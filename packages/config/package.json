@@ -1,0 +1,27 @@
+{
+  "name": "@cacia/config",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Configurações compartilhadas: TypeScript, ESLint e Prettier",
+  "files": [
+    "typescript",
+    "eslint",
+    "prettier"
+  ],
+  "exports": {
+    "./prettier": "./prettier/index.mjs",
+    "./eslint/base": "./eslint/base.mjs",
+    "./eslint/nest": "./eslint/nest.mjs",
+    "./eslint/next": "./eslint/next.mjs",
+    "./typescript/base": "./typescript/base.json",
+    "./typescript/nest": "./typescript/nest.json",
+    "./typescript/next": "./typescript/next.json"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.14.0",
+    "typescript-eslint": "^8.19.0"
+  }
+}

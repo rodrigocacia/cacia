@@ -1,0 +1,16 @@
+# Normaliza fim de linha: LF no repositório, sempre.
+# Sem isso, o Windows commita CRLF e o CI (Linux) acusa diferença em todo arquivo.
+* text=auto eol=lf
+
+# Binários — nunca normalizar
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+
+# Lockfile: gerado, não revisar em diff
+pnpm-lock.yaml -diff linguist-generated=true
