@@ -1,0 +1,1387 @@
+// =============================================================================
+// CacIA — Schema do banco de dados
+// =============================================================================
+// Convenções:
+//   - Modelos em PascalCase, tabelas em snake_case plural
+//   - Campos em camelCase no client, colunas em snake_case no banco
+//   - Chave primária UUID: evita enumeração de recursos por ID sequencial
+//   - Exclusão lógica via deletedAt — nunca DELETE físico
+//
+// ISOLAMENTO ENTRE ESCRITÓRIOS
+//   Office é a fronteira entre clientes. Das 28 tabelas, 23 têm office_id
+//   obrigatório; users, plans e offices são globais, e calendar_available_days
+//   é alcançada só pelo calendar (que já é do tenant).
+//
+//   A separação NÃO depende da disciplina de quem escreve a query: os pais
+//   declaram @@unique([id, officeId]) e os filhos referenciam esse par. Assim
+//   o banco recusa um filho apontando para um pai de outro escritório — e o
+//   cascade de exclusão fica confinado ao tenant por construção.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum Role {
+  USER  @map("user")
+  ADMIN @map("admin")
+
+  @@map("role")
+}
+
+enum OfficeStatus {
+  PENDING    @map("pending")
+  ACTIVE     @map("active")
+  DEACTIVATE @map("deactivate")
+
+  @@map("office_status")
+}
+
+enum PlanType {
+  UNIQUE     @map("unique")
+  RECURRENCE @map("recurrence")
+
+  @@map("plan_type")
+}
+
+enum SignatureType {
+  UNIQUE     @map("unique")
+  RECURRENCE @map("recurrence")
+
+  @@map("signature_type")
+}
+
+enum SignatureStatus {
+  PENDING   @map("pending")
+  ACTIVE    @map("active")
+  CANCELLED @map("cancelled")
+
+  @@map("signature_status")
+}
+
+enum PaymentGateway {
+  IOPAY @map("iopay")
+
+  @@map("payment_gateway")
+}
+
+enum RecurrenceStatus {
+  PENDING   @map("pending")
+  ACTIVE    @map("active")
+  CANCELLED @map("cancelled")
+
+  @@map("recurrence_status")
+}
+
+enum PaymentType {
+  PIX         @map("pix")
+  CREDIT_CARD @map("credit_card")
+
+  @@map("payment_type")
+}
+
+enum LeadStatus {
+  NEW        @map("new")
+  IN_CONTACT @map("in_contact")
+  CONVERTED  @map("converted")
+
+  @@map("lead_status")
+}
+
+enum ProcessType {
+  CIVIL
+  PENAL
+  TRABALHISTA
+  TRIBUTARIO
+  ADMINISTRATIVO
+  CONSTITUCIONAL
+  ELEITORAL
+  MILITAR
+  AMBIENTAL
+  CONSUMIDOR
+  EMPRESARIAL
+  PREVIDENCIARIO
+
+  @@map("process_type")
+}
+
+enum ProcessStatus {
+  PENDING   @map("pending")
+  ACTIVE    @map("active")
+  ARCHIVED  @map("archived")
+  CONCLUDED @map("concluded")
+  FINISHED  @map("finished")
+
+  @@map("process_status")
+}
+
+enum ProcessUpdateStatus {
+  PENDING
+  PROCESSING
+  DONE
+  ERROR
+  CANCELLED
+
+  @@map("process_update_status")
+}
+
+enum WhatsappProvider {
+  OFICIAL   @map("oficial")
+  EVOLUTION @map("evolution")
+  WAHA      @map("waha")
+
+  @@map("whatsapp_provider")
+}
+
+enum ConnectionType {
+  WHATSAPP @map("whatsapp")
+
+  @@map("connection_type")
+}
+
+enum ConnectionStatus {
+  PENDING      @map("pending")
+  CONNECTED    @map("connected")
+  DISCONNECTED @map("disconnected")
+
+  @@map("connection_status")
+}
+
+enum EvolutionState {
+  CONNECTED    @map("connected")
+  DISCONNECTED @map("disconnected")
+  CONNECTING   @map("connecting")
+  WAITING_QR   @map("waiting_qr")
+  FAILED       @map("failed")
+
+  @@map("evolution_state")
+}
+
+enum WahaSessionStatus {
+  STOPPED
+  STARTING
+  SCAN_QR_CODE
+  WORKING
+  FAILED
+
+  @@map("waha_session_status")
+}
+
+enum ProxyScope {
+  CITY    @map("city")
+  STATE   @map("state")
+  COUNTRY @map("country")
+
+  @@map("proxy_scope")
+}
+
+enum AgentType {
+  SUPPORT  @map("support")
+  PERSONAL @map("personal")
+
+  @@map("agent_type")
+}
+
+enum AgentGender {
+  WOMAN   @map("woman")
+  MAN     @map("man")
+  NEUTRAL @map("neutral")
+
+  @@map("agent_gender")
+}
+
+enum AgentStyle {
+  LEGAL_FORMAL              @map("Formal Jurídico")
+  CLEAR_AND_OBJECTIVE       @map("Claro e Objetivo")
+  ASSERTIVE_AND_PERSUASIVE  @map("Assertivo e Persuasivo")
+  EMPATHETIC_AND_SUPPORTIVE @map("Empático e Acolhedor")
+  PROFESSIONAL_AND_CASUAL   @map("Informal Profissional")
+
+  @@map("agent_style")
+}
+
+enum ChatType {
+  USER     @map("user")
+  LEAD     @map("lead")
+  CUSTOMER @map("customer")
+
+  @@map("chat_type")
+}
+
+enum ChatStatus {
+  PENDING   @map("pending")
+  ACTIVE    @map("active")
+  COMPLETED @map("completed")
+  CANCELLED @map("cancelled")
+
+  @@map("chat_status")
+}
+
+enum MessageSender {
+  LEAD     @map("lead")
+  CUSTOMER @map("customer")
+  USER     @map("user")
+  AGENT    @map("agent")
+  SYSTEM   @map("system")
+
+  @@map("message_sender")
+}
+
+enum MessageType {
+  TEXT     @map("text")
+  IMAGE    @map("image")
+  AUDIO    @map("audio")
+  VIDEO    @map("video")
+  DOCUMENT @map("document")
+  LOCATION @map("location")
+  CONTACT  @map("contact")
+  CALENDAR @map("calendar")
+  MEETING  @map("meeting")
+  TASK     @map("task")
+  NOTE     @map("note")
+  STICKER  @map("sticker")
+
+  @@map("message_type")
+}
+
+enum MessageStatus {
+  PENDING   @map("pending")
+  SENT      @map("sent")
+  DELIVERED @map("delivered")
+  READ      @map("read")
+  FAILED    @map("failed")
+
+  @@map("message_status")
+}
+
+enum MarkType {
+  LEAD
+  CUSTOMER
+  USER
+  SYSTEM
+
+  @@map("mark_type")
+}
+
+enum MarkCategory {
+  FEEDBACK   @map("feedback")
+  ADDRESS    @map("address")
+  PREFERENCE @map("preference")
+  OTHER      @map("other")
+
+  @@map("mark_category")
+}
+
+enum MarkAuthor {
+  USER
+  AGENT
+  SYSTEM
+
+  @@map("mark_author")
+}
+
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+
+  @@map("weekday")
+}
+
+enum EventType {
+  MEETING    @map("meeting")
+  HEARING    @map("hearing")
+  INQUIRY    @map("inquiry")
+  DEADLINE   @map("deadline")
+  COMMITMENT @map("commitment")
+  SERVICE    @map("service")
+
+  @@map("event_type")
+}
+
+enum EventStatus {
+  PENDING @map("pending")
+  CONFIRM @map("confirm")
+  CANCEL  @map("cancel")
+  DONE    @map("done")
+
+  @@map("event_status")
+}
+
+enum ConsultationMode {
+  ONLINE    @map("online")
+  IN_PERSON @map("in_person")
+
+  @@map("consultation_mode")
+}
+
+enum ReminderType {
+  EVENT       @map("event")
+  TASK        @map("task")
+  APPOINTMENT @map("appointment")
+  DEADLINE    @map("deadline")
+  CUSTOM      @map("custom")
+
+  @@map("reminder_type")
+}
+
+enum ReminderStatus {
+  PENDING   @map("pending")
+  SENT      @map("sent")
+  CANCELLED @map("cancelled")
+  FAILED    @map("failed")
+
+  @@map("reminder_status")
+}
+
+enum DocumentVectorStatus {
+  PENDING    @map("pending")
+  PROCESSING @map("processing")
+  COMPLETED  @map("completed")
+  FAILED     @map("failed")
+  SKIPPED    @map("skipped")
+
+  @@map("document_vector_status")
+}
+
+enum DocumentType {
+  UPLOAD     @map("upload")
+  CREATE     @map("create")
+  ATTACHMENT @map("attachment")
+
+  @@map("document_type")
+}
+
+enum DocumentCategory {
+  BUDGET            @map("budget")
+  CONTRACT          @map("contract")
+  POWER_OF_ATTORNEY @map("power_of_attorney")
+  PETITION          @map("petition")
+
+  @@map("document_category")
+}
+
+enum DocumentStatus {
+  DRAFT          @map("draft")
+  PENDING_REVIEW @map("pending_review")
+  APPROVED       @map("approved")
+  SENT           @map("sent")
+
+  @@map("document_status")
+}
+
+enum NotificationType {
+  PROCESS_UPDATE  @map("process_update")
+  PROGRESS_UPDATE @map("progress_update")
+  NEW_EVENT       @map("new_event")
+  ATTACHMENT_DOC  @map("attachment_doc")
+  CONFIRM_DOC     @map("confirm_doc")
+  NEW_LEAD        @map("new_lead")
+
+  @@map("notification_type")
+}
+
+enum NotificationStatus {
+  DELIVERY @map("delivery")
+  OPEN     @map("open")
+
+  @@map("notification_status")
+}
+
+enum ServiceArea {
+  ADMINISTRATIVE        @map("administrative")
+  AGRARIAN              @map("agrarian")
+  BANKRUPTCY            @map("bankruptcy")
+  BUSINESS              @map("business")
+  CIVIL                 @map("civil")
+  CONSUMER              @map("consumer")
+  CONTRACT              @map("contract")
+  CORPORATE             @map("corporate")
+  CRIMINAL              @map("criminal")
+  DIGITAL               @map("digital")
+  ELECTORAL             @map("electoral")
+  ENVIRONMENTAL         @map("environmental")
+  FAMILY                @map("family")
+  HEALTH                @map("health")
+  HUMAN_RIGHTS          @map("human_rights")
+  IMMIGRATION           @map("immigration")
+  INSURANCE             @map("insurance")
+  INTELLECTUAL_PROPERTY @map("intellectual_property")
+  INTERNATIONAL         @map("international")
+  LABOR                 @map("labor")
+  MILITARY              @map("military")
+  NOTARIAL              @map("notarial")
+  PENSION               @map("pension")
+  REAL_ESTATE           @map("real_estate")
+  SOCIAL_SECURITY       @map("social_security")
+  SPORTS                @map("sports")
+  TAX                   @map("tax")
+  TECHNOLOGY            @map("technology")
+  TRAFFIC               @map("traffic")
+  TRIBUTARY             @map("tributary")
+  YOUTH                 @map("youth")
+  OTHER                 @map("other")
+
+  @@map("service_area")
+}
+
+enum ServiceValueType {
+  FIXED    @map("fixed")
+  FLOAT    @map("float")
+  PERSONAL @map("personal")
+
+  @@map("service_value_type")
+}
+
+// =============================================================================
+// IDENTIDADE E ASSINATURA
+// =============================================================================
+
+model User {
+  id                 String    @id @default(uuid()) @db.Uuid
+  name               String
+  email              String    @unique
+  password           String
+  document           String?
+  birthday           String?
+  phone              String?
+  avatar             String?
+  thumb              String?
+  country            String?
+  state              String?
+  city               String?
+  role               Role      @default(USER)
+  verified           Boolean   @default(true)
+  forgotCode         String?   @map("forgot_code")
+  forgotCodeExpireAt DateTime? @map("forgot_code_expire_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  ownedOffices  Office[]       @relation("OfficeOwner")
+  memberships   OfficeMember[]
+  calendars     Calendar[]
+  chats         Chat[]
+  marks         Mark[]
+  reminders     Reminder[]
+  notifications Notification[]
+  signatures    Signature[]
+  recurrences   Recurrence[]
+
+  @@index([deletedAt])
+  @@map("users")
+}
+
+/// O Mongo guardava a lista de escritórios como array no próprio usuário.
+/// Aqui vira tabela de vínculo — permite papel por escritório e integridade real.
+model OfficeMember {
+  id       String @id @default(uuid()) @db.Uuid
+  userId   String @map("user_id") @db.Uuid
+  officeId String @map("office_id") @db.Uuid
+  role     Role   @default(USER)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  office Office @relation(fields: [officeId], references: [id], onDelete: Cascade)
+
+  calendars     Calendar[]
+  chats         Chat[]
+  marks         Mark[]
+  reminders     Reminder[]
+  notifications Notification[]
+
+  @@unique([userId, officeId])
+  @@index([officeId])
+  @@map("office_members")
+}
+
+model Plan {
+  id          String   @id @default(uuid()) @db.Uuid
+  type        PlanType
+  title       String
+  description String?
+  price       Decimal  @db.Decimal(12, 2)
+  status      Boolean  @default(true)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  offices     Office[]
+  signatures  Signature[]
+  recurrences Recurrence[]
+
+  @@index([deletedAt])
+  @@map("plans")
+}
+
+/// Fronteira de isolamento entre clientes. Tudo abaixo daqui pertence a um Office.
+model Office {
+  id                String       @id @default(uuid()) @db.Uuid
+  ownerId           String       @map("owner_id") @db.Uuid
+  planId            String?      @map("plan_id") @db.Uuid
+  name              String
+  description       String?
+  document          String
+  legalName         String?      @map("legal_name")
+  tradeName         String?      @map("trade_name")
+  remotejid         String?
+  oabNumber         String       @map("oab_number")
+  oabUf             String       @map("oab_uf")
+  status            OfficeStatus @default(PENDING)
+  gatewayCustomerId String?      @map("gateway_customer_id")
+  onboarding        Boolean      @default(false)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  owner User  @relation("OfficeOwner", fields: [ownerId], references: [id])
+  plan  Plan? @relation(fields: [planId], references: [id])
+
+  members       OfficeMember[]
+  addresses     OfficeAddress[]
+  agents        Agent[]
+  calendars     Calendar[]
+  chats         Chat[]
+  connections   Connection[]
+  consultation  Consultation?
+  customers     Customer[]
+  documents     Document[]
+  events        Event[]
+  folders       Folder[]
+  leads         Lead[]
+  marks         Mark[]
+  messages      Message[]
+  notifications Notification[]
+  processes     Process[]
+  progresses    Progress[]
+  questions     Question[]
+  recurrences   Recurrence[]
+  reminders     Reminder[]
+  services      Service[]
+  setting       Setting?
+  signatures    Signature[]
+
+  @@index([ownerId])
+  @@index([document])
+  @@index([deletedAt])
+  @@map("offices")
+}
+
+model Signature {
+  id                  String          @id @default(uuid()) @db.Uuid
+  officeId            String          @map("office_id") @db.Uuid
+  userId              String          @map("user_id") @db.Uuid
+  planId              String          @map("plan_id") @db.Uuid
+  type                SignatureType
+  status              SignatureStatus @default(PENDING)
+  nextRecurrenceAt    DateTime?       @map("next_recurrence_at")
+  gateway             PaymentGateway
+  gatewayRecurrenceId String?         @map("gateway_recurrence_id")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office      Office       @relation(fields: [officeId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+  plan        Plan         @relation(fields: [planId], references: [id])
+  recurrences Recurrence[]
+
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, status])
+  @@index([officeId, deletedAt])
+  @@index([nextRecurrenceAt])
+  @@map("signatures")
+}
+
+model Recurrence {
+  id                String           @id @default(uuid()) @db.Uuid
+  officeId          String           @map("office_id") @db.Uuid
+  userId            String           @map("user_id") @db.Uuid
+  signatureId       String           @map("signature_id") @db.Uuid
+  planId            String           @map("plan_id") @db.Uuid
+  total             Decimal          @db.Decimal(12, 2)
+  status            RecurrenceStatus @default(PENDING)
+  gateway           PaymentGateway
+  gatewayPaymentId  String?          @map("gateway_payment_id")
+  paymentLastDigits String?          @map("payment_last_digits")
+  paymentType       PaymentType      @map("payment_type")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office    Office    @relation(fields: [officeId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  signature Signature @relation(fields: [signatureId, officeId], references: [id, officeId])
+  plan      Plan      @relation(fields: [planId], references: [id])
+
+  @@index([officeId, status])
+  @@index([signatureId])
+  @@map("recurrences")
+}
+
+/// Endereço da sede do escritório. Era array embutido em Office.
+model OfficeAddress {
+  id           String  @id @default(uuid()) @db.Uuid
+  officeId     String  @map("office_id") @db.Uuid
+  cep          String?
+  street       String?
+  number       String?
+  complement   String?
+  neighborhood String?
+  city         String?
+  state        String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  office Office @relation(fields: [officeId], references: [id], onDelete: Cascade)
+
+  @@index([officeId])
+  @@map("office_addresses")
+}
+
+/// Endereço do cliente. Era array embutido em Customer.
+/// A FK composta garante que o endereço não atravesse a fronteira do escritório.
+model CustomerAddress {
+  id           String  @id @default(uuid()) @db.Uuid
+  officeId     String  @map("office_id") @db.Uuid
+  customerId   String  @map("customer_id") @db.Uuid
+  cep          String?
+  street       String?
+  number       String?
+  complement   String?
+  neighborhood String?
+  city         String?
+  state        String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  customer Customer @relation(fields: [customerId, officeId], references: [id, officeId], onDelete: Cascade)
+
+  @@index([officeId, customerId])
+  @@map("customer_addresses")
+}
+
+// =============================================================================
+// CLIENTES E PROCESSOS
+// =============================================================================
+
+model Customer {
+  id        String  @id @default(uuid()) @db.Uuid
+  officeId  String  @map("office_id") @db.Uuid
+  name      String
+  remotejid String
+  email     String?
+  briefing  String?
+  document  String
+  legalName String? @map("legal_name")
+  tradeName String? @map("trade_name")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office Office @relation(fields: [officeId], references: [id])
+
+  addresses CustomerAddress[]
+  chats     Chat[]
+  documents Document[]
+  events    Event[]
+  folders   Folder[]
+  leads     Lead[]
+  marks     Mark[]
+  messages  Message[]
+  processes Process[]
+  reminders Reminder[]
+
+  /// A unicidade não considera deletedAt: depois de excluir logicamente um
+  /// cliente, o mesmo documento não pode ser recadastrado. É deliberado — o
+  /// fluxo correto é restaurar o registro existente, não criar um segundo.
+  @@unique([officeId, document])
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, deletedAt])
+  @@index([officeId, remotejid])
+  @@index([officeId, name])
+  @@map("customers")
+}
+
+model Lead {
+  id             String     @id @default(uuid()) @db.Uuid
+  officeId       String     @map("office_id") @db.Uuid
+  customerId     String?    @map("customer_id") @db.Uuid
+  name           String
+  remotejid      String
+  email          String?
+  briefing       String?
+  status         LeadStatus @default(NEW)
+  lastActivityAt DateTime?  @map("last_activity_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office   Office    @relation(fields: [officeId], references: [id])
+  customer Customer? @relation(fields: [customerId, officeId], references: [id, officeId])
+
+  chats     Chat[]
+  documents Document[]
+  events    Event[]
+  marks     Mark[]
+  messages  Message[]
+  reminders Reminder[]
+
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, status])
+  @@index([officeId, remotejid])
+  @@index([officeId, deletedAt])
+  @@map("leads")
+}
+
+model Process {
+  id           String              @id @default(uuid()) @db.Uuid
+  officeId     String              @map("office_id") @db.Uuid
+  customerId   String              @map("customer_id") @db.Uuid
+  number       String
+  description  String?
+  requestId    String?             @map("request_id")
+  /// Unidade/vara do processo
+  unit         String?
+  type         ProcessType?
+  status       ProcessStatus       @default(ACTIVE)
+  updateStatus ProcessUpdateStatus @default(PENDING) @map("update_status")
+
+  // Dados vindos da Judit — formato variável, guardados como JSON
+  instance           Int?
+  name               String?
+  freeJustice        Boolean? @map("free_justice")
+  secrecyLevel       Int?     @map("secrecy_level")
+  tribunalAcronym    String?  @map("tribunal_acronym")
+  county             String?
+  state              String?
+  city               String?
+  judge              String?
+  distributionDate   String?  @map("distribution_date")
+  justice            String?
+  tribunal           String?
+  phase              String?
+  area               String?
+  justiceDescription String?  @map("justice_description")
+  amount             Decimal? @db.Decimal(16, 2)
+  currency           String?
+
+  /// Status como a Judit devolve, sem normalizar. O campo `status` guarda a
+  /// versão canônica; este preserva o original para auditoria.
+  juditStatus String? @map("judit_status")
+
+  courts          Json? @db.JsonB
+  classifications Json? @db.JsonB
+  subjects        Json? @db.JsonB
+  parties         Json? @db.JsonB
+
+  lastActivityAt DateTime? @map("last_activity_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  office   Office   @relation(fields: [officeId], references: [id])
+  customer Customer @relation(fields: [customerId, officeId], references: [id, officeId])
+
+  documents  Document[]
+  events     Event[]
+  progresses Progress[]
+  reminders  Reminder[]
+
+  @@unique([officeId, number])
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, status])
+  @@index([officeId, customerId])
+  @@index([officeId, deletedAt])
+  @@index([requestId])
+  @@map("processes")
+}
+
+model Progress {
+  id          String    @id @default(uuid()) @db.Uuid
+  officeId    String    @map("office_id") @db.Uuid
+  processId   String    @map("process_id") @db.Uuid
+  title       String?
+  description String
+  /// Identificador do andamento na Judit — evita gravar o mesmo duas vezes
+  stepId      String    @default("") @map("step_id")
+  releaseAt   DateTime? @map("release_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office  Office  @relation(fields: [officeId], references: [id])
+  process Process @relation(fields: [processId, officeId], references: [id, officeId], onDelete: Cascade)
+
+  documents Document[]
+  events    Event[]
+
+  @@unique([processId, stepId])
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, processId])
+  @@index([officeId, releaseAt])
+  @@map("progresses")
+}
+
+// =============================================================================
+// CONVERSA E AGENTE
+// =============================================================================
+
+model Agent {
+  id       String      @id @default(uuid()) @db.Uuid
+  officeId String      @map("office_id") @db.Uuid
+  type     AgentType
+  name     String      @default("CacIA")
+  gender   AgentGender @default(WOMAN)
+  style    AgentStyle
+  greeting String
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office Office @relation(fields: [officeId], references: [id])
+
+  chats    Chat[]
+  marks    Mark[]
+  messages Message[]
+
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, type])
+  @@map("agents")
+}
+
+model Chat {
+  id             String     @id @default(uuid()) @db.Uuid
+  officeId       String     @map("office_id") @db.Uuid
+  agentId        String     @map("agent_id") @db.Uuid
+  type           ChatType
+  userId         String?    @map("user_id") @db.Uuid
+  leadId         String?    @map("lead_id") @db.Uuid
+  customerId     String?    @map("customer_id") @db.Uuid
+  status         ChatStatus @default(ACTIVE)
+  userName       String?    @map("user_name")
+  audioReply     Boolean?   @map("audio_reply")
+  lastActivityAt DateTime   @default(now()) @map("last_activity_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office   Office        @relation(fields: [officeId], references: [id])
+  /// Garante que o usuário seja membro deste escritório
+  member   OfficeMember? @relation(fields: [userId, officeId], references: [userId, officeId])
+  agent    Agent         @relation(fields: [agentId, officeId], references: [id, officeId])
+  user     User?         @relation(fields: [userId], references: [id])
+  lead     Lead?         @relation(fields: [leadId, officeId], references: [id, officeId])
+  customer Customer?     @relation(fields: [customerId, officeId], references: [id, officeId])
+
+  documents Document[]
+  marks     Mark[]
+  messages  Message[]
+
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, type, status])
+  @@index([officeId, lastActivityAt])
+  @@index([officeId, customerId])
+  @@index([officeId, leadId])
+  @@index([officeId, userId])
+  @@map("chats")
+}
+
+model Message {
+  id                    String        @id @default(uuid()) @db.Uuid
+  officeId              String        @map("office_id") @db.Uuid
+  chatId                String        @map("chat_id") @db.Uuid
+  leadId                String?       @map("lead_id") @db.Uuid
+  customerId            String?       @map("customer_id") @db.Uuid
+  agentId               String?       @map("agent_id") @db.Uuid
+  sender                MessageSender
+  type                  MessageType
+  status                MessageStatus @default(PENDING)
+  messageText           String?       @map("message_text")
+  /// Legenda que acompanha imagem, vídeo ou documento no WhatsApp
+  messageCaption        String?       @map("message_caption")
+  messageFileUrl        String?       @map("message_file_url")
+  /// TODO(fase-5): base64 no banco infla a tabela e degrada toda consulta.
+  /// Mantido para paridade com o comportamento atual; migrar para o storage.
+  messageFileBase64     String?       @map("message_file_base64")
+  messageFileAttachment Boolean       @default(false) @map("message_file_attachment")
+  messageFileExtension  String?       @map("message_file_extension")
+  messageFileSizeBytes  Int?          @map("message_file_size_bytes")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office   Office    @relation(fields: [officeId], references: [id])
+  chat     Chat      @relation(fields: [chatId, officeId], references: [id, officeId], onDelete: Cascade)
+  lead     Lead?     @relation(fields: [leadId, officeId], references: [id, officeId])
+  customer Customer? @relation(fields: [customerId, officeId], references: [id, officeId])
+  agent    Agent?    @relation(fields: [agentId, officeId], references: [id, officeId])
+
+  documents Document[]
+
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, chatId, createdAt])
+  @@index([officeId, status])
+  @@map("messages")
+}
+
+/// Anotação sobre um contato — preferências, endereço, feedback.
+/// É a base da memória de longo prazo do agente.
+model Mark {
+  id          String       @id @default(uuid()) @db.Uuid
+  officeId    String       @map("office_id") @db.Uuid
+  chatId      String       @map("chat_id") @db.Uuid
+  type        MarkType
+  category    MarkCategory
+  author      MarkAuthor
+  title       String
+  description String?
+  leadId      String?      @map("lead_id") @db.Uuid
+  customerId  String?      @map("customer_id") @db.Uuid
+  agentId     String?      @map("agent_id") @db.Uuid
+  userId      String?      @map("user_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office   Office        @relation(fields: [officeId], references: [id])
+  /// Garante que o usuário seja membro deste escritório
+  member   OfficeMember? @relation(fields: [userId, officeId], references: [userId, officeId])
+  chat     Chat          @relation(fields: [chatId, officeId], references: [id, officeId], onDelete: Cascade)
+  lead     Lead?         @relation(fields: [leadId, officeId], references: [id, officeId])
+  customer Customer?     @relation(fields: [customerId, officeId], references: [id, officeId])
+  agent    Agent?        @relation(fields: [agentId, officeId], references: [id, officeId])
+  user     User?         @relation(fields: [userId], references: [id])
+
+  @@index([officeId, chatId])
+  @@index([officeId, customerId, category])
+  @@index([officeId, leadId, category])
+  @@map("marks")
+}
+
+// =============================================================================
+// AGENDA
+// =============================================================================
+
+model Calendar {
+  id               String  @id @default(uuid()) @db.Uuid
+  officeId         String  @map("office_id") @db.Uuid
+  userId           String  @map("user_id") @db.Uuid
+  title            String
+  description      String?
+  googleId         String? @map("google_id")
+  generalRoles     String? @map("general_roles")
+  generalAvailable String? @map("general_available")
+  cancelRoles      String? @map("cancel_roles")
+  notification     Boolean @default(true)
+  status           Boolean @default(true)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office Office       @relation(fields: [officeId], references: [id])
+  /// Garante que o usuário seja membro deste escritório
+  member OfficeMember @relation(fields: [userId, officeId], references: [userId, officeId])
+  user   User         @relation(fields: [userId], references: [id])
+
+  availableDays CalendarAvailableDay[]
+  events        Event[]
+
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, status])
+  @@index([officeId, userId])
+  @@map("calendars")
+}
+
+/// Era array embutido no Calendar. Cada dia tem dois turnos configuráveis.
+model CalendarAvailableDay {
+  id         String  @id @default(uuid()) @db.Uuid
+  calendarId String  @map("calendar_id") @db.Uuid
+  day        Weekday
+
+  available Boolean @default(false)
+  startTime String? @map("start_time")
+  endTime   String? @map("end_time")
+  online    Boolean @default(false)
+  inPerson  Boolean @default(false)
+
+  shift2Available Boolean @default(false) @map("shift2_available")
+  shift2StartTime String? @map("shift2_start_time")
+  shift2EndTime   String? @map("shift2_end_time")
+  shift2Online    Boolean @default(false) @map("shift2_online")
+  shift2InPerson  Boolean @default(false) @map("shift2_in_person")
+
+  calendar Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+
+  @@unique([calendarId, day])
+  @@map("calendar_available_days")
+}
+
+model Event {
+  id               String            @id @default(uuid()) @db.Uuid
+  officeId         String            @map("office_id") @db.Uuid
+  calendarId       String            @map("calendar_id") @db.Uuid
+  leadId           String?           @map("lead_id") @db.Uuid
+  customerId       String?           @map("customer_id") @db.Uuid
+  processId        String?           @map("process_id") @db.Uuid
+  progressId       String?           @map("progress_id") @db.Uuid
+  type             EventType         @default(HEARING)
+  title            String
+  description      String?
+  startTime        DateTime          @map("start_time")
+  endTime          DateTime          @map("end_time")
+  status           EventStatus       @default(PENDING)
+  consultationMode ConsultationMode? @map("consultation_mode")
+  /// Antecedências de lembrete em minutos — era array de objetos com um só campo
+  reminderOffsets  Int[]             @default([]) @map("reminder_offsets")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office   Office    @relation(fields: [officeId], references: [id])
+  calendar Calendar  @relation(fields: [calendarId, officeId], references: [id, officeId])
+  lead     Lead?     @relation(fields: [leadId, officeId], references: [id, officeId])
+  customer Customer? @relation(fields: [customerId, officeId], references: [id, officeId])
+  process  Process?  @relation(fields: [processId, officeId], references: [id, officeId])
+  progress Progress? @relation(fields: [progressId, officeId], references: [id, officeId])
+
+  documents Document[]
+  reminders Reminder[]
+
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, startTime])
+  @@index([officeId, status, startTime])
+  @@index([officeId, calendarId, startTime])
+  @@index([officeId, customerId])
+  @@map("events")
+}
+
+model Reminder {
+  id           String         @id @default(uuid()) @db.Uuid
+  officeId     String         @map("office_id") @db.Uuid
+  userId       String         @map("user_id") @db.Uuid
+  eventId      String?        @map("event_id") @db.Uuid
+  leadId       String?        @map("lead_id") @db.Uuid
+  customerId   String?        @map("customer_id") @db.Uuid
+  processId    String?        @map("process_id") @db.Uuid
+  type         ReminderType   @default(CUSTOM)
+  title        String
+  description  String?
+  /// Antecedência em minutos em relação ao evento
+  timeTrigger  Int            @map("time_trigger")
+  triggerAt    DateTime       @map("trigger_at")
+  status       ReminderStatus @default(PENDING)
+  sentAt       DateTime?      @map("sent_at")
+  errorMessage String?        @map("error_message")
+  retryCount   Int            @default(0) @map("retry_count")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office   Office       @relation(fields: [officeId], references: [id])
+  /// Garante que o usuário seja membro deste escritório
+  member   OfficeMember @relation(fields: [userId, officeId], references: [userId, officeId])
+  user     User         @relation(fields: [userId], references: [id])
+  event    Event?       @relation(fields: [eventId, officeId], references: [id, officeId], onDelete: Cascade)
+  lead     Lead?        @relation(fields: [leadId, officeId], references: [id, officeId])
+  customer Customer?    @relation(fields: [customerId, officeId], references: [id, officeId])
+  process  Process?     @relation(fields: [processId, officeId], references: [id, officeId])
+
+  /// Índice do worker: busca lembretes vencidos e ainda pendentes.
+  /// Sem officeId de propósito — o worker varre todos os escritórios.
+  @@index([status, triggerAt])
+  @@index([officeId, triggerAt])
+  @@index([eventId])
+  @@map("reminders")
+}
+
+// =============================================================================
+// DOCUMENTOS
+// =============================================================================
+
+model Folder {
+  id         String  @id @default(uuid()) @db.Uuid
+  officeId   String  @map("office_id") @db.Uuid
+  customerId String? @map("customer_id") @db.Uuid
+  title      String
+  /// Pasta criada pelo sistema não pode ser removida pelo usuário
+  system     Boolean @default(false)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office   Office    @relation(fields: [officeId], references: [id])
+  customer Customer? @relation(fields: [customerId, officeId], references: [id, officeId])
+
+  documents Document[]
+
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, customerId])
+  @@index([officeId, deletedAt])
+  @@map("folders")
+}
+
+model Document {
+  id                String            @id @default(uuid()) @db.Uuid
+  officeId          String            @map("office_id") @db.Uuid
+  folderId          String?           @map("folder_id") @db.Uuid
+  leadId            String?           @map("lead_id") @db.Uuid
+  customerId        String?           @map("customer_id") @db.Uuid
+  processId         String?           @map("process_id") @db.Uuid
+  progressId        String?           @map("progress_id") @db.Uuid
+  chatId            String?           @map("chat_id") @db.Uuid
+  messageId         String?           @map("message_id") @db.Uuid
+  eventId           String?           @map("event_id") @db.Uuid
+  type              DocumentType      @default(UPLOAD)
+  category          DocumentCategory?
+  status            DocumentStatus    @default(DRAFT)
+  title             String
+  content           String?
+  extension         String?
+  /// TODO(fase-5): mesmo problema do base64 em Message — migrar para o storage
+  contentBase64     String?           @map("content_base64")
+  contentUrl        String?           @map("content_url")
+  sizeBytes         Int?              @map("size_bytes")
+  templateVariables Json?             @map("template_variables") @db.JsonB
+
+  /// Preenchido quando os trechos do documento estão indexados no Qdrant
+  vectorStatus       DocumentVectorStatus @default(PENDING) @map("vector_status")
+  /// IDs dos pontos no Qdrant — necessários para remover ao excluir o documento
+  vectorIds          String[]             @default([]) @map("vector_ids")
+  vectorChunksCount  Int                  @default(0) @map("vector_chunks_count")
+  vectorTotalTokens  Int?                 @map("vector_total_tokens")
+  vectorErrorMessage String?              @map("vector_error_message")
+  vectorProcessedAt  DateTime?            @map("vector_processed_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office   Office    @relation(fields: [officeId], references: [id])
+  folder   Folder?   @relation(fields: [folderId, officeId], references: [id, officeId])
+  lead     Lead?     @relation(fields: [leadId, officeId], references: [id, officeId])
+  customer Customer? @relation(fields: [customerId, officeId], references: [id, officeId])
+  process  Process?  @relation(fields: [processId, officeId], references: [id, officeId])
+  progress Progress? @relation(fields: [progressId, officeId], references: [id, officeId])
+  chat     Chat?     @relation(fields: [chatId, officeId], references: [id, officeId])
+  message  Message?  @relation(fields: [messageId, officeId], references: [id, officeId])
+  event    Event?    @relation(fields: [eventId, officeId], references: [id, officeId])
+
+  @@index([officeId, folderId])
+  @@index([officeId, customerId])
+  @@index([officeId, processId])
+  @@index([officeId, status])
+  @@index([officeId, deletedAt])
+  @@map("documents")
+}
+
+// =============================================================================
+// CONFIGURAÇÃO DO ESCRITÓRIO
+// =============================================================================
+
+model Question {
+  id          String  @id @default(uuid()) @db.Uuid
+  officeId    String  @map("office_id") @db.Uuid
+  title       String
+  description String
+  status      Boolean @default(true)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office Office @relation(fields: [officeId], references: [id])
+
+  @@index([officeId, status])
+  @@map("questions")
+}
+
+model Service {
+  id          String           @id @default(uuid()) @db.Uuid
+  officeId    String           @map("office_id") @db.Uuid
+  title       String
+  description String
+  area        ServiceArea
+  valueType   ServiceValueType @map("value_type")
+  valueFixed  Decimal?         @map("value_fixed") @db.Decimal(12, 2)
+  valueFloat  Decimal?         @map("value_float") @db.Decimal(12, 2)
+  valueDetail String?          @map("value_detail")
+  status      Boolean          @default(true)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office Office @relation(fields: [officeId], references: [id])
+
+  @@index([officeId, status])
+  @@index([officeId, area])
+  @@map("services")
+}
+
+model Consultation {
+  id                        String  @id @default(uuid()) @db.Uuid
+  officeId                  String  @unique @map("office_id") @db.Uuid
+  isCharged                 Boolean @default(false) @map("is_charged")
+  consultationValue         Decimal @default(0) @map("consultation_value") @db.Decimal(12, 2)
+  requiresPaymentToSchedule Boolean @default(false) @map("requires_payment_to_schedule")
+  lawyerPixKey              String  @default("") @map("lawyer_pix_key")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office Office @relation(fields: [officeId], references: [id], onDelete: Cascade)
+
+  @@map("consultations")
+}
+
+/// Preferências de notificação. Um registro por escritório.
+/// n_w_c = notificação WhatsApp para o cliente
+/// n_w_a = notificação WhatsApp para o advogado
+model Setting {
+  id       String @id @default(uuid()) @db.Uuid
+  officeId String @unique @map("office_id") @db.Uuid
+
+  notifyClientNewEvent      Boolean @default(true) @map("n_w_c_new_event")
+  notifyClientUpdateProcess Boolean @default(true) @map("n_w_c_update_process")
+
+  notifyLawyerNewLead         Boolean @default(true) @map("n_w_a_new_lead")
+  notifyLawyerNewCustomer     Boolean @default(true) @map("n_w_a_new_customer")
+  notifyLawyerNewMarkLead     Boolean @default(true) @map("n_w_a_new_mark_lead")
+  notifyLawyerNewMarkCustomer Boolean @default(true) @map("n_w_a_new_mark_customer")
+  notifyLawyerNewDocument     Boolean @default(true) @map("n_w_a_new_document")
+  notifyLawyerNewEvent        Boolean @default(true) @map("n_w_a_new_event")
+  notifyLawyerUpdateProcess   Boolean @default(true) @map("n_w_a_update_process")
+  notifyLawyerUpdateSystem    Boolean @default(true) @map("n_w_a_update_system")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office Office @relation(fields: [officeId], references: [id], onDelete: Cascade)
+
+  @@map("settings")
+}
+
+model Notification {
+  id         String             @id @default(uuid()) @db.Uuid
+  officeId   String             @map("office_id") @db.Uuid
+  userId     String             @map("user_id") @db.Uuid
+  type       NotificationType
+  status     NotificationStatus @default(DELIVERY)
+  typeId     String             @map("type_id")
+  typeTitle  String             @map("type_title")
+  typeDetail String             @map("type_detail")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office Office       @relation(fields: [officeId], references: [id])
+  /// Garante que o usuário seja membro deste escritório
+  member OfficeMember @relation(fields: [userId, officeId], references: [userId, officeId])
+  user   User         @relation(fields: [userId], references: [id])
+
+  @@index([officeId, userId, status])
+  @@index([officeId, createdAt])
+  @@map("notifications")
+}
+
+// =============================================================================
+// CONEXÕES DE WHATSAPP
+// =============================================================================
+
+model Connection {
+  id       String           @id @default(uuid()) @db.Uuid
+  officeId String           @map("office_id") @db.Uuid
+  type     ConnectionType   @default(WHATSAPP)
+  provider WhatsappProvider
+  status   ConnectionStatus @default(PENDING)
+
+  /// Quando o provedor é WAHA e o envio falha, cai para a Evolution
+  fallbackEnabled Boolean @default(true) @map("fallback_enabled")
+
+  /// Chave da API oficial do WhatsApp — usada quando provider = OFICIAL
+  whatsappApiKey String? @map("whatsapp_api_key")
+
+  evolutionApiHost           String?         @map("evolution_api_host")
+  evolutionApiInstance       String?         @unique @map("evolution_api_instance")
+  evolutionApiKey            String?         @map("evolution_api_key")
+  evolutionState             EvolutionState? @map("evolution_state")
+  evolutionPhone             String?         @map("evolution_phone")
+  evolutionProfileName       String?         @map("evolution_profile_name")
+  evolutionProfilePictureUrl String?         @map("evolution_profile_picture_url")
+  evolutionProfileStatus     String?         @map("evolution_profile_status")
+
+  wahaApiHost           String?            @map("waha_api_host")
+  wahaApiKey            String?            @map("waha_api_key")
+  wahaSession           String?            @unique @map("waha_session")
+  wahaState             WahaSessionStatus? @map("waha_state")
+  wahaPhone             String?            @map("waha_phone")
+  wahaProfileName       String?            @map("waha_profile_name")
+  wahaProfilePictureUrl String?            @map("waha_profile_picture_url")
+
+  /// Proxy residencial Evomi. proxyScope guarda o nível que de fato funcionou:
+  /// a resolução tenta cidade, cai para estado e depois para país.
+  proxyCountry   String?     @default("BR") @map("proxy_country")
+  proxyState     String?     @map("proxy_state")
+  proxyCity      String?     @map("proxy_city")
+  proxyScope     ProxyScope? @map("proxy_scope")
+  proxyAppliedAt DateTime?   @map("proxy_applied_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office Office @relation(fields: [officeId], references: [id])
+
+  @@index([officeId, status])
+  @@index([wahaSession])
+  @@index([evolutionApiInstance])
+  @@map("connections")
+}

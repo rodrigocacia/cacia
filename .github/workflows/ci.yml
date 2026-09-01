@@ -14,6 +14,8 @@ concurrency:
 env:
   NODE_VERSION: "22"
   PNPM_VERSION: "10.34.5"
+  # O Prisma exige a variável para gerar o client, mesmo sem conectar
+  DATABASE_URL: "postgresql://cacia:cacia@localhost:5432/cacia?schema=public"
 
 jobs:
   verificacao:
@@ -50,6 +52,58 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  migracao:
+    name: Migration em Postgres real
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: cacia
+          POSTGRES_PASSWORD: cacia
+          POSTGRES_DB: cacia
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cacia"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Instalar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      # Aplica as migrations do zero: prova que o banco pode ser reconstruído
+      - name: Aplicar migrations
+        run: pnpm --filter @cacia/database migrate:deploy
+
+      # Se o schema divergir das migrations, o diff não fica vazio e falha aqui.
+      # É o que impede alguém editar o schema e esquecer de gerar a migration.
+      - name: Verificar que schema e migrations estão sincronizados
+        run: |
+          cd packages/database
+          npx prisma migrate diff \
+            --from-schema-datasource prisma/schema.prisma \
+            --to-schema-datamodel prisma/schema.prisma \
+            --exit-code
 
   seguranca:
     name: Auditoria de dependências

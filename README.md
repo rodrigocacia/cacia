@@ -91,6 +91,47 @@ Detalhamento e justificativa das decisões: [docs/ARQUITETURA.md](docs/ARQUITETU
 
 ---
 
+## Banco de dados
+
+Suba a infraestrutura local (PostgreSQL, Redis e Qdrant):
+
+```bash
+docker compose up -d
+```
+
+Aplique as migrations e gere o client:
+
+```bash
+pnpm --filter @cacia/database migrate:deploy
+pnpm --filter @cacia/database generate
+```
+
+Para inspecionar os dados em uma interface web:
+
+```bash
+pnpm --filter @cacia/database studio
+```
+
+### Ao alterar o schema
+
+O arquivo `packages/database/prisma/schema.prisma` é a fonte única do modelo de
+dados. Depois de editá-lo:
+
+```bash
+pnpm --filter @cacia/database migrate:dev --name descricao_da_mudanca
+```
+
+O CI verifica que o schema e as migrations estão sincronizados — editar um sem
+gerar o outro reprova a verificação.
+
+### Isolamento entre escritórios
+
+`Office` é a fronteira entre clientes. **Toda consulta a uma entidade filha
+precisa filtrar por `officeId`.** Cada tabela tem índice composto começando por
+essa coluna, então o filtro é barato — não há motivo para omiti-lo.
+
+---
+
 ## Contribuindo
 
 Fluxo de trabalho, padrão de commits e critérios de revisão:
