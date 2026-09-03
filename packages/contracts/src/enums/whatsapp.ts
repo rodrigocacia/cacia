@@ -4,18 +4,18 @@
  * Hoje duplicado em 3 repositórios; aqui passa a ter definição única.
  */
 export enum WhatsappProvider {
-  OFICIAL = "oficial",
-  EVOLUTION = "evolution",
-  WAHA = "waha",
+  OFICIAL = 'oficial',
+  EVOLUTION = 'evolution',
+  WAHA = 'waha',
 }
 
 /** Estado de uma sessão WAHA, conforme reportado pela própria API do WAHA. */
 export enum WahaSessionStatus {
-  STOPPED = "STOPPED",
-  STARTING = "STARTING",
-  SCAN_QR_CODE = "SCAN_QR_CODE",
-  WORKING = "WORKING",
-  FAILED = "FAILED",
+  STOPPED = 'STOPPED',
+  STARTING = 'STARTING',
+  SCAN_QR_CODE = 'SCAN_QR_CODE',
+  WORKING = 'WORKING',
+  FAILED = 'FAILED',
 }
 
 /**
@@ -25,7 +25,7 @@ export enum WahaSessionStatus {
  * armazenado é o nível que de fato funcionou, não o que foi pedido.
  */
 export enum ProxyScope {
-  CITY = "city",
-  STATE = "state",
-  COUNTRY = "country",
+  CITY = 'city',
+  STATE = 'state',
+  COUNTRY = 'country',
 }

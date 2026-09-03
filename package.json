@@ -27,7 +27,8 @@
   },
   "pnpm": {
     "overrides": {
-      "deepmerge-ts": ">=8.0.0"
+      "deepmerge-ts": ">=8.0.0",
+      "vite": "^6.4.3"
     },
     "onlyBuiltDependencies": [
       "@prisma/client",

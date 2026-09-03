@@ -12,10 +12,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "22"
-  PNPM_VERSION: "10.34.5"
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10.34.5'
   # O Prisma exige a variável para gerar o client, mesmo sem conectar
-  DATABASE_URL: "postgresql://cacia:cacia@localhost:5432/cacia?schema=public"
+  DATABASE_URL: 'postgresql://cacia:cacia@localhost:5432/cacia?schema=public'
 
 jobs:
   verificacao:
@@ -52,6 +52,9 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Testes
+        run: pnpm test
 
   migracao:
     name: Migration em Postgres real

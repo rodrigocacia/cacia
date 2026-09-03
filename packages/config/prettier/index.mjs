@@ -2,19 +2,19 @@
 export default {
   semi: true,
   singleQuote: true,
-  trailingComma: "all",
+  trailingComma: 'all',
   printWidth: 80,
   tabWidth: 2,
-  arrowParens: "always",
-  endOfLine: "lf",
+  arrowParens: 'always',
+  endOfLine: 'lf',
   overrides: [
     {
-      files: ["*.tsx", "*.jsx"],
+      files: ['*.tsx', '*.jsx'],
       options: { singleQuote: false, jsxSingleQuote: false },
     },
     {
-      files: ["*.md"],
-      options: { proseWrap: "preserve" },
+      files: ['*.md'],
+      options: { proseWrap: 'preserve' },
     },
   ],
 };

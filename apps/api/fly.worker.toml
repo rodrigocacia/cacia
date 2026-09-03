@@ -1,0 +1,20 @@
+# Mesma imagem da API, sem servidor HTTP — só consome filas.
+# Deploy:  fly deploy -c apps/api/fly.worker.toml --dockerfile apps/api/Dockerfile
+app            = "cacia-worker"
+primary_region = "gru"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+
+[processes]
+  worker = "node apps/api/dist/worker.js"
+
+# Sem [http_service]: o worker não recebe tráfego. Nunca pode dormir, porque
+# perderia jobs agendados e a leitura das filas.
+[[vm]]
+  size       = "shared-cpu-2x"
+  memory     = "2gb"
+  processes  = ["worker"]

@@ -105,6 +105,25 @@ registra a decisão, a restrição externa ou a armadilha não óbvia:
 frontend, ele vive em `packages/contracts`. A duplicação de schemas foi o
 principal problema da arquitetura anterior — não vamos reintroduzi-la.
 
+**O escritório vem do `TenantGuard`, nunca do cliente.** Em um controller,
+a única forma legítima de obter o escritório é o decorator `@CurrentOffice()`:
+
+```ts
+@Get()
+async listar(@CurrentOffice() officeId: string) {
+  return this.service.listar(officeId);
+}
+```
+
+Nunca leia `officeId` do corpo, da query ou do parâmetro de rota — esses valores
+vêm do cliente e não passam por validação de vínculo. O guard resolve o
+escritório a partir do cabeçalho `x-office-id` e confirma que o usuário é membro
+dele antes de a rota executar.
+
+Rotas que legitimamente não pertencem a um escritório declaram `@SkipTenant()`.
+Se a rota lê ou escreve qualquer dado de escritório, ela **não** pode usar esse
+decorator.
+
 **Toda consulta filtra por `office_id`.** É a fronteira entre clientes. Um
 esquecimento aqui vaza dado sigiloso de um escritório para outro.
 
