@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
+import { IaModule } from '@/ai/ia.module';
 import { IntegracoesModule } from '@/integrations/integracoes.module';
+import { ChatsModule } from '@/modules/chats/chats.module';
 import { RemindersModule } from '@/modules/reminders/reminders.module';
 import { FilasModule } from './filas/filas.module';
+import { AtendimentoProcessor } from './processadores/atendimento.processor';
 import { EnvioWhatsappProcessor } from './processadores/envio-whatsapp.processor';
 import { LembretesProcessor } from './processadores/lembretes.processor';
 import { LembretesTarefa } from './tarefas/lembretes.tarefa';
@@ -20,7 +23,14 @@ import { LembretesTarefa } from './tarefas/lembretes.tarefa';
     FilasModule,
     IntegracoesModule,
     RemindersModule,
+    ChatsModule,
+    IaModule,
   ],
-  providers: [EnvioWhatsappProcessor, LembretesProcessor, LembretesTarefa],
+  providers: [
+    AtendimentoProcessor,
+    EnvioWhatsappProcessor,
+    LembretesProcessor,
+    LembretesTarefa,
+  ],
 })
 export class WorkerModule {}

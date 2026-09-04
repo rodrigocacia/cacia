@@ -36,6 +36,7 @@ import { FILA } from './filas';
       }),
     }),
     BullModule.registerQueue(
+      { name: FILA.ATENDIMENTO },
       { name: FILA.ENVIO_WHATSAPP },
       { name: FILA.LEMBRETES },
       { name: FILA.ATUALIZACAO_PROCESSO },

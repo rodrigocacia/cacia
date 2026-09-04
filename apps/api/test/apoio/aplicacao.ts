@@ -12,15 +12,19 @@ import { EvomiService } from '@/integrations/evomi/evomi.service';
 import { JuditService } from '@/integrations/judit/judit.service';
 import { EmbeddingsService } from '@/ai/embeddings.service';
 import { AgenteService } from '@/ai/agente/agente.service';
+import { SumarizacaoService } from '@/ai/memoria/sumarizacao.service';
+import { ExtracaoDeFatosService } from '@/ai/memoria/extracao-de-fatos.service';
 import { configurarApp } from '@/bootstrap';
 import {
   AgenteFalso,
   EmbeddingsFalsa,
   EvolutionFalso,
   EvomiFalso,
+  ExtracaoFalsa,
   JuditFalso,
   QdrantEmMemoria,
   StorageEmMemoria,
+  SumarizacaoFalsa,
   WahaFalso,
 } from './dubles';
 
@@ -33,6 +37,7 @@ export interface AplicacaoDeTeste {
   storage: StorageEmMemoria;
   waha: WahaFalso;
   judit: JuditFalso;
+  agente: AgenteFalso;
   encerrar: () => Promise<void>;
 }
 
@@ -60,6 +65,7 @@ export async function criarAplicacao(
   const storage = new StorageEmMemoria();
   const waha = new WahaFalso();
   const judit = new JuditFalso();
+  const agente = new AgenteFalso();
 
   const modulo = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(QdrantService)
@@ -77,7 +83,11 @@ export async function criarAplicacao(
     .overrideProvider(EmbeddingsService)
     .useValue(new EmbeddingsFalsa())
     .overrideProvider(AgenteService)
-    .useValue(new AgenteFalso())
+    .useValue(agente)
+    .overrideProvider(SumarizacaoService)
+    .useValue(new SumarizacaoFalsa())
+    .overrideProvider(ExtracaoDeFatosService)
+    .useValue(new ExtracaoFalsa())
     .compile();
 
   const app = modulo.createNestApplication();
@@ -102,6 +112,7 @@ export async function criarAplicacao(
     storage,
     waha,
     judit,
+    agente,
     encerrar: async () => {
       await limparBanco(prisma);
       await redis.client.flushdb();

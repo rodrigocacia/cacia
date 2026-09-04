@@ -1,6 +1,6 @@
 # Estado da reconstrução
 
-> Atualizado em 04/09/2026, após a cobertura da camada de IA.
+> Atualizado em 04/09/2026, após ligar o atendimento automático.
 
 Documento de acompanhamento: o que foi feito, o que mudou em relação ao
 [plano original](ARQUITETURA.md) e o que continua pendente.
@@ -11,10 +11,10 @@ Documento de acompanhamento: o que foi feito, o que mudou em relação ao
 
 |                                |                                                                    |
 | ------------------------------ | ------------------------------------------------------------------ |
-| Pull requests integrados       | 17                                                                 |
+| Pull requests integrados       | 18                                                                 |
 | Entidades no banco             | 28                                                                 |
 | Arquivos TypeScript na API     | 132                                                                |
-| Testes automatizados           | 270 — 153 unitários e 117 de ponta a ponta                         |
+| Testes automatizados           | 302 — 175 unitários e 127 de ponta a ponta                         |
 | Cobertura de verificação no CI | formatação, lint, tipos, build, testes, E2E, migrations, auditoria |
 
 Ponto de partida: **0,6% de cobertura de testes e zero pipelines de CI**.
@@ -107,10 +107,12 @@ sobre HTTP), memória da IA, lembretes, proxy, webhooks, fragmentação, o ciclo
 completo dos CRUDs, validação de entrada, paginação, papéis e limite de
 requisições.
 
-Falta: o caminho da conversa de ponta a ponta — webhook do WhatsApp até a
-resposta enviada. Ele depende de dublar o modelo de linguagem, e um dublê que
-sempre responde a mesma coisa verifica pouco. É trabalho de par com a avaliação
-da IA, abaixo.
+O caminho da conversa também: do webhook do WhatsApp até a resposta
+enfileirada para envio, com as filas de verdade.
+
+Falta o que depende de um provedor externo respondendo — o pareamento de um
+número no WAHA, uma consulta real na Judit. São verificáveis só em
+homologação, com credenciais.
 
 ### Migração de dados
 
@@ -139,6 +141,33 @@ teste.
 
 ---
 
+## A lacuna mais séria, e como apareceu
+
+**O agente nunca era chamado.** Uma mensagem chegava pelo webhook, o lead era
+criado, a conversa era criada, a mensagem era gravada — e o sistema parava aí.
+Não havia uma linha ligando o webhook ao agente.
+
+Todas as peças existiam e estavam testadas: o agente, a memória em três
+camadas, as ferramentas, a fila de envio. O que faltava era a costura — e um
+teste de unidade não pega isso, porque cada peça funcionava.
+
+Apareceu ao escrever o teste da conversa de ponta a ponta: ao procurar quem
+chamava `AgenteService.responder`, a resposta foi ninguém.
+
+O elo é a fila `atendimento` e o `AtendimentoProcessor`. Três cuidados no
+desenho, cada um por um motivo concreto:
+
+- **Uma resposta por vez, por conversa.** Três mensagens seguidas geram três
+  jobs; sem trava, o cliente receberia três respostas, e nenhuma teria visto
+  as outras.
+- **As mensagens pendentes vão juntas.** O turno é tudo o que a pessoa disse
+  desde a última resposta — é o que faz "oi" / "tenho uma dúvida" / "sobre meu
+  processo" virar uma pergunta só.
+- **Quem está com atendente humano não recebe resposta automática.** A
+  conversa sai de `ACTIVE` quando o agente aciona uma pessoa.
+
+---
+
 ## Defeitos encontrados pelos testes
 
 Registrados porque nenhum deles aparecia antes, e é isso que justifica as
@@ -161,6 +190,12 @@ serviços, agenda ou perguntas mudam" — mas nenhum serviço o chamava. Na
 prática, mudar o horário de atendimento ou o nome do escritório levava até 15
 minutos para chegar ao agente, sem nenhum sinal de que algo estava
 desatualizado. Ligado em `CalendarsService` e `OfficesService`.
+
+**Os dublês do WAHA e da Evomi tinham o formato errado.** O `configPadrao()`
+devolvia `{ url }` onde o serviço real devolve `{ apiUrl }`, e o proxy vinha
+com campos em português onde o real usa os da API. Passava despercebido
+enquanto nenhum teste usava o valor; ao criar uma conexão de verdade, a
+credencial gravada saía vazia.
 
 **Dois testes existentes não compilavam.** O `tsconfig` de build exclui
 `*.spec.ts`, então nenhum teste passava pela verificação de tipos: um deles

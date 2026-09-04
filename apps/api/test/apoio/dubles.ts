@@ -1,8 +1,13 @@
+import { ProxyScope } from '@cacia/database';
 import type {
   FiltroBusca,
   PayloadVetor,
   ResultadoBusca,
 } from '@/integrations/qdrant/qdrant.service';
+import type {
+  CredenciaisEvomi,
+  ProxyResolvido,
+} from '@/integrations/evomi/evomi.service';
 import type { ArquivoEnviado } from '@/infra/storage/storage.service';
 
 /**
@@ -228,8 +233,9 @@ export class RegistroDeChamadas {
 }
 
 export class WahaFalso extends RegistroDeChamadas {
+  /** Mesmo formato do serviço real: é gravado na conexão e lido depois. */
   configPadrao() {
-    return { url: 'http://waha.teste', apiKey: 'x' };
+    return { apiUrl: 'http://waha.teste', apiKey: 'chave-de-teste' };
   }
 
   criarSessao(...argumentos: unknown[]): Promise<unknown> {
@@ -329,22 +335,25 @@ export class EvomiFalso extends RegistroDeChamadas {
     return true;
   }
 
-  obterCredenciais(): Promise<unknown> {
+  obterCredenciais(): Promise<CredenciaisEvomi> {
     this.registrar('obterCredenciais', []);
     return Promise.resolve({
-      usuario: 'usuario-teste',
-      senha: 'senha-teste',
-      host: 'proxy.teste',
-      porta: 1000,
+      username: 'usuario-teste',
+      password: 'senha-teste',
+      server: 'proxy.teste:1000',
     });
   }
 
-  resolverParaLocalizacao(...argumentos: unknown[]): Promise<unknown> {
+  /** Mesmo formato do serviço real — a conexão grava escopo e localização. */
+  resolverParaLocalizacao(...argumentos: unknown[]): Promise<ProxyResolvido> {
     this.registrar('resolverParaLocalizacao', argumentos);
     return Promise.resolve({
-      servidor: 'http://proxy.teste:1000',
-      usuario: 'usuario-teste',
-      senha: 'senha-teste',
+      server: 'proxy.teste:1000',
+      username: 'usuario-teste',
+      password: 'senha-teste_country-BR_state-Sao Paulo',
+      scope: ProxyScope.STATE,
+      country: 'BR',
+      state: 'Sao Paulo',
     });
   }
 }
@@ -375,12 +384,37 @@ export class JuditFalso extends RegistroDeChamadas {
   }
 }
 
+/**
+ * A sumarização e a extração de fatos chamam o modelo.
+ *
+ * Dubladas para que nenhum teste gaste crédito de API — o que elas gravam no
+ * banco e no índice é verificado nos testes da memória, chamando as camadas
+ * diretamente.
+ */
+export class SumarizacaoFalsa extends RegistroDeChamadas {
+  atualizarSeNecessario(...argumentos: unknown[]): Promise<boolean> {
+    this.registrar('atualizarSeNecessario', argumentos);
+    return Promise.resolve(false);
+  }
+}
+
+export class ExtracaoFalsa extends RegistroDeChamadas {
+  extrairDoTurno(...argumentos: unknown[]): Promise<number> {
+    this.registrar('extrairDoTurno', argumentos);
+    return Promise.resolve(0);
+  }
+}
+
 export class AgenteFalso extends RegistroDeChamadas {
+  /** O texto pode ser trocado pelo teste que quiser afirmar sobre ele. */
+  texto = 'Resposta de teste.';
+
   responder(...argumentos: unknown[]): Promise<unknown> {
     this.registrar('responder', argumentos);
     return Promise.resolve({
-      texto: 'Resposta de teste.',
+      texto: this.texto,
       ferramentasUsadas: [],
+      acionouAtendente: false,
     });
   }
 }

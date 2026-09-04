@@ -138,7 +138,9 @@ export class ChatsService {
         deletedAt: null,
         ...(customerId ? { customerId } : { leadId }),
       },
-      select: { id: true, agentId: true },
+      // O status vai junto: quem chama decide por ele se pede resposta
+      // automática, e uma consulta a mais logo depois seria desperdício.
+      select: { id: true, agentId: true, status: true },
     });
 
     if (existente) return existente;
@@ -164,7 +166,7 @@ export class ChatsService {
         userName: nomeContato,
         status: ChatStatus.ACTIVE,
       },
-      select: { id: true, agentId: true },
+      select: { id: true, agentId: true, status: true },
     });
   }
 

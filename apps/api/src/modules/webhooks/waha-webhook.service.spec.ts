@@ -1,19 +1,27 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { Queue } from 'bullmq';
+import { ChatStatus } from '@cacia/database';
 import { WahaWebhookService } from './waha-webhook.service';
 import type { PrismaService } from '@/infra/prisma/prisma.service';
 import type { WahaService } from '@/integrations/waha/waha.service';
 import type { ChatsService } from '@/modules/chats/chats.service';
+import type { JobAtendimento } from '@/worker/filas/filas';
 import type { EventoWahaDto } from './dto/waha-webhook.dto';
 
 const ESCRITORIO = 'aaaaaaaa-0000-0000-0000-000000000001';
 
-const CONEXAO = { wahaApiHost: 'https://waha.local', wahaApiKey: 'chave' };
+const CONEXAO = {
+  id: 'conexao-1',
+  wahaApiHost: 'https://waha.local',
+  wahaApiKey: 'chave',
+};
 
 function montar(
   opcoes: {
     clienteExistente?: { id: string } | null;
     leadExistente?: { id: string } | null;
     lidResolvido?: string | null;
+    statusDaConversa?: ChatStatus;
   } = {},
 ) {
   const criarLead = vi.fn().mockResolvedValue({ id: 'lead-novo' });
@@ -37,20 +45,28 @@ function montar(
     .mockResolvedValue(opcoes.lidResolvido ?? '5511999998888');
   const waha = { resolverLid } as unknown as WahaService;
 
-  const encontrarOuCriar = vi.fn().mockResolvedValue({ id: 'chat-1' });
+  const encontrarOuCriar = vi.fn().mockResolvedValue({
+    id: 'chat-1',
+    agentId: 'agente-1',
+    status: opcoes.statusDaConversa ?? ChatStatus.ACTIVE,
+  });
   const registrarMensagem = vi.fn().mockResolvedValue({ id: 'msg-1' });
   const chats = {
     encontrarOuCriar,
     registrarMensagem,
   } as unknown as ChatsService;
 
+  const enfileirar = vi.fn().mockResolvedValue({ id: 'job-1' });
+  const atendimento = { add: enfileirar } as unknown as Queue<JobAtendimento>;
+
   return {
-    servico: new WahaWebhookService(prisma, waha, chats),
+    servico: new WahaWebhookService(prisma, waha, chats, atendimento),
     prisma,
     resolverLid,
     criarLead,
     encontrarOuCriar,
     registrarMensagem,
+    enfileirar,
   };
 }
 
@@ -211,6 +227,83 @@ describe('WahaWebhookService', () => {
         expect(args.tipo).toBe(caso.esperado);
       });
     }
+  });
+
+  describe('pedido de resposta ao agente', () => {
+    it('enfileira depois de gravar a mensagem', async () => {
+      // A ordem importa: o worker vai ao banco ler o que a pessoa escreveu. Se
+      // o job saísse antes da gravação, o agente responderia sem enxergá-la.
+      const { servico, registrarMensagem, enfileirar } = montar();
+
+      await servico.processar(ESCRITORIO, mensagem());
+
+      expect(registrarMensagem).toHaveBeenCalledOnce();
+      expect(enfileirar).toHaveBeenCalledOnce();
+      expect(registrarMensagem.mock.invocationCallOrder[0]!).toBeLessThan(
+        enfileirar.mock.invocationCallOrder[0]!,
+      );
+    });
+
+    it('o job leva a conexão e o destinatário já resolvido', async () => {
+      // A resposta precisa sair pela MESMA sessão por onde a mensagem entrou:
+      // um escritório com duas conexões responderia pelo número errado.
+      const { servico, enfileirar } = montar();
+
+      await servico.processar(ESCRITORIO, mensagem());
+
+      expect(enfileirar.mock.calls[0]?.[1]).toEqual({
+        officeId: ESCRITORIO,
+        chatId: 'chat-1',
+        connectionId: 'conexao-1',
+        para: '5511999998888',
+      });
+    });
+
+    it('o destinatário do job é o telefone, nunca o @lid', async () => {
+      const { servico, enfileirar } = montar({ lidResolvido: '5511777776666' });
+
+      await servico.processar(ESCRITORIO, mensagem({ from: '123456789@lid' }));
+
+      const job = enfileirar.mock.calls[0]?.[1] as { para: string };
+      expect(job.para).toBe('5511777776666');
+    });
+
+    it('NÃO enfileira quando a conversa está com atendente humano', async () => {
+      // É o pior comportamento possível do sistema: o agente respondendo por
+      // cima de uma pessoa que assumiu o atendimento.
+      const { servico, registrarMensagem, enfileirar } = montar({
+        statusDaConversa: ChatStatus.PENDING,
+      });
+
+      await servico.processar(ESCRITORIO, mensagem());
+
+      // A mensagem é gravada mesmo assim — o atendente precisa vê-la
+      expect(registrarMensagem).toHaveBeenCalledOnce();
+      expect(enfileirar).not.toHaveBeenCalled();
+    });
+
+    it('NÃO enfileira em conversa encerrada', async () => {
+      const { servico, enfileirar } = montar({
+        statusDaConversa: ChatStatus.COMPLETED,
+      });
+
+      await servico.processar(ESCRITORIO, mensagem());
+
+      expect(enfileirar).not.toHaveBeenCalled();
+    });
+
+    it('falha ao enfileirar não perde a mensagem', async () => {
+      // Perder a resposta automática é ruim; perder a mensagem do cliente
+      // seria muito pior. A gravação já aconteceu antes.
+      const { servico, registrarMensagem, enfileirar } = montar();
+      enfileirar.mockRejectedValueOnce(new Error('Redis fora do ar'));
+
+      await expect(
+        servico.processar(ESCRITORIO, mensagem()),
+      ).resolves.toBeUndefined();
+
+      expect(registrarMensagem).toHaveBeenCalledOnce();
+    });
   });
 
   describe('resiliência', () => {

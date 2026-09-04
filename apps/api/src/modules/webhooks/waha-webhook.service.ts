@@ -1,5 +1,8 @@
+import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
+import type { Queue } from 'bullmq';
 import {
+  ChatStatus,
   ConnectionStatus,
   MessageSender,
   MessageType,
@@ -8,6 +11,7 @@ import {
 import { PrismaService } from '@/infra/prisma/prisma.service';
 import { WahaService } from '@/integrations/waha/waha.service';
 import { ChatsService } from '@/modules/chats/chats.service';
+import { FILA, type JobAtendimento } from '@/worker/filas/filas';
 import type { EventoWahaDto } from './dto/waha-webhook.dto';
 
 /**
@@ -25,6 +29,8 @@ export class WahaWebhookService {
     private readonly prisma: PrismaService,
     private readonly waha: WahaService,
     private readonly chats: ChatsService,
+    @InjectQueue(FILA.ATENDIMENTO)
+    private readonly atendimento: Queue<JobAtendimento>,
   ) {}
 
   async processar(officeId: string, evento: EventoWahaDto): Promise<void> {
@@ -88,7 +94,7 @@ export class WahaWebhookService {
 
     const conexao = await this.prisma.connection.findFirst({
       where: { officeId, wahaSession: evento.session, deletedAt: null },
-      select: { wahaApiHost: true, wahaApiKey: true },
+      select: { id: true, wahaApiHost: true, wahaApiKey: true },
     });
 
     if (!conexao?.wahaApiHost || !conexao.wahaApiKey) {
@@ -135,6 +141,58 @@ export class WahaWebhookService {
       arquivoUrl: payload.media?.url,
       extensao: payload.media?.mimetype?.split('/')[1],
     });
+
+    await this.pedirResposta({
+      officeId,
+      chatId: chat.id,
+      connectionId: conexao.id,
+      para: remetente,
+      status: chat.status,
+    });
+  }
+
+  /**
+   * Enfileira a resposta do agente.
+   *
+   * Fora da transação de gravação e depois dela: a mensagem recebida precisa
+   * estar no banco antes de o worker ir lê-la. Enfileirar antes criaria uma
+   * corrida em que o agente responderia sem enxergar o que a pessoa escreveu.
+   *
+   * A falha ao enfileirar não derruba o webhook. A mensagem já está gravada e
+   * visível para o atendente humano — perder a resposta automática é ruim,
+   * perder a mensagem seria muito pior.
+   */
+  private async pedirResposta(params: {
+    officeId: string;
+    chatId: string;
+    connectionId: string;
+    para: string;
+    status: ChatStatus;
+  }): Promise<void> {
+    if (params.status !== ChatStatus.ACTIVE) {
+      // Conversa com atendente humano, encerrada ou cancelada
+      this.logger.log(
+        `Conversa ${params.chatId} em ${params.status}: sem resposta automática`,
+      );
+      return;
+    }
+
+    const { status: _status, ...job } = params;
+
+    try {
+      await this.atendimento.add('responder', job, {
+        attempts: 2,
+        backoff: { type: 'exponential', delay: 3000 },
+        removeOnComplete: true,
+        removeOnFail: { count: 200 },
+      });
+    } catch (erro) {
+      this.logger.error(
+        `Não foi possível enfileirar a resposta da conversa ${params.chatId}: ${
+          erro instanceof Error ? erro.message : 'erro'
+        }`,
+      );
+    }
   }
 
   /**
