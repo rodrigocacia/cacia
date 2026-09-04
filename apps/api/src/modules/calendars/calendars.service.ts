@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Weekday } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
+import { PromptService } from '@/ai/agente/prompt.service';
 import type { AtualizarAgendaDto, CriarAgendaDto } from './dto/calendar.dto';
 
 const CAMPOS = {
@@ -29,7 +30,19 @@ const ORDEM_SEMANA: Weekday[] = [
 
 @Injectable()
 export class CalendarsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly prompt: PromptService,
+  ) {}
+
+  /**
+   * A agenda faz parte do bloco estático do prompt, que fica 15 minutos em
+   * cache. Sem invalidar, o agente seguiria oferecendo o horário antigo
+   * durante todo esse tempo — e quem mudou a agenda não teria como saber.
+   */
+  private invalidarPrompt(officeId: string): Promise<void> {
+    return this.prompt.invalidar(officeId);
+  }
 
   async listar(officeId: string) {
     const agendas = await this.prisma.calendar.findMany({
@@ -66,7 +79,7 @@ export class CalendarsService {
   async criar(officeId: string, userId: string, dto: CriarAgendaDto) {
     const { availableDays, ...dados } = dto;
 
-    return this.prisma.calendar.create({
+    const agenda = await this.prisma.calendar.create({
       data: {
         ...dados,
         officeId,
@@ -75,6 +88,10 @@ export class CalendarsService {
       },
       select: { ...CAMPOS, availableDays: true },
     });
+
+    await this.invalidarPrompt(officeId);
+
+    return agenda;
   }
 
   /**
@@ -90,7 +107,7 @@ export class CalendarsService {
 
     const { availableDays, ...dados } = dto;
 
-    return this.prisma.$transaction(async (tx) => {
+    const agenda = await this.prisma.$transaction(async (tx) => {
       if (availableDays) {
         await tx.calendarAvailableDay.deleteMany({ where: { calendarId: id } });
         await tx.calendarAvailableDay.createMany({
@@ -104,6 +121,10 @@ export class CalendarsService {
         select: { ...CAMPOS, availableDays: true },
       });
     });
+
+    await this.invalidarPrompt(officeId);
+
+    return agenda;
   }
 
   async remover(officeId: string, id: string): Promise<void> {
@@ -113,6 +134,8 @@ export class CalendarsService {
       where: { id },
       data: { deletedAt: new Date() },
     });
+
+    await this.invalidarPrompt(officeId);
   }
 
   private ordenarSemana<T extends { day: Weekday }>(dias: T[]): T[] {

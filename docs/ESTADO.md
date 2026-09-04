@@ -1,6 +1,6 @@
 # Estado da reconstrução
 
-> Atualizado em 04/09/2026, após a suíte de ponta a ponta.
+> Atualizado em 04/09/2026, após a cobertura da camada de IA.
 
 Documento de acompanhamento: o que foi feito, o que mudou em relação ao
 [plano original](ARQUITETURA.md) e o que continua pendente.
@@ -11,10 +11,10 @@ Documento de acompanhamento: o que foi feito, o que mudou em relação ao
 
 |                                |                                                                    |
 | ------------------------------ | ------------------------------------------------------------------ |
-| Pull requests integrados       | 16                                                                 |
+| Pull requests integrados       | 17                                                                 |
 | Entidades no banco             | 28                                                                 |
 | Arquivos TypeScript na API     | 132                                                                |
-| Testes automatizados           | 206 — 116 unitários e 90 de ponta a ponta                          |
+| Testes automatizados           | 270 — 153 unitários e 117 de ponta a ponta                         |
 | Cobertura de verificação no CI | formatação, lint, tipos, build, testes, E2E, migrations, auditoria |
 
 Ponto de partida: **0,6% de cobertura de testes e zero pipelines de CI**.
@@ -120,15 +120,29 @@ quatro cópias dos schemas antigos estão documentadas nos PRs #2 e #5.
 
 ### Avaliação da IA
 
-Não há conjunto de casos que impeça regressão de qualidade nas respostas. É o
-próximo passo natural agora que a memória e o prompt estão estáveis.
+**O que passou a ser coberto:** tudo o que é nosso na conversa. O laço de
+ferramentas do agente com o modelo dublado por respostas roteirizadas, cada
+ferramenta presa ao escritório do contexto, a memória em três camadas ao longo
+de uma conversa de cem turnos contra Redis e Postgres reais, e o prompt montado
+a partir dos dados reais do escritório.
+
+**O que continua fora:** a qualidade do texto que o modelo produz. Medir isso
+exige chamar a API de verdade, com um conjunto de casos julgados por alguém que
+conheça o atendimento do escritório — e o resultado é uma nota, não um
+passa/não passa que possa reprovar um PR. É trabalho de par com o cliente, não
+de CI.
+
+A distinção importa: uma regressão de qualidade quase sempre vem de uma
+mudança nossa — uma regra que sumiu do prompt, um fato que a memória deixou de
+recuperar, uma ferramenta que parou de ser oferecida. Essas três agora têm
+teste.
 
 ---
 
-## Defeitos encontrados pelos testes de ponta a ponta
+## Defeitos encontrados pelos testes
 
-Registrados porque nenhum deles aparecia em teste unitário, e é isso que
-justifica a suíte existir.
+Registrados porque nenhum deles aparecia antes, e é isso que justifica as
+suítes existirem.
 
 **A busca por texto devolvia a base inteira.** Em clientes e em processos, o
 termo era limpo com `replace(/\D/g, '')` para casar com CPF ou número do
@@ -140,6 +154,13 @@ o trecho numérico só entra quando há dígitos.
 **A aplicação não subia no ambiente de teste.** O esbuild, que o Vitest usa
 por padrão, apaga os metadados de tipo dos decorators. Sem eles o Nest não
 sabe o que injetar e todo construtor recebe `undefined`. Trocado pelo SWC.
+
+**A invalidação do cache do prompt não era chamada por ninguém.** O
+`PromptService.invalidar()` existia e estava documentado como "chamado quando
+serviços, agenda ou perguntas mudam" — mas nenhum serviço o chamava. Na
+prática, mudar o horário de atendimento ou o nome do escritório levava até 15
+minutos para chegar ao agente, sem nenhum sinal de que algo estava
+desatualizado. Ligado em `CalendarsService` e `OfficesService`.
 
 **Dois testes existentes não compilavam.** O `tsconfig` de build exclui
 `*.spec.ts`, então nenhum teste passava pela verificação de tipos: um deles

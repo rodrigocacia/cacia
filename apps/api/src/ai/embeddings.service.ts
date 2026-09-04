@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import OpenAI from 'openai';
+import type OpenAI from 'openai';
+import { CLIENTE_OPENAI } from './cliente-openai';
 
 /** Limite da API da OpenAI por requisição de embeddings. */
 const MAX_POR_LOTE = 100;
@@ -8,14 +9,13 @@ const MAX_POR_LOTE = 100;
 @Injectable()
 export class EmbeddingsService {
   private readonly logger = new Logger(EmbeddingsService.name);
-  private readonly openai: OpenAI;
   private readonly modelo: string;
   private readonly dimensoes: number;
 
-  constructor(config: ConfigService) {
-    this.openai = new OpenAI({
-      apiKey: config.getOrThrow<string>('OPENAI_API_KEY'),
-    });
+  constructor(
+    @Inject(CLIENTE_OPENAI) private readonly openai: OpenAI,
+    config: ConfigService,
+  ) {
     this.modelo =
       config.get<string>('OPENAI_EMBEDDING_MODEL') ?? 'text-embedding-3-small';
     this.dimensoes = config.get<number>('OPENAI_EMBEDDING_DIMENSIONS') ?? 1536;

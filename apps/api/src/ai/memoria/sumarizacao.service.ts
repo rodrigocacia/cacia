@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import OpenAI from 'openai';
+import type OpenAI from 'openai';
+import { CLIENTE_OPENAI } from '../cliente-openai';
 import { MessageSender } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
 import { MemoriaService } from './memoria.service';
@@ -34,17 +35,14 @@ o resultado substitui o anterior por completo.`;
 @Injectable()
 export class SumarizacaoService {
   private readonly logger = new Logger(SumarizacaoService.name);
-  private readonly openai: OpenAI;
   private readonly modelo: string;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly memoria: MemoriaService,
+    @Inject(CLIENTE_OPENAI) private readonly openai: OpenAI,
     config: ConfigService,
   ) {
-    this.openai = new OpenAI({
-      apiKey: config.getOrThrow<string>('OPENAI_API_KEY'),
-    });
     // Sumarização é tarefa simples e frequente: usa o modelo barato, não o
     // mesmo do atendimento.
     this.modelo = config.get<string>('OPENAI_SUMMARY_MODEL') ?? 'gpt-4o-mini';

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { QdrantModule } from '@/integrations/qdrant/qdrant.module';
+import { provedorOpenAI } from './cliente-openai';
 import { EmbeddingsService } from './embeddings.service';
 import { MemoriaService } from './memoria/memoria.service';
 import { SumarizacaoService } from './memoria/sumarizacao.service';
@@ -18,6 +19,7 @@ import { RagService } from './rag/rag.service';
 @Module({
   imports: [QdrantModule],
   providers: [
+    provedorOpenAI,
     EmbeddingsService,
     MemoriaService,
     SumarizacaoService,

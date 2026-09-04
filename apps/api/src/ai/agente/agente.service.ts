@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import OpenAI from 'openai';
+import type OpenAI from 'openai';
+import { CLIENTE_OPENAI } from '../cliente-openai';
 import type {
   ChatCompletionMessageParam,
   ChatCompletionTool,
@@ -38,7 +39,6 @@ const MAX_RODADAS = 4;
 @Injectable()
 export class AgenteService {
   private readonly logger = new Logger(AgenteService.name);
-  private readonly openai: OpenAI;
   private readonly modelo: string;
 
   constructor(
@@ -46,11 +46,9 @@ export class AgenteService {
     private readonly memoria: MemoriaService,
     private readonly prompt: PromptService,
     private readonly ferramentas: FerramentasService,
+    @Inject(CLIENTE_OPENAI) private readonly openai: OpenAI,
     config: ConfigService,
   ) {
-    this.openai = new OpenAI({
-      apiKey: config.getOrThrow<string>('OPENAI_API_KEY'),
-    });
     this.modelo = config.get<string>('OPENAI_MODEL') ?? 'gpt-4o';
   }
 

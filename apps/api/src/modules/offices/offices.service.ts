@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Role } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
+import { PromptService } from '@/ai/agente/prompt.service';
 import type { CriarEscritorioDto } from './dto/criar-escritorio.dto';
 import type { AtualizarEscritorioDto } from './dto/atualizar-escritorio.dto';
 import type { AdicionarMembroDto } from './dto/adicionar-membro.dto';
@@ -27,7 +28,10 @@ const CAMPOS_PUBLICOS = {
 
 @Injectable()
 export class OfficesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly prompt: PromptService,
+  ) {}
 
   /** Escritórios de que o usuário é membro. */
   async listarDoUsuario(userId: string) {
@@ -103,11 +107,17 @@ export class OfficesService {
   }
 
   async atualizar(officeId: string, dto: AtualizarEscritorioDto) {
-    return this.prisma.office.update({
+    const escritorio = await this.prisma.office.update({
       where: { id: officeId },
       data: dto,
       select: CAMPOS_PUBLICOS,
     });
+
+    // O nome do escritório abre o prompt do agente. Sem invalidar, ele
+    // continuaria se apresentando pelo nome antigo por até 15 minutos.
+    await this.prompt.invalidar(officeId);
+
+    return escritorio;
   }
 
   async listarMembros(officeId: string) {
