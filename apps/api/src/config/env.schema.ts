@@ -37,6 +37,19 @@ export const envSchema = z.object({
     .default('false')
     .transform((v) => v === 'true'),
   REDIS_PREFIX: z.string().default('cacia:'),
+
+  // WhatsApp — opcionais para que a API suba sem eles em desenvolvimento.
+  // A ausência é registrada em log e a funcionalidade recusa operar, em vez
+  // de impedir a aplicação inteira de iniciar.
+  WAHA_API_URL: z.string().url().optional(),
+  WAHA_API_KEY: z.string().optional(),
+
+  EVOLUTION_API_URL: z.string().url().optional(),
+  EVOLUTION_API_KEY: z.string().optional(),
+
+  // Proxy residencial. Sem isso, as sessões saem pelo IP do datacenter.
+  EVOMI_API_KEY: z.string().optional(),
+  EVOMI_PRODUCT: z.enum(['rp', 'rpc']).default('rpc'),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -18,6 +18,7 @@ import { ProcessesModule } from './modules/processes/processes.module';
 import { CalendarsModule } from './modules/calendars/calendars.module';
 import { EventsModule } from './modules/events/events.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
+import { ConnectionsModule } from './modules/connections/connections.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { RemindersModule } from './modules/reminders/reminders.module';
     CalendarsModule,
     EventsModule,
     RemindersModule,
+    ConnectionsModule,
   ],
   providers: [
     // Ambos globais e nesta ordem: autentica, depois resolve o escritório.

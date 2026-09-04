@@ -202,6 +202,17 @@ As rotas de escritório exigem também o cabeçalho `x-office-id`.
 | GET    | `/reminders/failed`  | Lembretes que falharam em definitivo                     |
 | DELETE | `/reminders/:id`     | Cancela um lembrete                                      |
 
+### Conexões de WhatsApp
+
+| Método | Rota                      | Papel    | O que faz                                         |
+| ------ | ------------------------- | -------- | ------------------------------------------------- |
+| GET    | `/connections`            | qualquer | Lista conexões                                    |
+| POST   | `/connections`            | ADMIN    | Cria sessão **com proxy residencial já aplicado** |
+| GET    | `/connections/:id/qrcode` | qualquer | QR Code para parear o número                      |
+| GET    | `/connections/no-proxy`   | qualquer | Conexões operando sem proxy                       |
+| PUT    | `/connections/:id/proxy`  | ADMIN    | Troca a localização do proxy                      |
+| DELETE | `/connections/:id`        | ADMIN    | Desconecta                                        |
+
 ### Planos e saúde
 
 | Método | Rota            | O que faz                                   |
