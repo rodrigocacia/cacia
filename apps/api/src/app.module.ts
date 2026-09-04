@@ -29,6 +29,12 @@ import { ObservabilidadeModule } from './infra/observabilidade/observabilidade.m
 import { StorageModule } from './infra/storage/storage.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { FoldersModule } from './modules/folders/folders.module';
+import { ServicesModule } from './modules/services/services.module';
+import { QuestionsModule } from './modules/questions/questions.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { ConsultationsModule } from './modules/consultations/consultations.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -71,6 +77,12 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     StorageModule,
     DocumentsModule,
     NotificationsModule,
+    FoldersModule,
+    ServicesModule,
+    QuestionsModule,
+    SettingsModule,
+    ConsultationsModule,
+    DashboardModule,
   ],
   providers: [
     // Ambos globais e nesta ordem: autentica, depois resolve o escritório.
