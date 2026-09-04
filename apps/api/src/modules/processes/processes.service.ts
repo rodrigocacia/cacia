@@ -1,9 +1,12 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@/infra/prisma/prisma.service';
+import { JuditService } from '@/integrations/judit/judit.service';
 import { janela, montarPaginacao } from '@/common/dto/paginacao.dto';
 import type {
   AtualizarProcessoDto,
@@ -39,7 +42,13 @@ const CAMPOS = {
 
 @Injectable()
 export class ProcessesService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(ProcessesService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly judit: JuditService,
+    private readonly config: ConfigService,
+  ) {}
 
   async listar(officeId: string, dto: ListarProcessosDto) {
     const where = {
@@ -116,7 +125,7 @@ export class ProcessesService {
       );
     }
 
-    return this.prisma.process.create({
+    const processo = await this.prisma.process.create({
       data: {
         officeId,
         customerId: dto.customerId,
@@ -126,6 +135,80 @@ export class ProcessesService {
         type: dto.type,
       },
       select: CAMPOS,
+    });
+
+    await this.ativarAcompanhamento(officeId, processo.id, numero);
+
+    return processo;
+  }
+
+  /**
+   * Registra consulta e MONITORAMENTO CONTÍNUO na Judit.
+   *
+   * O sistema anterior chamava apenas a consulta pontual, no cadastro, e nunca
+   * mais. Movimentações posteriores não chegavam: o produto virava um cadastro
+   * de processos, quando deveria ser um acompanhamento.
+   *
+   * Falhar aqui não desfaz o cadastro — o processo existe e pode ser
+   * acompanhado depois. Mas fica registrado e aparece em
+   * GET /processes/unmonitored.
+   */
+  private async ativarAcompanhamento(
+    officeId: string,
+    processId: string,
+    numero: string,
+  ): Promise<void> {
+    if (!this.judit.estaConfigurado()) {
+      this.logger.warn('Judit não configurada — processo sem acompanhamento');
+      return;
+    }
+
+    const callback = `${this.config.getOrThrow<string>('APP_WEBHOOK_URL')}/webhooks/judit`;
+
+    try {
+      const [consulta, monitoramento] = await Promise.all([
+        this.judit.consultar(numero, callback),
+        this.judit.monitorar(numero, callback),
+      ]);
+
+      await this.prisma.process.update({
+        where: { id: processId },
+        data: {
+          requestId: consulta.request_id,
+          juditTrackingId: monitoramento.tracking_id,
+          updateStatus: 'PROCESSING',
+        },
+      });
+    } catch (erro) {
+      this.logger.error(
+        `Falha ao ativar acompanhamento do processo ${numero}: ${
+          erro instanceof Error ? erro.message : 'erro'
+        }`,
+      );
+
+      await this.prisma.process.update({
+        where: { id: processId },
+        data: { updateStatus: 'ERROR' },
+      });
+    }
+  }
+
+  /**
+   * Processos sem monitoramento contínuo.
+   *
+   * Existe para tornar visível o que antes era silencioso: um processo que
+   * não recebe movimentação parece apenas um processo parado.
+   */
+  listarSemAcompanhamento(officeId: string) {
+    return this.prisma.process.findMany({
+      where: { officeId, deletedAt: null, juditTrackingId: null },
+      select: {
+        id: true,
+        number: true,
+        updateStatus: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 

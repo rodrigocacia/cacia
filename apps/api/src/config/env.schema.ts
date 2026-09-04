@@ -77,6 +77,11 @@ export const envSchema = z.object({
 
   // Rastreamento de erros. Sem DSN, o Sentry fica inativo.
   SENTRY_DSN: z.string().url().optional(),
+
+  // Dados processuais. Sem a chave, o acompanhamento fica inativo e os
+  // processos são cadastrados sem monitoramento.
+  JUDIT_API_URL: z.string().url().default('https://requests.prod.judit.io'),
+  JUDIT_API_KEY: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

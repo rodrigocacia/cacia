@@ -11,6 +11,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Public } from '@/auth/decorators/public.decorator';
 import { WahaWebhookService } from './waha-webhook.service';
+import { JuditWebhookService, type EventoJudit } from './judit-webhook.service';
 import { ConsultaWebhookDto, type EventoWahaDto } from './dto/waha-webhook.dto';
 
 /**
@@ -27,6 +28,7 @@ export class WebhooksController {
 
   constructor(
     private readonly wahaWebhook: WahaWebhookService,
+    private readonly juditWebhook: JuditWebhookService,
     config: ConfigService,
   ) {
     this.token = config.getOrThrow<string>('CACIA_TOOL_API_KEY');
@@ -44,6 +46,26 @@ export class WebhooksController {
     await this.wahaWebhook.processar(consulta.office_id, evento);
 
     // Sempre 200: erro faria o WAHA reenviar e duplicar a mensagem
+    return { received: true };
+  }
+
+  /**
+   * Atualizações processuais da Judit.
+   *
+   * Chega tanto da consulta pontual do cadastro quanto do monitoramento
+   * contínuo — este último é a novidade: antes, movimentação posterior ao
+   * cadastro nunca chegava.
+   */
+  @Post('judit')
+  @HttpCode(HttpStatus.OK)
+  async judit(
+    @Headers('x-webhook-token') token: string | undefined,
+    @Body() evento: EventoJudit,
+  ): Promise<{ received: true }> {
+    this.conferirToken(token);
+
+    await this.juditWebhook.processar(evento);
+
     return { received: true };
   }
 

@@ -766,17 +766,21 @@ model Lead {
 }
 
 model Process {
-  id           String              @id @default(uuid()) @db.Uuid
-  officeId     String              @map("office_id") @db.Uuid
-  customerId   String              @map("customer_id") @db.Uuid
-  number       String
-  description  String?
-  requestId    String?             @map("request_id")
+  id              String              @id @default(uuid()) @db.Uuid
+  officeId        String              @map("office_id") @db.Uuid
+  customerId      String              @map("customer_id") @db.Uuid
+  number          String
+  description     String?
+  requestId       String?             @map("request_id")
+  /// Monitoramento contínuo na Judit. Preenchido significa que ela avisa a
+  /// cada movimentação; nulo significa que o processo foi consultado uma vez
+  /// e nunca mais — o comportamento do sistema anterior.
+  juditTrackingId String?             @map("judit_tracking_id")
   /// Unidade/vara do processo
-  unit         String?
-  type         ProcessType?
-  status       ProcessStatus       @default(ACTIVE)
-  updateStatus ProcessUpdateStatus @default(PENDING) @map("update_status")
+  unit            String?
+  type            ProcessType?
+  status          ProcessStatus       @default(ACTIVE)
+  updateStatus    ProcessUpdateStatus @default(PENDING) @map("update_status")
 
   // Dados vindos da Judit — formato variável, guardados como JSON
   instance           Int?

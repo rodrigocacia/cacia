@@ -187,6 +187,7 @@ As rotas de escritório exigem também o cabeçalho `x-office-id`.
 | POST   | `/processes`                | Cadastra processo                               |
 | GET    | `/processes/:id`            | Detalha, com os dados da Judit                  |
 | GET    | `/processes/:id/progresses` | Andamentos, do mais recente                     |
+| GET    | `/processes/unmonitored`    | Processos sem acompanhamento contínuo           |
 
 ### Agenda
 
@@ -229,6 +230,7 @@ As rotas de escritório exigem também o cabeçalho `x-office-id`.
 | Método | Rota                        | O que faz                           |
 | ------ | --------------------------- | ----------------------------------- |
 | POST   | `/webhooks/waha?office_id=` | Recebe mensagens e estado da sessão |
+| POST   | `/webhooks/judit`           | Recebe atualizações processuais     |
 
 Sem JWT — o WAHA não tem sessão de usuário —, mas exige o cabeçalho
 `x-webhook-token`. Sem ele, qualquer um poderia injetar mensagens falsas no

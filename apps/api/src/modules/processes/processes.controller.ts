@@ -29,6 +29,15 @@ export class ProcessesController {
     return this.processes.listar(officeId, dto);
   }
 
+  /**
+   * Processos sem monitoramento contínuo na Judit.
+   * Antes, processo sem acompanhamento parecia apenas processo parado.
+   */
+  @Get('unmonitored')
+  semAcompanhamento(@CurrentOffice() officeId: string) {
+    return this.processes.listarSemAcompanhamento(officeId);
+  }
+
   @Get(':id')
   detalhar(
     @CurrentOffice() officeId: string,

@@ -321,6 +321,7 @@ CREATE TABLE "processes" (
     "number" TEXT NOT NULL,
     "description" TEXT,
     "request_id" TEXT,
+    "judit_tracking_id" TEXT,
     "unit" TEXT,
     "type" "process_type",
     "status" "process_status" NOT NULL DEFAULT 'active',
