@@ -50,6 +50,12 @@ export const envSchema = z.object({
   // Proxy residencial. Sem isso, as sessões saem pelo IP do datacenter.
   EVOMI_API_KEY: z.string().optional(),
   EVOMI_PRODUCT: z.enum(['rp', 'rpc']).default('rpc'),
+
+  // Token compartilhado que autentica os webhooks. Obrigatório: sem ele,
+  // qualquer um poderia injetar mensagens falsas no atendimento.
+  CACIA_TOOL_API_KEY: z
+    .string()
+    .min(24, 'CACIA_TOOL_API_KEY precisa de ao menos 24 caracteres'),
 });
 
 export type Env = z.infer<typeof envSchema>;

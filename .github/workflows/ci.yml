@@ -111,7 +111,7 @@ jobs:
   seguranca:
     name: Auditoria de dependências
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -135,12 +135,18 @@ jobs:
       # registro npm não reprova o PR: seria uma falha que não diz nada sobre
       # o código, e o time aprenderia a ignorar o job vermelho.
       - name: Auditoria
+        # O retry interno do pnpm usa backoff longo: cada tentativa levava ~4
+        # minutos só esperando o socket, e o job estourava o limite antes de
+        # concluir. Aqui ela falha rápido e o retry fica sob nosso controle.
+        env:
+          NPM_CONFIG_FETCH_RETRIES: '0'
+          NPM_CONFIG_FETCH_TIMEOUT: '30000'
         run: |
           for tentativa in 1 2 3; do
             saida=$(pnpm audit --audit-level high 2>&1) && exit 0
-            if echo "$saida" | grep -qE 'ERR_SOCKET_TIMEOUT|FetchError|ECONNRESET|ETIMEDOUT'; then
+            if echo "$saida" | grep -qE 'ERR_SOCKET_TIMEOUT|FetchError|ECONNRESET|ETIMEDOUT|ERR_PNPM_AUDIT'; then
               echo "::warning::Tentativa $tentativa: registro npm indisponível"
-              sleep $((tentativa * 15))
+              sleep $((tentativa * 10))
               continue
             fi
             echo "$saida"

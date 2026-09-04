@@ -19,6 +19,9 @@ import { CalendarsModule } from './modules/calendars/calendars.module';
 import { EventsModule } from './modules/events/events.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
 import { ConnectionsModule } from './modules/connections/connections.module';
+import { AgentsModule } from './modules/agents/agents.module';
+import { ChatsModule } from './modules/chats/chats.module';
+import { WebhooksModule } from './modules/webhooks/webhooks.module';
 
 @Module({
   imports: [
@@ -41,6 +44,9 @@ import { ConnectionsModule } from './modules/connections/connections.module';
     EventsModule,
     RemindersModule,
     ConnectionsModule,
+    AgentsModule,
+    ChatsModule,
+    WebhooksModule,
   ],
   providers: [
     // Ambos globais e nesta ordem: autentica, depois resolve o escritório.

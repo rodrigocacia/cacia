@@ -213,6 +213,27 @@ As rotas de escritório exigem também o cabeçalho `x-office-id`.
 | PUT    | `/connections/:id/proxy`  | ADMIN    | Troca a localização do proxy                      |
 | DELETE | `/connections/:id`        | ADMIN    | Desconecta                                        |
 
+### Conversa e agentes
+
+| Método | Rota                     | O que faz                                  |
+| ------ | ------------------------ | ------------------------------------------ |
+| GET    | `/agents`                | Lista agentes de IA do escritório          |
+| POST   | `/agents`                | Cria agente (tipo, estilo, saudação)       |
+| GET    | `/chats`                 | Lista conversas (filtra por status e tipo) |
+| GET    | `/chats/:id/messages`    | Mensagens da conversa                      |
+| PUT    | `/chats/:id/audio-reply` | Liga ou desliga resposta em áudio          |
+| POST   | `/chats/:id/close`       | Encerra a conversa                         |
+
+### Webhooks
+
+| Método | Rota                        | O que faz                           |
+| ------ | --------------------------- | ----------------------------------- |
+| POST   | `/webhooks/waha?office_id=` | Recebe mensagens e estado da sessão |
+
+Sem JWT — o WAHA não tem sessão de usuário —, mas exige o cabeçalho
+`x-webhook-token`. Sem ele, qualquer um poderia injetar mensagens falsas no
+atendimento de um escritório.
+
 ### Planos e saúde
 
 | Método | Rota            | O que faz                                   |
