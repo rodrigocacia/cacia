@@ -1,22 +1,40 @@
 import 'reflect-metadata';
-import { Logger } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { validateEnv } from './config/env.schema';
+import { PrismaModule } from './infra/prisma/prisma.module';
+import { RedisModule } from './infra/redis/redis.module';
+import { WorkerModule } from './worker/worker.module';
 
 /**
- * Entrypoint do worker.
+ * Raiz do processo worker.
  *
- * Mesmo código da API, sem servidor HTTP: processa filas e tarefas agendadas.
- * A separação existe para que uma chamada de LLM ou o processamento de um
- * áudio longo não segure as requisições dos usuários.
+ * Deliberadamente NÃO é o AppModule: o worker não expõe rota nem guard, e
+ * carregar os controllers aqui criaria um segundo servidor HTTP sem ninguém
+ * apontando para ele.
  */
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validate: validateEnv,
+      cache: true,
+    }),
+    PrismaModule,
+    RedisModule,
+    WorkerModule,
+  ],
+})
+class WorkerRootModule {}
+
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.createApplicationContext(AppModule);
+  const app = await NestFactory.createApplicationContext(WorkerRootModule);
   const logger = new Logger('Worker');
 
   app.enableShutdownHooks();
 
-  logger.log('Worker iniciado — consumindo filas');
+  logger.log('Worker iniciado — consumindo filas e tarefas agendadas');
 }
 
 void bootstrap();

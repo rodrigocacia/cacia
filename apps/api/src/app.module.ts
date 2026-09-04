@@ -22,6 +22,7 @@ import { ConnectionsModule } from './modules/connections/connections.module';
 import { AgentsModule } from './modules/agents/agents.module';
 import { ChatsModule } from './modules/chats/chats.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { FilasModule } from './worker/filas/filas.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module';
     AgentsModule,
     ChatsModule,
     WebhooksModule,
+    FilasModule,
   ],
   providers: [
     // Ambos globais e nesta ordem: autentica, depois resolve o escritório.

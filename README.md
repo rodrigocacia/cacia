@@ -244,6 +244,30 @@ atendimento de um escritório.
 
 ---
 
+## Worker
+
+Processo separado, mesmo código da API. Sobe com:
+
+```bash
+pnpm --filter @cacia/api start:worker
+```
+
+| Fila                   | O que processa                                                  |
+| ---------------------- | --------------------------------------------------------------- |
+| `envio-whatsapp`       | Envio de mensagens, com queda para a Evolution se o WAHA falhar |
+| `lembretes`            | Disparo dos avisos de compromisso e prazo                       |
+| `atualizacao-processo` | Retorno da consulta processual                                  |
+
+Uma tarefa agendada varre os lembretes vencidos a cada minuto e os enfileira.
+A corretude **não depende dessa frequência**: como a busca não tem janela de
+tempo, um ciclo perdido apenas atrasa o aviso.
+
+Os processadores só existem no processo do worker. Se a API os carregasse, cada
+instância dela também consumiria as filas — e a varredura aconteceria uma vez
+por instância, não uma vez por minuto.
+
+---
+
 ## Contribuindo
 
 Fluxo de trabalho, padrão de commits e critérios de revisão:
