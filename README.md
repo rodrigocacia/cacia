@@ -203,6 +203,28 @@ As rotas de escritório exigem também o cabeçalho `x-office-id`.
 | GET    | `/reminders/failed`  | Lembretes que falharam em definitivo                     |
 | DELETE | `/reminders/:id`     | Cancela um lembrete                                      |
 
+### Documentos
+
+| Método | Rota                         | O que faz                                   |
+| ------ | ---------------------------- | ------------------------------------------- |
+| GET    | `/documents`                 | Lista (filtra por cliente, processo, pasta) |
+| POST   | `/documents`                 | Envia arquivo (até 20 MB)                   |
+| GET    | `/documents/:id/download`    | Link temporário de 15 minutos               |
+| GET    | `/documents/indexing-failed` | Documentos cuja indexação falhou            |
+| DELETE | `/documents/:id`             | Exclusão lógica; remove do índice vetorial  |
+
+Arquivos vão para o storage, **nunca em base64 dentro da tabela**. O sistema
+anterior guardava o conteúdo codificado na própria linha, o que inflava o banco
+e fazia cada `SELECT` carregar megabytes que ninguém pediu.
+
+### Notificações
+
+| Método | Rota                      | O que faz                        |
+| ------ | ------------------------- | -------------------------------- |
+| GET    | `/notifications`          | Lista, com contagem de não lidas |
+| POST   | `/notifications/:id/read` | Marca como lida                  |
+| POST   | `/notifications/read-all` | Marca todas                      |
+
 ### Conexões de WhatsApp
 
 | Método | Rota                      | Papel    | O que faz                                         |

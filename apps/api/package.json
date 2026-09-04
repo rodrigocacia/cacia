@@ -15,6 +15,8 @@
     "clean": "rimraf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.984.0",
+    "@aws-sdk/s3-request-presigner": "^3.1126.0",
     "@cacia/contracts": "workspace:*",
     "@cacia/database": "workspace:*",
     "@nestjs/bullmq": "^11.0.5",
@@ -38,6 +40,7 @@
     "openai": "^4.104.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
+    "pdf-parse": "^1.1.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "undici": "^7.29.0",
@@ -50,6 +53,7 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.5",
     "@types/passport-jwt": "^4.0.1",
+    "@types/pdf-parse": "^1.1.5",
     "eslint": "^9.17.0",
     "rimraf": "^6.0.1",
     "typescript": "^5.7.3",

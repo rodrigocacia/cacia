@@ -26,6 +26,9 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { FilasModule } from './worker/filas/filas.module';
 import { IaModule } from './ai/ia.module';
 import { ObservabilidadeModule } from './infra/observabilidade/observabilidade.module';
+import { StorageModule } from './infra/storage/storage.module';
+import { DocumentsModule } from './modules/documents/documents.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -65,6 +68,9 @@ import { ObservabilidadeModule } from './infra/observabilidade/observabilidade.m
     FilasModule,
     IaModule,
     ObservabilidadeModule,
+    StorageModule,
+    DocumentsModule,
+    NotificationsModule,
   ],
   providers: [
     // Ambos globais e nesta ordem: autentica, depois resolve o escritório.

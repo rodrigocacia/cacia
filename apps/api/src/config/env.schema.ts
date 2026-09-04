@@ -82,6 +82,14 @@ export const envSchema = z.object({
   // processos são cadastrados sem monitoramento.
   JUDIT_API_URL: z.string().url().default('https://requests.prod.judit.io'),
   JUDIT_API_KEY: z.string().optional(),
+
+  // Armazenamento de arquivos (DigitalOcean Spaces, compatível com S3).
+  // Substitui a prática anterior de guardar base64 na linha da tabela.
+  DO_ENDPOINT: z.string(),
+  DO_BUCKET: z.string(),
+  DO_KEY: z.string(),
+  DO_SECRET: z.string(),
+  DO_PUBLIC_URL: z.string().url(),
 });
 
 export type Env = z.infer<typeof envSchema>;
