@@ -65,7 +65,8 @@ frontends vive em `packages/contracts` — não é copiado.
 | `pnpm build`        | Compila tudo, respeitando a ordem de dependência |
 | `pnpm lint`         | Analisa o código                                 |
 | `pnpm typecheck`    | Verifica tipos sem gerar arquivos                |
-| `pnpm test`         | Executa os testes                                |
+| `pnpm test`         | Executa os testes unitários                      |
+| `pnpm test:e2e`     | Executa os testes de ponta a ponta               |
 | `pnpm format`       | Formata o código                                 |
 | `pnpm format:check` | Verifica formatação sem alterar (usado no CI)    |
 
@@ -79,11 +80,42 @@ pnpm --filter @cacia/contracts build
 
 ---
 
+## Testes
+
+São duas suítes, com propósitos diferentes.
+
+**Unitários** (`pnpm test`) — rápidos, sem infraestrutura. Cobrem regra de
+negócio isolada: o cálculo do disparo de um lembrete, a fragmentação de um
+documento, a decisão do guard de tenant.
+
+**Ponta a ponta** (`pnpm test:e2e`) — sobem a aplicação inteira e falam com
+ela por HTTP, contra **PostgreSQL e Redis de verdade**. Cobrem o que o teste
+unitário com Prisma dublado não enxerga: uma query inválida, um índice único
+que dispara, um enum que não existe no banco, um guard que ficou na ordem
+errada.
+
+```bash
+docker compose up -d postgres redis
+pnpm test:e2e
+```
+
+As integrações que sairiam para a rede — OpenAI, Qdrant, WAHA, Evolution,
+Evomi, Judit, storage — são substituídas por dublês. O Qdrant e o storage
+guardam de verdade o que recebem, para que "indexar e depois excluir" seja
+verificável.
+
+A suíte roda no schema `e2e` e **trunca todas as tabelas dele** entre os
+arquivos. Ela recusa iniciar se apontar para o `public`, justamente para não
+apagar o banco de quem está com a aplicação aberta ao lado. Para usar outra
+conexão, defina `DATABASE_URL_E2E`.
+
+---
+
 ## Arquitetura
 
 | Camada         | Tecnologia                              | Hospedagem            |
 | -------------- | --------------------------------------- | --------------------- |
-| Frontends      | Next.js (exportação estática)           | Cloudflare Pages      |
+| Frontends      | Next.js (renderização no servidor)      | Cloudflare Workers    |
 | API e worker   | NestJS                                  | Fly.io                |
 | Banco de dados | PostgreSQL + Prisma                     | Gerenciado            |
 | Filas e cache  | Redis                                   | Gerenciado            |

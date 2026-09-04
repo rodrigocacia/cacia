@@ -58,6 +58,73 @@ jobs:
       - name: Testes
         run: pnpm test
 
+  e2e:
+    name: Ponta a ponta
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Banco e Redis de verdade. É o ponto do teste de ponta a ponta: dublar o
+    # Prisma esconderia justamente o que se quer verificar — uma query
+    # inválida, um índice único que dispara, um enum inexistente.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: cacia
+          POSTGRES_PASSWORD: cacia
+          POSTGRES_DB: cacia
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cacia"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Schema dedicado: a suíte trunca todas as tabelas do schema em que roda,
+      # e o harness recusa rodar no `public` por isso mesmo.
+      DATABASE_URL_E2E: 'postgresql://cacia:cacia@localhost:5432/cacia?schema=e2e'
+      REDIS_HOST: localhost
+      REDIS_PORT: '6379'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Instalar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      # A API importa @cacia/database e @cacia/contracts pelo `dist` deles.
+      # Sem este passo o Vitest não resolve os pacotes — o `postinstall` só
+      # gera o client do Prisma, não compila o TypeScript.
+      - name: Compilar os pacotes internos
+        run: pnpm turbo run build --filter=@cacia/database --filter=@cacia/contracts
+
+      - name: Testes de ponta a ponta
+        run: pnpm test:e2e
+
   migracao:
     name: Migration em Postgres real
     runs-on: ubuntu-latest

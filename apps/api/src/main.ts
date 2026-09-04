@@ -5,36 +5,21 @@ import { iniciarSentry } from './infra/observabilidade/sentry';
 iniciarSentry();
 
 import 'reflect-metadata';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { configurarApp } from './bootstrap';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
   const logger = new Logger('API');
 
-  app.use(helmet());
-
-  app.enableCors({
-    origin: config.getOrThrow<string>('WEBSITE_URL'),
-    credentials: true,
-  });
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true, // remove campos não declarados no DTO
-      forbidNonWhitelisted: true, // e recusa a requisição que os envie
-      transform: true,
-      transformOptions: { enableImplicitConversion: true },
-    }),
-  );
-
-  // Encerra as conexões de banco e Redis antes de o processo morrer
-  app.enableShutdownHooks();
+  // A mesma configuração que os testes de ponta a ponta aplicam — ver
+  // bootstrap.ts
+  configurarApp(app, config);
 
   // Documentação apenas fora de produção: em produção ela expõe a superfície
   // inteira da API para quem quiser mapeá-la.

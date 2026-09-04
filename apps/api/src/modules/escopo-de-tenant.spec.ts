@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
+import type { ConfigService } from '@nestjs/config';
 import type { PrismaService } from '@/infra/prisma/prisma.service';
+import type { JuditService } from '@/integrations/judit/judit.service';
 import { CustomersService } from './customers/customers.service';
 import { LeadsService } from './leads/leads.service';
 import { ProcessesService } from './processes/processes.service';
@@ -34,6 +36,20 @@ function prismaEspiao(retorno: unknown = null) {
   return { prisma, findFirst, findMany, update };
 }
 
+/**
+ * O serviço de processos também recebe a Judit e a configuração.
+ *
+ * Nenhuma das duas participa das consultas verificadas aqui — mas o
+ * construtor as exige, e passar só o Prisma esconderia de vez uma delas
+ * passar a ser usada na leitura.
+ */
+function servicoDeProcessos(prisma: PrismaService): ProcessesService {
+  const judit = { estaConfigurado: () => false } as unknown as JuditService;
+  const config = { get: () => undefined } as unknown as ConfigService;
+
+  return new ProcessesService(prisma, judit, config);
+}
+
 /** Extrai o `where` da primeira chamada de uma consulta espionada. */
 function whereDe(espiao: ReturnType<typeof vi.fn>): Record<string, unknown> {
   const args = espiao.mock.calls[0]?.[0] as { where: Record<string, unknown> };
@@ -58,7 +74,7 @@ describe('escopo de tenant nos módulos de domínio', () => {
 
     it('processos', async () => {
       const { prisma, findMany } = prismaEspiao();
-      await new ProcessesService(prisma).listar(ESCRITORIO, paginacao);
+      await servicoDeProcessos(prisma).listar(ESCRITORIO, paginacao);
       expect(whereDe(findMany).officeId).toBe(ESCRITORIO);
     });
   });
@@ -84,7 +100,7 @@ describe('escopo de tenant nos módulos de domínio', () => {
 
     it('processo', async () => {
       const { prisma, findFirst } = prismaEspiao({ id: REGISTRO });
-      await new ProcessesService(prisma).detalhar(ESCRITORIO, REGISTRO);
+      await servicoDeProcessos(prisma).detalhar(ESCRITORIO, REGISTRO);
 
       const where = whereDe(findFirst);
       expect(where.id).toBe(REGISTRO);
@@ -113,7 +129,7 @@ describe('escopo de tenant nos módulos de domínio', () => {
     it('processo', async () => {
       const { prisma } = prismaEspiao(null);
       await expect(
-        new ProcessesService(prisma).detalhar(ESCRITORIO, REGISTRO),
+        servicoDeProcessos(prisma).detalhar(ESCRITORIO, REGISTRO),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -151,7 +167,7 @@ describe('escopo de tenant nos módulos de domínio', () => {
 
     it('processo', async () => {
       const { prisma, findMany } = prismaEspiao();
-      await new ProcessesService(prisma).listar(ESCRITORIO, paginacao);
+      await servicoDeProcessos(prisma).listar(ESCRITORIO, paginacao);
       expect(whereDe(findMany).deletedAt).toBeNull();
     });
   });

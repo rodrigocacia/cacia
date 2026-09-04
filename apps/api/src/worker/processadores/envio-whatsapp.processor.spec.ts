@@ -7,7 +7,22 @@ import type { WahaService } from '@/integrations/waha/waha.service';
 import type { EvolutionService } from '@/integrations/evolution/evolution.service';
 import type { JobEnvioWhatsapp } from '../filas/filas';
 
-const CONEXAO_COMPLETA = {
+/**
+ * Espelha as colunas da tabela, com os mesmos campos nuláveis.
+ *
+ * O tipo importa: é justamente o caso "credencial ausente" que os testes
+ * abaixo exercitam, e sem `| null` na declaração o teste não compilaria.
+ */
+const CONEXAO_COMPLETA: {
+  provider: WhatsappProvider;
+  fallbackEnabled: boolean;
+  wahaSession: string | null;
+  wahaApiHost: string | null;
+  wahaApiKey: string | null;
+  evolutionApiHost: string | null;
+  evolutionApiInstance: string | null;
+  evolutionApiKey: string | null;
+} = {
   provider: WhatsappProvider.WAHA,
   fallbackEnabled: true,
   wahaSession: 'office-1',

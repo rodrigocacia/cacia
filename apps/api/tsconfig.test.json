@@ -1,0 +1,17 @@
+{
+  // Os testes ficavam fora da verificação de tipos: o tsconfig de build
+  // exclui `*.spec.ts` e nem enxerga a pasta `test/`. Um teste com tipo
+  // errado passava no CI até quebrar em execução — este arquivo fecha isso.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    // Sem cache incremental: compartilhá-lo com o build faria um invalidar o
+    // outro, e o build pararia de emitir.
+    "incremental": false,
+    "declaration": false,
+    "declarationMap": false
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

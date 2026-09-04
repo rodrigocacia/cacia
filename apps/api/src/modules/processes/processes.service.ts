@@ -40,6 +40,23 @@ const CAMPOS = {
   createdAt: true,
 } as const;
 
+/**
+ * Alternativas de busca por texto.
+ *
+ * O número do processo só entra quando o termo tem dígitos — ver a mesma
+ * regra em customers.service.ts. Sem isso, `contains: ''` casava com todos os
+ * processos e a busca por texto virava uma listagem completa.
+ */
+function alternativasDeBusca(termo: string) {
+  const digitos = termo.replace(/\D/g, '');
+
+  return [
+    { name: { contains: termo, mode: 'insensitive' as const } },
+    { description: { contains: termo, mode: 'insensitive' as const } },
+    ...(digitos ? [{ number: { contains: digitos } }] : []),
+  ];
+}
+
 @Injectable()
 export class ProcessesService {
   private readonly logger = new Logger(ProcessesService.name);
@@ -56,15 +73,7 @@ export class ProcessesService {
       deletedAt: null,
       ...(dto.status && { status: dto.status }),
       ...(dto.customerId && { customerId: dto.customerId }),
-      ...(dto.search && {
-        OR: [
-          { number: { contains: dto.search.replace(/\D/g, '') } },
-          { name: { contains: dto.search, mode: 'insensitive' as const } },
-          {
-            description: { contains: dto.search, mode: 'insensitive' as const },
-          },
-        ],
-      }),
+      ...(dto.search && { OR: alternativasDeBusca(dto.search) }),
     };
 
     const [data, total] = await Promise.all([

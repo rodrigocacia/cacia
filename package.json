@@ -16,7 +16,8 @@
     "test": "turbo run test",
     "clean": "turbo run clean && rimraf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,json,md,yml,yaml}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,json,md,yml,yaml}\""
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,json,md,yml,yaml}\"",
+    "test:e2e": "pnpm --filter @cacia/api test:e2e"
   },
   "devDependencies": {
     "@cacia/config": "workspace:*",
@@ -36,7 +37,8 @@
       "@prisma/client",
       "@prisma/engines",
       "prisma",
-      "esbuild"
+      "esbuild",
+      "@swc/core"
     ]
   }
 }

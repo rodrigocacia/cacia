@@ -1,6 +1,6 @@
 # Estado da reconstrução
 
-> Atualizado em 04/09/2026, ao fim das fases 0 a 5.
+> Atualizado em 04/09/2026, após a suíte de ponta a ponta.
 
 Documento de acompanhamento: o que foi feito, o que mudou em relação ao
 [plano original](ARQUITETURA.md) e o que continua pendente.
@@ -9,13 +9,13 @@ Documento de acompanhamento: o que foi feito, o que mudou em relação ao
 
 ## Em números
 
-|                                |                                                               |
-| ------------------------------ | ------------------------------------------------------------- |
-| Pull requests integrados       | 15                                                            |
-| Entidades no banco             | 28                                                            |
-| Arquivos TypeScript na API     | 132                                                           |
-| Testes automatizados           | 116                                                           |
-| Cobertura de verificação no CI | formatação, lint, tipos, build, testes, migrations, auditoria |
+|                                |                                                                    |
+| ------------------------------ | ------------------------------------------------------------------ |
+| Pull requests integrados       | 16                                                                 |
+| Entidades no banco             | 28                                                                 |
+| Arquivos TypeScript na API     | 132                                                                |
+| Testes automatizados           | 206 — 116 unitários e 90 de ponta a ponta                          |
+| Cobertura de verificação no CI | formatação, lint, tipos, build, testes, E2E, migrations, auditoria |
 
 Ponto de partida: **0,6% de cobertura de testes e zero pipelines de CI**.
 
@@ -39,6 +39,9 @@ Cada um com o estado atual.
 | 10  | Isolamento entre escritórios só por convenção     | ✅ Garantido no banco e no guard |
 | 11  | `KEYS *` bloqueante no Redis                      | ✅ Não existe no código novo     |
 | 12  | Sem CI, sem testes, sem observabilidade           | ✅ Todos os três                 |
+
+Ponto 12, com detalhe: a suíte de ponta a ponta encontrou um defeito de
+produção que nenhum teste unitário pegaria — ver mais abaixo.
 
 ---
 
@@ -99,9 +102,15 @@ destrava a exportação estática e o Cloudflare Pages, mas é um projeto própr
 
 ### Cobertura de testes
 
-116 testes cobrem o que tem risco: isolamento entre tenants, memória da IA,
-lembretes, proxy, webhooks, fragmentação. Falta cobrir o caminho feliz dos CRUDs
-e testes de ponta a ponta.
+Coberto: isolamento entre escritórios (no banco, no guard e agora rota por rota
+sobre HTTP), memória da IA, lembretes, proxy, webhooks, fragmentação, o ciclo
+completo dos CRUDs, validação de entrada, paginação, papéis e limite de
+requisições.
+
+Falta: o caminho da conversa de ponta a ponta — webhook do WhatsApp até a
+resposta enviada. Ele depende de dublar o modelo de linguagem, e um dublê que
+sempre responde a mesma coisa verifica pouco. É trabalho de par com a avaliação
+da IA, abaixo.
 
 ### Migração de dados
 
@@ -113,6 +122,30 @@ quatro cópias dos schemas antigos estão documentadas nos PRs #2 e #5.
 
 Não há conjunto de casos que impeça regressão de qualidade nas respostas. É o
 próximo passo natural agora que a memória e o prompt estão estáveis.
+
+---
+
+## Defeitos encontrados pelos testes de ponta a ponta
+
+Registrados porque nenhum deles aparecia em teste unitário, e é isso que
+justifica a suíte existir.
+
+**A busca por texto devolvia a base inteira.** Em clientes e em processos, o
+termo era limpo com `replace(/\D/g, '')` para casar com CPF ou número do
+processo. Um termo sem dígitos — "Maria" — virava `contains: ''`, e no
+Postgres todo texto contém a string vazia: a cláusula casava com tudo. Quem
+buscasse por nome recebia a listagem completa em vez do resultado. Corrigido:
+o trecho numérico só entra quando há dígitos.
+
+**A aplicação não subia no ambiente de teste.** O esbuild, que o Vitest usa
+por padrão, apaga os metadados de tipo dos decorators. Sem eles o Nest não
+sabe o que injetar e todo construtor recebe `undefined`. Trocado pelo SWC.
+
+**Dois testes existentes não compilavam.** O `tsconfig` de build exclui
+`*.spec.ts`, então nenhum teste passava pela verificação de tipos: um deles
+construía um serviço com um argumento em vez de três, o outro passava `null`
+onde o tipo dizia `string | undefined`. Ambos passavam em execução por acaso.
+Corrigidos, e agora há um `tsconfig.test.json` que verifica os testes junto.
 
 ---
 

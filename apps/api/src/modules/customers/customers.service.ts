@@ -24,6 +24,24 @@ const CAMPOS = {
   updatedAt: true,
 } as const;
 
+/**
+ * Alternativas de busca por texto.
+ *
+ * O trecho do documento entra SÓ quando o termo tem dígitos. Buscar por
+ * "Maria" deixava `contains: ''` no filtro do documento — e no Postgres todo
+ * texto contém a string vazia, então a cláusula casava com a base inteira e a
+ * busca devolvia todos os clientes do escritório.
+ */
+function alternativasDeBusca(termo: string) {
+  const digitos = termo.replace(/\D/g, '');
+
+  return [
+    { name: { contains: termo, mode: 'insensitive' as const } },
+    { email: { contains: termo, mode: 'insensitive' as const } },
+    ...(digitos ? [{ document: { contains: digitos } }] : []),
+  ];
+}
+
 @Injectable()
 export class CustomersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -32,13 +50,7 @@ export class CustomersService {
     const where = {
       officeId,
       deletedAt: null,
-      ...(dto.search && {
-        OR: [
-          { name: { contains: dto.search, mode: 'insensitive' as const } },
-          { document: { contains: dto.search.replace(/\D/g, '') } },
-          { email: { contains: dto.search, mode: 'insensitive' as const } },
-        ],
-      }),
+      ...(dto.search && { OR: alternativasDeBusca(dto.search) }),
     };
 
     const [data, total] = await Promise.all([
