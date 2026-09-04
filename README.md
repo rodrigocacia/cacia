@@ -5,6 +5,9 @@ WhatsApp, leitura de documentos, acompanhamento processual e agenda.
 
 Monorepo mantido pela **WG Soluções Tecnológicas**.
 
+Estado da reconstrução, decisões revistas e o que continua pendente:
+[`docs/ESTADO.md`](docs/ESTADO.md).
+
 ---
 
 ## Requisitos

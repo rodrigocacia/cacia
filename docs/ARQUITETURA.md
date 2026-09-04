@@ -1,6 +1,11 @@
 # CacIA — Plano de Arquitetura e Migração
 
-> **Status:** proposta para revisão
+> **Status:** executado nas fases 0 a 5
+>
+> Três decisões deste plano foram revistas durante a execução, com informação
+> que só apareceu ao medir o código. O registro está em
+> [`ESTADO.md`](ESTADO.md) — em especial a exportação estática dos frontends,
+> que não é viável como descrito aqui.
 > **Data:** 05/08/2026
 > **Contexto:** transição de responsabilidade técnica do projeto
 
