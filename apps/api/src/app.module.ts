@@ -23,6 +23,7 @@ import { AgentsModule } from './modules/agents/agents.module';
 import { ChatsModule } from './modules/chats/chats.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { FilasModule } from './worker/filas/filas.module';
+import { IaModule } from './ai/ia.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { FilasModule } from './worker/filas/filas.module';
     ChatsModule,
     WebhooksModule,
     FilasModule,
+    IaModule,
   ],
   providers: [
     // Ambos globais e nesta ordem: autentica, depois resolve o escritório.

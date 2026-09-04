@@ -244,6 +244,27 @@ atendimento de um escritório.
 
 ---
 
+## Memória da IA
+
+Três camadas, com orçamento de contexto **fixo** — uma conversa de duzentas
+mensagens ocupa o mesmo espaço que uma de dez.
+
+| Camada | Onde       | O que guarda                      | Custo       |
+| ------ | ---------- | --------------------------------- | ----------- |
+| Quente | Redis      | Últimos 4 turnos, literais        | ~500 tokens |
+| Morna  | PostgreSQL | Resumo rolante do que veio antes  | ~200 tokens |
+| Fria   | Qdrant     | Fatos permanentes, por relevância | ~100 tokens |
+
+**Resultado de ferramenta nunca entra na memória** — só o fato que dele decorre.
+Era exatamente isso que consumia a janela do sistema anterior: cada turno com
+ferramentas gravava de 3 a 5 entradas das 20 disponíveis, e a janela real virava
+4 a 6 turnos.
+
+As três camadas degradam de forma independente: sem Redis o agente responde com
+resumo e fatos; sem Qdrant, com os turnos recentes e o resumo.
+
+---
+
 ## Worker
 
 Processo separado, mesmo código da API. Sobe com:

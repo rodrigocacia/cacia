@@ -887,17 +887,28 @@ model Agent {
 }
 
 model Chat {
-  id             String     @id @default(uuid()) @db.Uuid
-  officeId       String     @map("office_id") @db.Uuid
-  agentId        String     @map("agent_id") @db.Uuid
-  type           ChatType
-  userId         String?    @map("user_id") @db.Uuid
-  leadId         String?    @map("lead_id") @db.Uuid
-  customerId     String?    @map("customer_id") @db.Uuid
-  status         ChatStatus @default(ACTIVE)
-  userName       String?    @map("user_name")
-  audioReply     Boolean?   @map("audio_reply")
-  lastActivityAt DateTime   @default(now()) @map("last_activity_at")
+  id         String     @id @default(uuid()) @db.Uuid
+  officeId   String     @map("office_id") @db.Uuid
+  agentId    String     @map("agent_id") @db.Uuid
+  type       ChatType
+  userId     String?    @map("user_id") @db.Uuid
+  leadId     String?    @map("lead_id") @db.Uuid
+  customerId String?    @map("customer_id") @db.Uuid
+  status     ChatStatus @default(ACTIVE)
+  userName   String?    @map("user_name")
+  audioReply Boolean?   @map("audio_reply")
+
+  /// Camada morna da memória: resumo rolante da conversa.
+  ///
+  /// Substitui o histórico bruto no contexto do agente. A camada quente (Redis)
+  /// guarda os últimos turnos literais; daí para trás, o que o agente recebe é
+  /// este resumo — algumas centenas de tokens em vez de milhares.
+  summary                String?
+  summaryUpdatedAt       DateTime? @map("summary_updated_at")
+  /// Quantas mensagens já foram incorporadas ao resumo. O que veio depois
+  /// ainda não está resumido e precisa ir literal para o contexto.
+  summarizedMessageCount Int       @default(0) @map("summarized_message_count")
+  lastActivityAt         DateTime  @default(now()) @map("last_activity_at")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -981,9 +992,13 @@ model Mark {
   agentId     String?      @map("agent_id") @db.Uuid
   userId      String?      @map("user_id") @db.Uuid
 
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  /// Camada fria: preenchido quando o fato está indexado no Qdrant.
+  /// Nulo significa que ainda não é recuperável por similaridade.
+  vectorId        String?   @map("vector_id")
+  vectorIndexedAt DateTime? @map("vector_indexed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
 
   office   Office        @relation(fields: [officeId], references: [id])
   /// Garante que o usuário seja membro deste escritório

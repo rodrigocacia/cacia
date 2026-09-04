@@ -56,6 +56,20 @@ export const envSchema = z.object({
   CACIA_TOOL_API_KEY: z
     .string()
     .min(24, 'CACIA_TOOL_API_KEY precisa de ao menos 24 caracteres'),
+
+  // Inteligência artificial
+  OPENAI_API_KEY: z.string().startsWith('sk-'),
+  OPENAI_MODEL: z.string().default('gpt-4o'),
+  // Sumarização e extração de fatos são tarefas simples e frequentes —
+  // usam o modelo barato, não o mesmo do atendimento.
+  OPENAI_SUMMARY_MODEL: z.string().default('gpt-4o-mini'),
+  OPENAI_EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
+  OPENAI_EMBEDDING_DIMENSIONS: z.coerce.number().int().default(1536),
+
+  // Busca vetorial — RAG de documentos e camada fria da memória
+  QDRANT_URL: z.string().url(),
+  QDRANT_API_KEY: z.string().optional(),
+  QDRANT_COLLECTION: z.string().default('cacia_vectors'),
 });
 
 export type Env = z.infer<typeof envSchema>;
