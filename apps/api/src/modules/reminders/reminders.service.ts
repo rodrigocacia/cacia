@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { ReminderStatus } from '@cacia/database';
+import { ReminderStatus, ReminderType } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
+import type { CriarLembreteDto } from './dto/reminder.dto';
 
 const MAX_TENTATIVAS = 3;
 
@@ -137,6 +138,80 @@ export class RemindersService {
       },
       orderBy: { triggerAt: 'desc' },
       take: 100,
+    });
+  }
+
+  /**
+   * Lembretes de um compromisso.
+   *
+   * A tela do evento mostra os avisos já programados para ele; sem esta rota,
+   * quem abrisse o compromisso não teria como saber que já havia um.
+   */
+  listarDoEvento(officeId: string, eventId: string) {
+    return this.prisma.reminder.findMany({
+      where: { officeId, eventId, deletedAt: null },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        timeTrigger: true,
+        triggerAt: true,
+        status: true,
+        sentAt: true,
+        createdAt: true,
+      },
+      orderBy: { timeTrigger: 'asc' },
+    });
+  }
+
+  /**
+   * Cria um lembrete para um compromisso que já existe.
+   *
+   * O horário de disparo é calculado a partir do início do evento — nunca
+   * recebido pronto. Aceitar `triggerAt` do cliente permitiria um aviso
+   * desalinhado do compromisso a que ele pertence.
+   */
+  async criar(officeId: string, userId: string, dto: CriarLembreteDto) {
+    const evento = await this.prisma.event.findFirst({
+      where: { id: dto.eventId, officeId, deletedAt: null },
+      select: {
+        id: true,
+        startTime: true,
+        customerId: true,
+        leadId: true,
+        processId: true,
+      },
+    });
+
+    if (!evento) throw new NotFoundException('Compromisso não encontrado');
+
+    const triggerAt = new Date(
+      evento.startTime.getTime() - dto.timeTrigger * 60_000,
+    );
+
+    return this.prisma.reminder.create({
+      data: {
+        officeId,
+        userId,
+        eventId: evento.id,
+        customerId: evento.customerId,
+        leadId: evento.leadId,
+        processId: evento.processId,
+        type: ReminderType.EVENT,
+        title: dto.title,
+        description: dto.description,
+        timeTrigger: dto.timeTrigger,
+        triggerAt,
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        timeTrigger: true,
+        triggerAt: true,
+        status: true,
+        createdAt: true,
+      },
     });
   }
 

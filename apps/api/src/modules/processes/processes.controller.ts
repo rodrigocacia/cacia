@@ -16,6 +16,7 @@ import { PaginacaoDto } from '@/common/dto/paginacao.dto';
 import { ProcessesService } from './processes.service';
 import {
   AtualizarProcessoDto,
+  CriarAndamentoDto,
   CriarProcessoDto,
   ListarProcessosDto,
 } from './dto/process.dto';
@@ -53,6 +54,15 @@ export class ProcessesController {
     @Query() dto: PaginacaoDto,
   ) {
     return this.processes.listarAndamentos(officeId, id, dto);
+  }
+
+  @Post(':id/progresses')
+  criarAndamento(
+    @CurrentOffice() officeId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CriarAndamentoDto,
+  ) {
+    return this.processes.criarAndamento(officeId, id, dto);
   }
 
   @Post()

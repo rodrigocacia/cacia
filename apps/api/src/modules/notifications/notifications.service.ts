@@ -42,6 +42,38 @@ export class NotificationsService {
     return { ...montarPaginacao(data, total, dto), unread: naoLidas };
   }
 
+  /**
+   * Só a contagem de não lidas.
+   *
+   * A listagem já devolve `unread`, mas o sino do cabeçalho pergunta a cada
+   * minuto e não precisa da página inteira junto.
+   */
+  async contarNaoLidas(
+    officeId: string,
+    userId: string,
+  ): Promise<{ count: number }> {
+    const count = await this.prisma.notification.count({
+      where: {
+        officeId,
+        userId,
+        deletedAt: null,
+        status: NotificationStatus.DELIVERY,
+      },
+    });
+
+    return { count };
+  }
+
+  /** Exclusão lógica — some da lista de quem dispensou, sem apagar o histórico. */
+  async remover(officeId: string, userId: string, id: string): Promise<void> {
+    const { count } = await this.prisma.notification.updateMany({
+      where: { id, officeId, userId, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
+
+    if (count === 0) throw new NotFoundException('Notificação não encontrada');
+  }
+
   async marcarComoLida(
     officeId: string,
     userId: string,

@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -27,6 +28,15 @@ export class NotificationsController {
     return this.notifications.listar(officeId, usuario.userId, dto);
   }
 
+  /** Só o número — o sino do cabeçalho consulta com frequência. */
+  @Get('unread-count')
+  contarNaoLidas(
+    @CurrentOffice() officeId: string,
+    @CurrentUser() usuario: UsuarioAutenticado,
+  ) {
+    return this.notifications.contarNaoLidas(officeId, usuario.userId);
+  }
+
   @Post(':id/read')
   @HttpCode(HttpStatus.NO_CONTENT)
   marcarComoLida(
@@ -35,6 +45,16 @@ export class NotificationsController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<void> {
     return this.notifications.marcarComoLida(officeId, usuario.userId, id);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remover(
+    @CurrentOffice() officeId: string,
+    @CurrentUser() usuario: UsuarioAutenticado,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<void> {
+    return this.notifications.remover(officeId, usuario.userId, id);
   }
 
   @Post('read-all')

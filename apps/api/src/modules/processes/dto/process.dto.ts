@@ -1,4 +1,12 @@
-import { IsEnum, IsOptional, IsString, IsUUID, Length } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Length,
+  MinLength,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ProcessStatus, ProcessType } from '@cacia/database';
 import { PaginacaoDto } from '@/common/dto/paginacao.dto';
@@ -28,4 +36,23 @@ export class AtualizarProcessoDto {
 export class ListarProcessosDto extends PaginacaoDto {
   @IsOptional() @IsEnum(ProcessStatus) status?: ProcessStatus;
   @IsOptional() @IsUUID() customerId?: string;
+}
+
+/**
+ * Andamento lançado à mão.
+ *
+ * Os que vêm da Judit chegam pelo webhook e trazem `stepId`. Este é o do
+ * advogado, que registra o que aconteceu fora do sistema — uma audiência, uma
+ * conversa com a parte contrária.
+ */
+export class CriarAndamentoDto {
+  @IsString()
+  @MinLength(2)
+  @Transform(({ value }: { value: string }) => value?.trim())
+  description!: string;
+
+  @IsOptional() @IsString() title?: string;
+
+  /** Quando o andamento aconteceu. Ausente, vale agora. */
+  @IsOptional() @IsDateString() releaseAt?: string;
 }

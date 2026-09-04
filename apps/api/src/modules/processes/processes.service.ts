@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import {
   ConflictException,
   Injectable,
@@ -11,6 +12,7 @@ import { JuditService } from '@/integrations/judit/judit.service';
 import { janela, montarPaginacao } from '@/common/dto/paginacao.dto';
 import type {
   AtualizarProcessoDto,
+  CriarAndamentoDto,
   CriarProcessoDto,
   ListarProcessosDto,
 } from './dto/process.dto';
@@ -289,6 +291,47 @@ export class ProcessesService {
           `Processo ${id} excluído, mas o monitoramento ${processo.juditTrackingId} segue ativo na Judit: ${erro.message}`,
         );
       });
+  }
+
+  /**
+   * Lança um andamento à mão.
+   *
+   * O `stepId` fica vazio: ele identifica o andamento na Judit e serve para
+   * não gravar o mesmo duas vezes. Um lançamento manual não tem esse par, e
+   * a constraint `@@unique([processId, stepId])` só admite UM registro com
+   * string vazia por processo — por isso o id é gerado aqui.
+   */
+  async criarAndamento(
+    officeId: string,
+    processId: string,
+    dto: CriarAndamentoDto,
+  ) {
+    await this.garantirQueExiste(officeId, processId);
+
+    const andamento = await this.prisma.progress.create({
+      data: {
+        officeId,
+        processId,
+        title: dto.title ?? dto.description.slice(0, 120),
+        description: dto.description,
+        releaseAt: dto.releaseAt ? new Date(dto.releaseAt) : new Date(),
+        stepId: `manual:${randomUUID()}`,
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        releaseAt: true,
+        createdAt: true,
+      },
+    });
+
+    await this.prisma.process.update({
+      where: { id: processId },
+      data: { lastActivityAt: new Date() },
+    });
+
+    return andamento;
   }
 
   /** Andamentos do processo, do mais recente para o mais antigo. */

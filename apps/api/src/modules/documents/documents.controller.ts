@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   UploadedFile,
@@ -15,7 +16,11 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CurrentOffice } from '@/auth/decorators/current-office.decorator';
 import { DocumentsService } from './documents.service';
-import { EnviarDocumentoDto, ListarDocumentosDto } from './dto/document.dto';
+import {
+  AtualizarDocumentoDto,
+  EnviarDocumentoDto,
+  ListarDocumentosDto,
+} from './dto/document.dto';
 
 interface ArquivoRecebido {
   buffer: Buffer;
@@ -63,6 +68,15 @@ export class DocumentsController {
     @Body() dto: EnviarDocumentoDto,
   ) {
     return this.documents.enviar({ officeId, arquivo, ...dto });
+  }
+
+  @Patch(':id')
+  atualizar(
+    @CurrentOffice() officeId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AtualizarDocumentoDto,
+  ) {
+    return this.documents.atualizar(officeId, id, dto);
   }
 
   @Delete(':id')

@@ -21,6 +21,15 @@ export interface EscritorioDoUsuario {
   id: string;
   name: string;
   role: string;
+  /**
+   * Se o escritório já concluiu a configuração inicial.
+   *
+   * Vai no login porque é o que decide para onde o usuário é levado logo
+   * depois. Buscá-lo numa segunda requisição faria a tela piscar entre o
+   * painel e o onboarding.
+   */
+  onboarding: boolean;
+  status: string;
 }
 
 export interface RespostaAutenticacao {
@@ -87,7 +96,14 @@ export class AuthService {
           where: { office: { deletedAt: null } },
           select: {
             role: true,
-            office: { select: { id: true, name: true } },
+            office: {
+              select: {
+                id: true,
+                name: true,
+                onboarding: true,
+                status: true,
+              },
+            },
           },
         },
       },
@@ -118,6 +134,8 @@ export class AuthService {
         id: v.office.id,
         name: v.office.name,
         role: v.role,
+        onboarding: v.office.onboarding,
+        status: v.office.status,
       })),
     };
   }

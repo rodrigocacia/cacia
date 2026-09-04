@@ -14,7 +14,10 @@ import { janela, montarPaginacao } from '@/common/dto/paginacao.dto';
 import { FILA, type JobIndexacaoDocumento } from '@/worker/filas/filas';
 import { fragmentar } from './fragmentacao';
 import { extrairTexto } from './extracao-de-texto';
-import type { ListarDocumentosDto } from './dto/document.dto';
+import type {
+  AtualizarDocumentoDto,
+  ListarDocumentosDto,
+} from './dto/document.dto';
 
 const CAMPOS = {
   id: true,
@@ -214,6 +217,46 @@ export class DocumentsService {
       select: { id: true, officeId: true },
       orderBy: { createdAt: 'asc' },
       take: limite,
+    });
+  }
+
+  /**
+   * Atualiza os metadados do documento.
+   *
+   * Quando o conteúdo em texto muda, a indexação volta para PENDING: o que
+   * está no índice vetorial passou a não corresponder ao documento, e deixá-lo
+   * como está faria a IA citar um trecho que não existe mais.
+   */
+  async atualizar(officeId: string, id: string, dto: AtualizarDocumentoDto) {
+    const atual = await this.prisma.document.findFirst({
+      where: { id, officeId, deletedAt: null },
+      select: { id: true, content: true },
+    });
+
+    if (!atual) throw new NotFoundException('Documento não encontrado');
+
+    const conteudoMudou =
+      dto.content !== undefined && dto.content !== atual.content;
+
+    if (conteudoMudou) {
+      await this.rag.removerDocumento(officeId, id).catch((erro: Error) => {
+        this.logger.warn(
+          `Falha ao limpar vetores do documento ${id}: ${erro.message}`,
+        );
+      });
+    }
+
+    return this.prisma.document.update({
+      where: { id },
+      data: {
+        ...dto,
+        ...(conteudoMudou && {
+          vectorStatus: DocumentVectorStatus.PENDING,
+          vectorChunksCount: 0,
+          vectorErrorMessage: null,
+        }),
+      },
+      select: CAMPOS,
     });
   }
 
