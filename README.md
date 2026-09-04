@@ -171,6 +171,23 @@ As rotas de escritório exigem também o cabeçalho `x-office-id`.
 | POST   | `/offices/current/members`         | ADMIN    | Adiciona membro                        |
 | DELETE | `/offices/current/members/:userId` | ADMIN    | Remove membro                          |
 
+### Domínio jurídico
+
+| Método | Rota                        | O que faz                                       |
+| ------ | --------------------------- | ----------------------------------------------- |
+| GET    | `/customers`                | Lista clientes (paginado, com busca)            |
+| POST   | `/customers`                | Cadastra cliente                                |
+| GET    | `/customers/:id`            | Detalha, com contagem de processos e documentos |
+| PATCH  | `/customers/:id`            | Atualiza                                        |
+| DELETE | `/customers/:id`            | Exclusão lógica                                 |
+| GET    | `/leads`                    | Lista leads (filtra por status)                 |
+| POST   | `/leads`                    | Cadastra lead                                   |
+| POST   | `/leads/:id/convert`        | Converte em cliente                             |
+| GET    | `/processes`                | Lista processos (filtra por status e cliente)   |
+| POST   | `/processes`                | Cadastra processo                               |
+| GET    | `/processes/:id`            | Detalha, com os dados da Judit                  |
+| GET    | `/processes/:id/progresses` | Andamentos, do mais recente                     |
+
 ### Planos e saúde
 
 | Método | Rota            | O que faz                                   |

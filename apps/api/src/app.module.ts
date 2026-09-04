@@ -12,6 +12,9 @@ import { OfficeRoleGuard } from './auth/guards/office-role.guard';
 import { UsersModule } from './modules/users/users.module';
 import { OfficesModule } from './modules/offices/offices.module';
 import { PlansModule } from './modules/plans/plans.module';
+import { CustomersModule } from './modules/customers/customers.module';
+import { LeadsModule } from './modules/leads/leads.module';
+import { ProcessesModule } from './modules/processes/processes.module';
 
 @Module({
   imports: [
@@ -27,6 +30,9 @@ import { PlansModule } from './modules/plans/plans.module';
     UsersModule,
     OfficesModule,
     PlansModule,
+    CustomersModule,
+    LeadsModule,
+    ProcessesModule,
   ],
   providers: [
     // Ambos globais e nesta ordem: autentica, depois resolve o escritório.

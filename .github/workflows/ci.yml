@@ -131,6 +131,20 @@ jobs:
       - name: Instalar dependências
         run: pnpm install --frozen-lockfile
 
-      # Falha apenas em vulnerabilidade alta ou crítica — moderadas viram aviso
+      # Falha em vulnerabilidade alta ou crítica. Instabilidade de rede com o
+      # registro npm não reprova o PR: seria uma falha que não diz nada sobre
+      # o código, e o time aprenderia a ignorar o job vermelho.
       - name: Auditoria
-        run: pnpm audit --audit-level high
+        run: |
+          for tentativa in 1 2 3; do
+            saida=$(pnpm audit --audit-level high 2>&1) && exit 0
+            if echo "$saida" | grep -qE 'ERR_SOCKET_TIMEOUT|FetchError|ECONNRESET|ETIMEDOUT'; then
+              echo "::warning::Tentativa $tentativa: registro npm indisponível"
+              sleep $((tentativa * 15))
+              continue
+            fi
+            echo "$saida"
+            echo "::error::Vulnerabilidade alta ou crítica encontrada"
+            exit 1
+          done
+          echo "::warning::Auditoria inconclusiva — registro npm fora do ar após 3 tentativas"
