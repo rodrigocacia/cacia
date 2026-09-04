@@ -70,6 +70,13 @@ export const envSchema = z.object({
   QDRANT_URL: z.string().url(),
   QDRANT_API_KEY: z.string().optional(),
   QDRANT_COLLECTION: z.string().default('cacia_vectors'),
+
+  // Limite de requisições por IP
+  RATE_LIMIT_TTL: z.coerce.number().int().positive().default(60_000),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(120),
+
+  // Rastreamento de erros. Sem DSN, o Sentry fica inativo.
+  SENTRY_DSN: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -338,6 +338,33 @@ por instância, não uma vez por minuto.
 
 ---
 
+## Infraestrutura
+
+| Serviço      | Onde               | Por quê                               |
+| ------------ | ------------------ | ------------------------------------- |
+| API e worker | Fly.io `gru`       | Já configurado                        |
+| WAHA         | Fly.io, com volume | Sessões em disco; não pode dormir     |
+| Qdrant       | Fly.io, com volume | Vetor é dado derivado — reprocessável |
+| PostgreSQL   | Gerenciado         | Dado perdido não volta                |
+| Redis        | Gerenciado         | Filas e memória quente                |
+| Frontends    | Cloudflare Workers | OpenNext                              |
+
+Detalhes de provisionamento em [`infra/README.md`](infra/README.md).
+
+O deploy é por caminho alterado: mexer no frontend não republica a API. As
+migrations rodam **antes** do deploy — código novo pode depender de coluna nova,
+mas código antigo nunca depende de coluna que ainda não existe.
+
+## Observabilidade
+
+- **Sentry** para erros 5xx, com remoção de credenciais e do corpo dos webhooks
+  antes do envio — eles carregam mensagens de clientes, que são sigilosas
+- **Rate limit** por IP, avaliado antes da autenticação: uma enxurrada sem token
+  não pode custar uma consulta ao banco cada
+- **Swagger** em `/docs`, apenas fora de produção
+
+---
+
 ## Contribuindo
 
 Fluxo de trabalho, padrão de commits e critérios de revisão:

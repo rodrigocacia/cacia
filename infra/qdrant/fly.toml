@@ -1,0 +1,39 @@
+# Qdrant — busca vetorial
+#
+# Deploy:  fly deploy -c infra/qdrant/fly.toml
+#
+# Diferente do PostgreSQL, aqui auto-hospedar é seguro: vetor é dado DERIVADO.
+# Perder o Qdrant significa reprocessar embeddings a partir dos documentos —
+# custa tempo e algumas chamadas de API, não perde informação.
+
+app            = "cacia-qdrant"
+primary_region = "gru"
+
+[build]
+  image = "qdrant/qdrant:latest"
+
+[env]
+  QDRANT__SERVICE__HTTP_PORT = "6333"
+  QDRANT__TELEMETRY_DISABLED = "true"
+
+[http_service]
+  internal_port        = 6333
+  force_https          = true
+  auto_stop_machines   = "suspend"
+  auto_start_machines  = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "20s"
+    interval     = "30s"
+    method       = "GET"
+    timeout      = "10s"
+    path         = "/healthz"
+
+[[mounts]]
+  source      = "qdrant_storage"
+  destination = "/qdrant/storage"
+
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "1gb"

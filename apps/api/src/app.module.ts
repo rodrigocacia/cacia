@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { validateEnv } from './config/env.schema';
 import { PrismaModule } from './infra/prisma/prisma.module';
 import { RedisModule } from './infra/redis/redis.module';
@@ -24,6 +25,7 @@ import { ChatsModule } from './modules/chats/chats.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { FilasModule } from './worker/filas/filas.module';
 import { IaModule } from './ai/ia.module';
+import { ObservabilidadeModule } from './infra/observabilidade/observabilidade.module';
 
 @Module({
   imports: [
@@ -31,6 +33,17 @@ import { IaModule } from './ai/ia.module';
       isGlobal: true,
       validate: validateEnv,
       cache: true,
+    }),
+    // Limite por IP. Não protege contra ataque distribuído, mas impede que um
+    // cliente com laço de repetição derrube a API para todo mundo.
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [
+        {
+          ttl: config.get<number>('RATE_LIMIT_TTL') ?? 60_000,
+          limit: config.get<number>('RATE_LIMIT_MAX') ?? 120,
+        },
+      ],
     }),
     PrismaModule,
     RedisModule,
@@ -51,11 +64,15 @@ import { IaModule } from './ai/ia.module';
     WebhooksModule,
     FilasModule,
     IaModule,
+    ObservabilidadeModule,
   ],
   providers: [
     // Ambos globais e nesta ordem: autentica, depois resolve o escritório.
     // Aplicar por padrão em vez de por rota significa que esquecer o guard
     // não é possível — o que é preciso declarar é a EXCEÇÃO.
+    // O limite vem antes da autenticação: uma enxurrada de requisições sem
+    // token não pode custar uma consulta ao banco cada.
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: TenantGuard },
     { provide: APP_GUARD, useClass: OfficeRoleGuard },

@@ -1,0 +1,138 @@
+name: Deploy
+
+# Só publica o que mudou. Cada job tem seu filtro de caminho, então uma
+# alteração no frontend não redeploya a API — e vice-versa.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      alvo:
+        description: 'O que publicar'
+        required: true
+        type: choice
+        options: [api, worker, web, backoffice, todos]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false # deploy não se cancela no meio
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10.34.5'
+
+jobs:
+  mudancas:
+    name: O que mudou
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filtro.outputs.api }}
+      web: ${{ steps.filtro.outputs.web }}
+      backoffice: ${{ steps.filtro.outputs.backoffice }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filtro
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+              - 'packages/**'
+            web:
+              - 'apps/web/**'
+              - 'packages/contracts/**'
+            backoffice:
+              - 'apps/backoffice/**'
+              - 'packages/contracts/**'
+
+  migracao:
+    name: Aplicar migrations
+    needs: mudancas
+    if: needs.mudancas.outputs.api == 'true' || inputs.alvo == 'api' || inputs.alvo == 'todos'
+    runs-on: ubuntu-latest
+    environment: producao
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Antes do deploy, sempre: código novo pode depender de coluna nova, mas
+      # código antigo nunca depende de coluna que ainda não existe.
+      - name: Migrations
+        run: pnpm --filter @cacia/database migrate:deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  api:
+    name: API e worker
+    needs: [mudancas, migracao]
+    if: needs.mudancas.outputs.api == 'true' || inputs.alvo == 'api' || inputs.alvo == 'todos'
+    runs-on: ubuntu-latest
+    environment: producao
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Publicar API
+        run: flyctl deploy -c apps/api/fly.api.toml --dockerfile apps/api/Dockerfile --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Publicar worker
+        run: flyctl deploy -c apps/api/fly.worker.toml --dockerfile apps/api/Dockerfile --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  web:
+    name: Frontend
+    needs: mudancas
+    if: needs.mudancas.outputs.web == 'true' || inputs.alvo == 'web' || inputs.alvo == 'todos'
+    runs-on: ubuntu-latest
+    environment: producao
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Publicar no Cloudflare
+        run: pnpm --filter @cacia/web cf:deploy
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  backoffice:
+    name: Backoffice
+    needs: mudancas
+    if: needs.mudancas.outputs.backoffice == 'true' || inputs.alvo == 'backoffice' || inputs.alvo == 'todos'
+    runs-on: ubuntu-latest
+    environment: producao
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Publicar no Cloudflare
+        run: pnpm --filter @cacia/backoffice cf:deploy
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
