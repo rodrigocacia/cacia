@@ -188,6 +188,20 @@ As rotas de escritório exigem também o cabeçalho `x-office-id`.
 | GET    | `/processes/:id`            | Detalha, com os dados da Judit                  |
 | GET    | `/processes/:id/progresses` | Andamentos, do mais recente                     |
 
+### Agenda
+
+| Método | Rota                 | O que faz                                                |
+| ------ | -------------------- | -------------------------------------------------------- |
+| GET    | `/calendars`         | Lista agendas do escritório                              |
+| POST   | `/calendars`         | Cria agenda com os dias e turnos disponíveis             |
+| PATCH  | `/calendars/:id`     | Atualiza (substitui a configuração de dias)              |
+| GET    | `/events`            | Lista compromissos (filtra por período, agenda, cliente) |
+| POST   | `/events`            | Cria compromisso e seus lembretes                        |
+| PATCH  | `/events/:id`        | Atualiza; remarcar recalcula os lembretes pendentes      |
+| POST   | `/events/:id/cancel` | Cancela o compromisso e os lembretes                     |
+| GET    | `/reminders/failed`  | Lembretes que falharam em definitivo                     |
+| DELETE | `/reminders/:id`     | Cancela um lembrete                                      |
+
 ### Planos e saúde
 
 | Método | Rota            | O que faz                                   |

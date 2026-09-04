@@ -15,6 +15,9 @@ import { PlansModule } from './modules/plans/plans.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { LeadsModule } from './modules/leads/leads.module';
 import { ProcessesModule } from './modules/processes/processes.module';
+import { CalendarsModule } from './modules/calendars/calendars.module';
+import { EventsModule } from './modules/events/events.module';
+import { RemindersModule } from './modules/reminders/reminders.module';
 
 @Module({
   imports: [
@@ -33,6 +36,9 @@ import { ProcessesModule } from './modules/processes/processes.module';
     CustomersModule,
     LeadsModule,
     ProcessesModule,
+    CalendarsModule,
+    EventsModule,
+    RemindersModule,
   ],
   providers: [
     // Ambos globais e nesta ordem: autentica, depois resolve o escritório.

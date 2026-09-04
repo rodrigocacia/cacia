@@ -104,7 +104,7 @@ CREATE TYPE "consultation_mode" AS ENUM ('online', 'in_person');
 CREATE TYPE "reminder_type" AS ENUM ('event', 'task', 'appointment', 'deadline', 'custom');
 
 -- CreateEnum
-CREATE TYPE "reminder_status" AS ENUM ('pending', 'sent', 'cancelled', 'failed');
+CREATE TYPE "reminder_status" AS ENUM ('pending', 'processing', 'sent', 'cancelled', 'failed');
 
 -- CreateEnum
 CREATE TYPE "document_vector_status" AS ENUM ('pending', 'processing', 'completed', 'failed', 'skipped');

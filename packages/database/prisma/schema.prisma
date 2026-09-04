@@ -340,10 +340,14 @@ enum ReminderType {
 }
 
 enum ReminderStatus {
-  PENDING   @map("pending")
-  SENT      @map("sent")
-  CANCELLED @map("cancelled")
-  FAILED    @map("failed")
+  PENDING    @map("pending")
+  /// Reservado por um worker. Existe para que a troca PENDING -> PROCESSING
+  /// seja atômica: dois workers que peguem o mesmo lembrete disputam o
+  /// updateMany, e só um recebe count 1 — o outro não envia.
+  PROCESSING @map("processing")
+  SENT       @map("sent")
+  CANCELLED  @map("cancelled")
+  FAILED     @map("failed")
 
   @@map("reminder_status")
 }
