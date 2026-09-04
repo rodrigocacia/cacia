@@ -109,6 +109,15 @@ arquivos. Ela recusa iniciar se apontar para o `public`, justamente para não
 apagar o banco de quem está com a aplicação aberta ao lado. Para usar outra
 conexão, defina `DATABASE_URL_E2E`.
 
+**Frontends** (`pnpm test`, junto com os unitários) — cobrem a camada de
+tradução entre o vocabulário da interface e o da API, e o cliente HTTP contra
+um servidor de verdade. É o ponto onde um erro não quebra uma tela, e sim
+todas: um campo renomeado errado aparece como "undefined" na aplicação inteira
+ao mesmo tempo. Ver [`apps/web/src/http/adaptador.ts`](apps/web/src/http/adaptador.ts).
+
+Nenhum teste abre a aplicação e olha para a tela — isso continua sendo
+trabalho de uma pessoa antes de cada publicação.
+
 ---
 
 ## Arquitetura

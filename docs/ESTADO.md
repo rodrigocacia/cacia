@@ -1,6 +1,6 @@
 # Estado da reconstrução
 
-> Atualizado em 04/09/2026, após ligar as peças que faltavam.
+> Atualizado em 04/09/2026, após ligar os frontends à API.
 
 Documento de acompanhamento: o que foi feito, o que mudou em relação ao
 [plano original](ARQUITETURA.md) e o que continua pendente.
@@ -11,10 +11,10 @@ Documento de acompanhamento: o que foi feito, o que mudou em relação ao
 
 |                                |                                                                    |
 | ------------------------------ | ------------------------------------------------------------------ |
-| Pull requests integrados       | 19                                                                 |
+| Pull requests integrados       | 23                                                                 |
 | Entidades no banco             | 28                                                                 |
-| Arquivos TypeScript na API     | 132                                                                |
-| Testes automatizados           | 316 — 183 unitários e 133 de ponta a ponta                         |
+| Arquivos TypeScript na API     | 168                                                                |
+| Testes automatizados           | 438 — 186 unitários, 206 de ponta a ponta e 46 nos frontends       |
 | Cobertura de verificação no CI | formatação, lint, tipos, build, testes, E2E, migrations, auditoria |
 
 Ponto de partida: **0,6% de cobertura de testes e zero pipelines de CI**.
@@ -47,7 +47,8 @@ produção que nenhum teste unitário pegaria — ver mais abaixo.
 
 ## O que mudou em relação ao plano
 
-Três decisões foram revistas com informação que só apareceu durante a execução.
+Quatro decisões foram revistas com informação que só apareceu durante a
+execução.
 
 ### 1. Frontends: exportação estática não é viável agora
 
@@ -70,7 +71,27 @@ páginas.
 caminho recomendado pela Cloudflare para Next.js com renderização no servidor.
 No volume atual, igualmente gratuito.
 
-### 2. Isolamento entre escritórios precisou de mais que rótulo
+### 2. Os frontends nunca falaram com a API nova
+
+**No plano:** importar os frontends e apontá-los para a API unificada.
+
+**O que estava acontecendo:** eles foram importados e ficaram apontando para o
+contrato do sistema antigo. Caminhos no singular (`customer`, não `customers`),
+`office_id` na query e no corpo, resposta em formato de página do Mongo, campos
+em snake_case com `_id`.
+
+Nenhuma tela funcionava. Não era degradação — era 404 e 400 em toda chamada.
+Some-se a isso que a API não expunha seis recursos que a interface chamava, e
+que o painel administrativo precisava de um domínio inteiro que não existia.
+
+**Decisão:** a tradução acontece num lugar só, `src/http/adaptador.ts`, ligado
+ao cliente HTTP. A alternativa seria trocar `_id` por `id` e snake_case por
+camelCase nos ~160 componentes que leem esses campos — uma refatoração de
+interface inteira, sem ninguém para conferir o resultado na tela.
+
+Dentro dessa fronteira o frontend continua falando a língua que sempre falou.
+
+### 3. Isolamento entre escritórios precisou de mais que rótulo
 
 **No plano:** `office_id` obrigatório e índices compostos.
 
@@ -83,7 +104,7 @@ destruía a mensagem rotulada como de A.
 estrangeiras referenciam esse par. Os ataques foram reexecutados contra o schema
 corrigido e ambos são recusados.
 
-### 3. Sondagem de proxy não funcionaria como estava
+### 4. Sondagem de proxy não funcionaria como estava
 
 Ao portar, a tradução direta do código antigo usaria a opção `agent` do `fetch`
 — que o Node **ignora silenciosamente**. A sondagem sairia sem proxy e
@@ -94,11 +115,48 @@ dispatcher do undici.
 
 ## Pendente
 
-### Frontends
+### Frontends: a revisão visual
+
+O contrato está provado: caminho, cabeçalho, corpo e formato da resposta têm
+teste, e os dois aplicativos compilam. **Nenhum teste abre a aplicação e
+olha.**
+
+É o que falta antes de produção: percorrer as telas. A lista curta do que mais
+merece atenção, porque foi onde a tradução exigiu decisão e não apenas
+mecânica:
+
+- cadastro e edição de cliente, com endereço
+- criação de compromisso com lembretes
+- envio e edição de documento
+- as telas de configuração (serviços, perguntas, consulta, notificações)
+- o cadastro de escritório no painel administrativo, que ganhou campos novos
+
+### Frontends: exportação estática
 
 A camada de dados continua em Server Actions. Migrar para busca client-side
 destrava a exportação estática e o Cloudflare Pages, mas é um projeto próprio —
-54 páginas, com implicações visuais que precisam de revisão humana.
+54 páginas, com implicações visuais que precisam de revisão humana. Segue sendo
+uma decisão sua, agora sem urgência: os dois aplicativos funcionam nos Workers.
+
+### Cobrança
+
+**Não foi reimplementada.** O sistema anterior cobrava por PIX através da
+iopay. A reconstrução não trouxe a integração: não há gateway configurado, nem
+rota na API, nem decisão tomada sobre qual provedor usar.
+
+O que mudou por causa disso, e está visível no código:
+
+- **o login não bloqueia mais por assinatura.** O bloqueio existia e, mantido,
+  travaria todo acesso — não há caminho para criar uma assinatura neste
+  sistema. Voltará junto com o meio de pagamento.
+- **as funções de assinatura devolvem falha explícita** em vez de chamarem um
+  endpoint que não existe
+- **o painel administrativo mostra "Indisponível"** onde havia faturamento, e
+  não R$ 0,00: zero se confunde com "nenhuma venda no período"
+- **a listagem de recorrências devolve página vazia** com o motivo escrito
+
+É a maior lacuna funcional que resta, e a única que depende de uma decisão
+comercial antes de qualquer código.
 
 ### Cobertura de testes
 
@@ -109,6 +167,9 @@ requisições.
 
 O caminho da conversa também: do webhook do WhatsApp até a resposta
 enfileirada para envio, com as filas de verdade.
+
+Os dois frontends também: o adaptador que traduz entre o vocabulário da
+interface e o da API, e o cliente HTTP contra um servidor de verdade.
 
 Falta o que depende de um provedor externo respondendo — o pareamento de um
 número no WAHA, uma consulta real na Judit. São verificáveis só em
@@ -153,6 +214,10 @@ justamente aquilo que nenhuma peça é.
 | `DocumentsService.indexar`        | documento enviado nunca entrava na busca           |
 | `PromptService.invalidar`         | mudar a agenda levava 15 min para chegar ao agente |
 | `JuditService.pararMonitoramento` | processo excluído seguia sendo cobrado             |
+
+E os frontends inteiros: importados, compilando, e apontando para um
+contrato que a API não fala mais — ver "O que mudou em relação ao plano",
+item 2.
 
 E uma fila declarada, `atualizacao-processo`, sem ninguém publicando nem
 consumindo. Virou `acompanhamento-processo`, com uma varredura que retoma o
@@ -218,6 +283,24 @@ devolvia `{ url }` onde o serviço real devolve `{ apiUrl }`, e o proxy vinha
 com campos em português onde o real usa os da API. Passava despercebido
 enquanto nenhum teste usava o valor; ao criar uma conexão de verdade, a
 credencial gravada saía vazia.
+
+**O corpo da requisição não estava sendo traduzido no frontend.** Dois hooks
+em sequência no ky: o primeiro devolvia uma requisição nova com a query limpa,
+e o segundo era construído sobre um corpo já consumido. Passava silenciosamente
+— e toda criação e edição continuaria mandando `office_id`, recebendo 400.
+Encontrado pelo teste do cliente contra um servidor HTTP de verdade, não por
+leitura.
+
+**O filtro `?status=false` devolvia os registros ativos** — o contrário do
+pedido. `Boolean('false')` é `true` em JavaScript, e o `ValidationPipe` roda
+com `enableImplicitConversion`. Havia um segundo efeito, pior: a ausência do
+parâmetro também virava `false`, e a listagem sem filtro nenhum mostraria só os
+inativos.
+
+**Três defeitos no painel administrativo**, encontrados no inventário: `useMe`
+chamava a API sem URL, sem token e sem tradução; `getCurrentOfficeId` lia um
+cookie com nome diferente do que o cliente procurava; e `createOffice` mandava
+`office_id` na query e no corpo, contrariando o próprio comentário do arquivo.
 
 **Dois testes existentes não compilavam.** O `tsconfig` de build exclui
 `*.spec.ts`, então nenhum teste passava pela verificação de tipos: um deles
