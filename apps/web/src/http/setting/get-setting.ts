@@ -2,7 +2,6 @@
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
 import { Setting } from "@/types/setting"
 
 export interface GetSettingResponse {
@@ -19,10 +18,7 @@ interface QueryParams {
 }
 
 export async function getSetting({ page, search }: QueryParams) {
-  const officeId = await getCurrentOfficeId()
-
   const queryParams = new URLSearchParams({
-    office_id: officeId ?? "",
     page: page.toString(),
   })
 
@@ -31,7 +27,7 @@ export async function getSetting({ page, search }: QueryParams) {
   }
 
   const result = await api
-    .get(`setting?${queryParams.toString()}`, {
+    .get(`settings?${queryParams.toString()}`, {
       next: {
         tags: ["setting"],
         revalidate: 60,

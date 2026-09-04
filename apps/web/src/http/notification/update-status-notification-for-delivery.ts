@@ -5,8 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 export interface UpdateStatusNotificationForDeliveryRequest {
   notification_id: string
 }
@@ -19,12 +17,9 @@ export async function updateStatusNotificationForDelivery({
   notification_id,
 }: UpdateStatusNotificationForDeliveryRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .patch(`notification/${notification_id}`, {
+      .patch(`notifications/${notification_id}`, {
         json: {
-          office_id,
           status: "delivery",
         },
       })

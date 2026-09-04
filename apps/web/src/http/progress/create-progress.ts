@@ -5,8 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 export interface CreateProgressRequest {
   process_id: string
   title: string
@@ -34,21 +32,14 @@ export async function createProgress({
   release_at,
 }: CreateProgressRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .post("progress", {
-        json: {
-          office_id,
-          process_id,
-          title,
-          description,
-          release_at,
-        },
+      .post(`processes/${process_id}/progresses`, {
+        json: { title, description, release_at },
       })
       .json<CreateProgressResponse>()
 
-    revalidateTag(`process/${process_id}`)
+    revalidateTag(`progress/${process_id}`)
+    revalidateTag("process")
 
     return { success: true, data: result }
   } catch (err: any) {

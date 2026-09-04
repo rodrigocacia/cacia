@@ -6,7 +6,7 @@ import { api } from "../api-client"
 
 export async function deleteNotification(notificationId: string) {
   try {
-    const response = await api.delete(`notification/${notificationId}`)
+    const response = await api.delete(`notifications/${notificationId}`)
     const contentType = response.headers.get("content-type")
 
     let data: any = null

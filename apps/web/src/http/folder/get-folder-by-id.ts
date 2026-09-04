@@ -3,7 +3,7 @@ import { api } from "../api-client"
 
 export async function getFolderById(folderId: string) {
   const result = await api
-    .get(`folder/${folderId}`)
+    .get(`folders/${folderId}`)
     .json<GetFolderByIdResponse>()
 
   return result

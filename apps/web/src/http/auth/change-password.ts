@@ -19,7 +19,7 @@ export async function changePassword({
 }: ChangePasswordRequest) {
   try {
     const result = await api
-      .put("user/password", {
+      .put("users/me/password", {
         json: {
           password,
           newPassword,

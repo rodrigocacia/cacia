@@ -2,25 +2,22 @@
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 export type GetNotificationUnreadCountResponse = number
 
+/**
+ * Quantas notificações o usuário ainda não abriu.
+ *
+ * A API devolve `{ count }`; o sino do cabeçalho espera o número direto.
+ */
 export async function getNotificationUnreadCount() {
-  const officeId = await getCurrentOfficeId()
-
-  const queryParams = new URLSearchParams({
-    office_id: officeId ?? "",
-  })
-
-  const result = await api
-    .get(`notification/unread/count?${queryParams.toString()}`, {
+  const resultado = await api
+    .get("notifications/unread-count", {
       next: {
         tags: ["notificationunread"],
         revalidate: 60,
       },
     })
-    .json<GetNotificationUnreadCountResponse>()
+    .json<{ count: number }>()
 
-  return result
+  return resultado.count as GetNotificationUnreadCountResponse
 }

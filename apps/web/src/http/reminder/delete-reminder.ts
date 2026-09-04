@@ -5,7 +5,7 @@ import { api } from "../api-client"
 
 export async function deleteReminder(reminderId: string) {
   try {
-    await api.delete(`reminder/${reminderId}`)
+    await api.delete(`reminders/${reminderId}`)
 
     revalidateTag("reminders")
 

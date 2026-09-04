@@ -2,7 +2,6 @@
 
 import { LegalConsultation } from "@/types/legal-consultation"
 import { api } from "../api-client"
-import { getCurrentOfficeId } from "@/auth/auth"
 
 export interface GetLegalConsultationResponse {
   data: LegalConsultation
@@ -10,10 +9,8 @@ export interface GetLegalConsultationResponse {
 
 export async function getLegalConsultation() {
   try {
-    const officeId = await getCurrentOfficeId()
-
     const result = await api
-      .get(`consultation?office_id=${officeId}`)
+      .get("consultations")
       .json<GetLegalConsultationResponse>()
 
     return { success: true, data: result, error: null }

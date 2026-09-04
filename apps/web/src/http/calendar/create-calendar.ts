@@ -5,7 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
 import { AvailableDay } from "@/types/calendar"
 
 export interface CreateCalendarRequest {
@@ -32,24 +31,21 @@ interface CreateCalendarResponse {
 export async function createCalendar({
   title,
   general_roles,
-  user,
   available_days,
 }: CreateCalendarRequest) {
+  // `user` continua na assinatura para não mexer em quem chama, mas não vai
+  // mais no corpo: o dono da agenda é o usuário autenticado, e a API o resolve
+  // pelo token. Aceitá-lo do cliente permitiria criar agenda em nome de outro.
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .post(`calendar?office_id=${office_id}`, {
+      .post("calendars", {
         json: {
-          office_id,
           title,
           general_roles,
-          user,
           available_days,
           general_available: "admin",
           cancel_roles: "admin",
           notification: true,
-          status: true,
         },
       })
       .json<CreateCalendarResponse>()

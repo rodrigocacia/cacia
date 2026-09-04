@@ -5,8 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 interface Address {
   street?: string
   number?: string
@@ -51,19 +49,16 @@ export async function updateCustomer({
   address,
 }: UpdateCustomerRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .patch(`customer/${customer_id}`, {
+      .patch(`customers/${customer_id}`, {
         json: {
-          office_id,
           name,
           remotejid,
           document,
           ...(email && { email }),
           legal_name,
           trade_name,
-          ...(address && address.length > 0 && { address }),
+          ...(address && address.length > 0 && { addresses: address }),
         },
       })
       .json<UpdateCustomerResponse>()

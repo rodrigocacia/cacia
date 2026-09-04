@@ -81,6 +81,62 @@ describe('escritórios e papéis (e2e)', () => {
     });
   });
 
+  describe('endereço e onboarding', () => {
+    it('grava o endereço, que é o que escolhe a localização do proxy', async () => {
+      // Não é só cadastro: o número de WhatsApp precisa parecer estar onde o
+      // escritório está — ver ConnectionsService.criar.
+      const resposta = await dono.api.patch('/offices/current', {
+        addresses: [
+          {
+            cep: '01310100',
+            street: 'Avenida Paulista',
+            number: '1000',
+            neighborhood: 'Bela Vista',
+            city: 'São Paulo',
+            state: 'SP',
+          },
+        ],
+      });
+
+      expect(resposta.status).toBe(200);
+
+      const detalhe = await dono.api.get<{
+        addresses: { city: string; state: string }[];
+      }>('/offices/current');
+
+      expect(detalhe.corpo.addresses[0]?.city).toBe('São Paulo');
+      expect(detalhe.corpo.addresses[0]?.state).toBe('SP');
+    });
+
+    it('enviar o endereço de novo substitui, não acumula', async () => {
+      // A tela manda o endereço inteiro; um merge parcial deixaria o bairro
+      // antigo junto da rua nova.
+      await dono.api.patch('/offices/current', {
+        addresses: [{ city: 'Santos', state: 'SP' }],
+      });
+
+      const detalhe = await dono.api.get<{ addresses: unknown[] }>(
+        '/offices/current',
+      );
+
+      expect(detalhe.corpo.addresses).toHaveLength(1);
+    });
+
+    it('conclui o onboarding, e sabe reabri-lo', async () => {
+      await dono.api.patch('/offices/current', { onboarding: true });
+      expect(
+        (await dono.api.get<{ onboarding: boolean }>('/offices/current')).corpo
+          .onboarding,
+      ).toBe(true);
+
+      await dono.api.patch('/offices/current', { onboarding: false });
+      expect(
+        (await dono.api.get<{ onboarding: boolean }>('/offices/current')).corpo
+          .onboarding,
+      ).toBe(false);
+    });
+  });
+
   describe('membros', () => {
     it('o convidado passa a ver o escritório na própria lista', async () => {
       const resposta = await membro.api

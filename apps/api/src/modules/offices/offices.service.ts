@@ -24,6 +24,18 @@ const CAMPOS_PUBLICOS = {
   status: true,
   onboarding: true,
   createdAt: true,
+  addresses: {
+    select: {
+      id: true,
+      cep: true,
+      street: true,
+      number: true,
+      complement: true,
+      neighborhood: true,
+      city: true,
+      state: true,
+    },
+  },
 } as const;
 
 @Injectable()
@@ -107,10 +119,26 @@ export class OfficesService {
   }
 
   async atualizar(officeId: string, dto: AtualizarEscritorioDto) {
-    const escritorio = await this.prisma.office.update({
-      where: { id: officeId },
-      data: dto,
-      select: CAMPOS_PUBLICOS,
+    const { addresses, ...dadosDoEscritorio } = dto;
+
+    const escritorio = await this.prisma.$transaction(async (tx) => {
+      if (addresses) {
+        // Substituição total: a tela envia o endereço inteiro, e um merge
+        // parcial deixaria o bairro antigo junto da rua nova.
+        await tx.officeAddress.deleteMany({ where: { officeId } });
+
+        if (addresses.length > 0) {
+          await tx.officeAddress.createMany({
+            data: addresses.map((endereco) => ({ ...endereco, officeId })),
+          });
+        }
+      }
+
+      return tx.office.update({
+        where: { id: officeId },
+        data: dadosDoEscritorio,
+        select: CAMPOS_PUBLICOS,
+      });
     });
 
     // O nome do escritório abre o prompt do agente. Sem invalidar, ele

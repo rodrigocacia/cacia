@@ -5,8 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 export interface CreateDocumentRequest {
   title: string
   folder_id?: string | null
@@ -36,29 +34,28 @@ export async function createDocument({
   process_id,
 }: CreateDocumentRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const formData = new FormData()
 
     formData.append("title", title)
-    formData.append("office_id", office_id || "")
 
+    // FormData não passa pela tradução do cliente — só corpo JSON passa. Os
+    // nomes vão em camelCase à mão, como a API espera.
     if (folder_id) {
-      formData.append("folder_id", folder_id)
+      formData.append("folderId", folder_id)
     }
 
     formData.append("file", file)
 
     if (customer_id) {
-      formData.append("customer_id", customer_id)
+      formData.append("customerId", customer_id)
     }
 
     if (process_id) {
-      formData.append("process_id", process_id)
+      formData.append("processId", process_id)
     }
 
     const result = await api
-      .post("document", {
+      .post("documents", {
         body: formData,
       })
       .json<CreateDocumentResponse>()

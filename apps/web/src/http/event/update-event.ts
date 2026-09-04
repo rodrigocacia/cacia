@@ -4,7 +4,6 @@
 import { revalidateTag } from "next/cache"
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
 import { UserReminder } from "@/schemas/event"
 
 interface UpdateEventRequest {
@@ -54,12 +53,9 @@ export async function updateEvent({
   consultation_mode,
 }: UpdateEventRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .patch(`event/${eventId}`, {
+      .patch(`events/${eventId}`, {
         json: {
-          office_id,
           calendar_id,
           process_id,
           customer_id,
@@ -69,7 +65,9 @@ export async function updateEvent({
           start_time,
           end_time,
           status,
-          user_reminder,
+          // A API recebe apenas as antecedências, em minutos, e cria os
+          // lembretes junto com o compromisso — daí o mapeamento.
+          reminderOffsets: (user_reminder ?? []).map((r) => r.time_trigger),
           consultation_mode,
         },
       })

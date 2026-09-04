@@ -22,7 +22,7 @@ interface UpdateUserResponse {
 export async function updateUser({ name, document, phone }: UpdateUserRequest) {
   try {
     const result = await api
-      .patch("user", {
+      .patch("users/me", {
         json: {
           name,
           document,

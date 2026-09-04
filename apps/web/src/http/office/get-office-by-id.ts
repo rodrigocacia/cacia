@@ -1,7 +1,6 @@
 "use server"
 
 import { api } from "../api-client"
-import { getCurrentOfficeId } from "@/auth/auth"
 
 export interface GetOfficeByIdResponse {
   deleted_at: null
@@ -32,12 +31,22 @@ export interface GetOfficeByIdResponse {
   __v: number
 }
 
-export async function getOfficeById() {
-  const officeId = await getCurrentOfficeId()
+/** O que a API devolve, antes do ajuste de nome do campo de endereço. */
+type EscritorioDaApi = Omit<GetOfficeByIdResponse, "address"> & {
+  addresses?: GetOfficeByIdResponse["address"]
+}
 
-  const result = await api
-    .get(`office/${officeId}`)
-    .json<GetOfficeByIdResponse>()
+export async function getOfficeById() {
+  const resposta = await api.get("offices/current").json<EscritorioDaApi>()
+
+  // A API chama de `addresses`; a interface inteira lê `address`. Renomear
+  // aqui evita caçar o campo em cada tela que o consome.
+  const { addresses, ...escritorio } = resposta
+
+  const result: GetOfficeByIdResponse = {
+    ...escritorio,
+    address: addresses ?? ([] as unknown as GetOfficeByIdResponse["address"]),
+  }
 
   return result
 }

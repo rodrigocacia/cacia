@@ -5,8 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 export interface CreateFolderRequest {
   title: string
 }
@@ -24,13 +22,10 @@ interface CreateFolderResponse {
 
 export async function createFolder({ title }: CreateFolderRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .post("folder", {
+      .post("folders", {
         json: {
           title,
-          office_id,
         },
       })
       .json<CreateFolderResponse>()

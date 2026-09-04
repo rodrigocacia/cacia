@@ -2,7 +2,6 @@
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
 import { Progress } from "@/types/progress"
 
 export interface GetProgressResponse {
@@ -20,25 +19,18 @@ interface QueryParams {
 }
 
 export async function getProgress({ page, process_id, search }: QueryParams) {
-  const officeId = await getCurrentOfficeId()
-
-  const queryParams = new URLSearchParams({
-    office_id: officeId ?? "",
-    page: page.toString(),
-  })
-
-  if (process_id) {
-    queryParams.set("process_id", process_id)
-  }
+  // Os andamentos são sub-recurso do processo, não uma coleção própria: sem o
+  // processo não há o que listar.
+  const queryParams = new URLSearchParams({ page: page.toString() })
 
   if (search) {
-    queryParams.set("number", search)
+    queryParams.set("search", search)
   }
 
   const result = await api
-    .get(`progress?${queryParams.toString()}`, {
+    .get(`processes/${process_id}/progresses?${queryParams.toString()}`, {
       next: {
-        tags: ["progress"],
+        tags: [`progress/${process_id}`],
         revalidate: 60,
       },
     })

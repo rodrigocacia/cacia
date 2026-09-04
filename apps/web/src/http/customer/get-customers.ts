@@ -3,7 +3,6 @@
 import { api } from "../api-client"
 
 import { Customer } from "@/types/customer"
-import { getCurrentOfficeId } from "@/auth/auth"
 
 export interface GetCustomersResponse {
   data: Customer[]
@@ -26,10 +25,7 @@ export async function getCustomers({
   limit,
   status,
 }: QueryParams) {
-  const officeId = await getCurrentOfficeId()
-
   const queryParams = new URLSearchParams({
-    office_id: officeId ?? "",
     page: page.toString(),
   })
 
@@ -46,7 +42,7 @@ export async function getCustomers({
   }
 
   const result = await api
-    .get(`customer?${queryParams.toString()}`, {
+    .get(`customers?${queryParams.toString()}`, {
       next: {
         tags: ["customers"],
         revalidate: 60,

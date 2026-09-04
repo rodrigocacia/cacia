@@ -3,7 +3,7 @@ import { api } from "../api-client"
 
 export async function getCustomerById(customerId: string) {
   const result = await api
-    .get(`customer/${customerId}`)
+    .get(`customers/${customerId}`)
     .json<GetCustomerByIdResponse>()
 
   return result

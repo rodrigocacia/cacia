@@ -14,7 +14,7 @@ interface ErrorResponse {
 
 export async function downloadDocument(documentId: string) {
   try {
-    const response = await api.get(`document/${documentId}/pdf`)
+    const response = await api.get(`documents/${documentId}/download`)
 
     if (!response.ok) {
       const errorBody = (await response.json()) as ErrorResponse

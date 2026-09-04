@@ -1,7 +1,6 @@
 "use server"
 
 import { api } from "../api-client"
-import { getCurrentOfficeId } from "@/auth/auth"
 import { Event } from "@/types/event"
 import { formatUtcMinus3 } from "@/utils/format-time-utc-minus-3"
 
@@ -30,10 +29,7 @@ export async function getEvent({
   process_id,
   customer_id,
 }: QueryParams) {
-  const officeId = await getCurrentOfficeId()
-
   const queryParams = new URLSearchParams({
-    office_id: officeId ?? "",
     page: page.toString(),
     calendar_id,
   })
@@ -58,7 +54,7 @@ export async function getEvent({
   queryParams.set("limit", "100")
 
   const result = await api
-    .get(`event?${queryParams.toString()}`, {
+    .get(`events?${queryParams.toString()}`, {
       next: { tags: [`event/${calendar_id}`] },
     })
     .json<GetEventResponse>()

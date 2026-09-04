@@ -6,7 +6,7 @@ import { api } from "../api-client"
 
 export async function deleteDocument(documentId: string) {
   try {
-    const response = await api.delete(`document/${documentId}`)
+    const response = await api.delete(`documents/${documentId}`)
     const contentType = response.headers.get("content-type")
 
     let data: any = null

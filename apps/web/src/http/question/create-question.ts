@@ -5,8 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 export interface CreateQuestionRequest {
   title: string
   description: string
@@ -29,12 +27,9 @@ export async function createQuestion({
   description,
 }: CreateQuestionRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .post("question", {
+      .post("questions", {
         json: {
-          office_id,
           title,
           description,
           status: true,

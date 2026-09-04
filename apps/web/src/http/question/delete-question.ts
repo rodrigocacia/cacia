@@ -10,7 +10,7 @@ import { Question as GetQuestionByIdResponse } from "@/types/question"
 export async function deleteQuestion(questionId: string) {
   try {
     const result = await api
-      .delete(`question/${questionId}`)
+      .delete(`questions/${questionId}`)
       .json<GetQuestionByIdResponse>()
 
     revalidateTag("question")

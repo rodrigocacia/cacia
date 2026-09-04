@@ -14,7 +14,7 @@ export async function deleteEvent(
   eventId: string
 ): Promise<DeleteEventResponse> {
   try {
-    const response = await api.delete(`event/${eventId}`)
+    const response = await api.delete(`events/${eventId}`)
     const contentType = response.headers.get("content-type")
 
     let data: unknown = null

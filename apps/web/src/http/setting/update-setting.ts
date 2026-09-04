@@ -5,8 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 export interface UpdateSettingRequest {
   setting_id: string
   n_w_c_new_event: boolean
@@ -37,7 +35,6 @@ interface UpdateSettingResponse {
 }
 
 export async function updateSetting({
-  setting_id,
   n_w_c_new_event,
   n_w_c_update_process,
   n_w_a_new_lead,
@@ -48,20 +45,20 @@ export async function updateSetting({
   n_w_a_update_system,
 }: UpdateSettingRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
+    // As colunas do banco continuam `n_w_*`; a API expõe nomes legíveis. A
+    // tradução automática do adaptador não alcança este caso — `n_w_c_new_event`
+    // viraria `nWCNewEvent`, que não existe em lugar nenhum.
     const result = await api
-      .patch(`setting/${setting_id}`, {
+      .patch("settings", {
         json: {
-          office_id,
-          n_w_c_new_event,
-          n_w_c_update_process,
-          n_w_a_new_lead,
-          n_w_a_new_mark_lead,
-          n_w_a_new_mark_customer,
-          n_w_a_new_event,
-          n_w_a_update_process,
-          n_w_a_update_system,
+          notifyClientNewEvent: n_w_c_new_event,
+          notifyClientUpdateProcess: n_w_c_update_process,
+          notifyLawyerNewLead: n_w_a_new_lead,
+          notifyLawyerNewMarkLead: n_w_a_new_mark_lead,
+          notifyLawyerNewMarkCustomer: n_w_a_new_mark_customer,
+          notifyLawyerNewEvent: n_w_a_new_event,
+          notifyLawyerUpdateProcess: n_w_a_update_process,
+          notifyLawyerUpdateSystem: n_w_a_update_system,
         },
       })
       .json<UpdateSettingResponse>()

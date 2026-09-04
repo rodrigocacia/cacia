@@ -62,7 +62,7 @@ export async function createUser({
 }: CreateUserRequest) {
   try {
     const result = await api
-      .post("office", {
+      .post("offices", {
         json: {
           user_name,
           user_email,

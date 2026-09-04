@@ -1,41 +1,82 @@
 import ky from "ky"
 
+/**
+ * Login.
+ *
+ * Usa `ky` direto, e não o cliente da aplicação: o `api` redireciona para
+ * /signin ao receber 401, o que aqui engoliria a mensagem de "e-mail ou senha
+ * incorretos" e devolveria o usuário para a mesma tela sem explicação.
+ *
+ * Como não passa pelo cliente, também não passa pela tradução automática de
+ * campos — por isso o mapeamento explícito no fim.
+ */
+
 interface SignInRequest {
   email: string
   password: string
 }
 
-interface Office {
-  _id: string
-  name: string
-  onboarding: boolean
+/** O que a API devolve. */
+interface RespostaDaApi {
+  token: string
+  user: {
+    id: string
+    name: string
+    email: string
+    avatar: string | null
+  }
+  offices: {
+    id: string
+    name: string
+    role: string
+    onboarding: boolean
+    status: string
+  }[]
 }
 
-interface SignInResponse {
+export interface Office {
+  _id: string
+  name: string
+  role: string
+  onboarding: boolean
+  status: string
+}
+
+export interface SignInResponse {
   token: string
   user: {
     _id: string
     email: string
     name: string
-    verified: boolean
-    role: string
-    offices: Office[]
-    favorites: []
-    createdAt: string
-    updatedAt: string
-    signature: boolean
+    avatar: string | null
   }
+  offices: Office[]
 }
 
-export async function signIn({ email, password }: SignInRequest) {
-  const result = await ky
+export async function signIn({
+  email,
+  password,
+}: SignInRequest): Promise<SignInResponse> {
+  const resultado = await ky
     .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-      json: {
-        email,
-        password,
-      },
+      json: { email, password },
     })
-    .json<SignInResponse>()
+    .json<RespostaDaApi>()
 
-  return result
+  return {
+    token: resultado.token,
+    user: {
+      _id: resultado.user.id,
+      email: resultado.user.email,
+      name: resultado.user.name,
+      avatar: resultado.user.avatar,
+    },
+    offices: resultado.offices.map((escritorio) => ({
+      _id: escritorio.id,
+      name: escritorio.name,
+      role: escritorio.role,
+      onboarding: escritorio.onboarding,
+      status: escritorio.status,
+    })),
+  }
 }

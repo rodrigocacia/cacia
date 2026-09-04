@@ -5,8 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 export interface UpdateOfficeRequest {
   name?: string
   trade_name?: string
@@ -55,25 +53,25 @@ export async function updateOffice({
   address,
 }: UpdateOfficeRequest) {
   try {
-    const officeId = await getCurrentOfficeId()
-
-    const requestBody: any = {
-      office_id: officeId,
-    }
+    const requestBody: Record<string, unknown> = {}
 
     if (name) requestBody.name = name
     if (trade_name) requestBody.trade_name = trade_name
     if (description) requestBody.description = description
-    if (onboarding) requestBody.onboarding = onboarding
-    if (address) requestBody.address = address
+    if (address) requestBody.addresses = address
+
+    // `!== undefined` e não `if (onboarding)`: concluir o onboarding envia
+    // `true`, mas reabri-lo envia `false` — que a checagem por veracidade
+    // descartava silenciosamente.
+    if (onboarding !== undefined) requestBody.onboarding = onboarding
 
     const result = await api
-      .patch(`office/${officeId}`, {
+      .patch("offices/current", {
         json: requestBody,
       })
       .json<UpdateOfficeResponse>()
 
-    revalidateTag(`office/${officeId}`)
+    revalidateTag("office")
 
     return { success: true, data: result }
   } catch (err: any) {

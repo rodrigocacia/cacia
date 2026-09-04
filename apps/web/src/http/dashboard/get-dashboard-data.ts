@@ -1,4 +1,3 @@
-import { getCurrentOfficeId } from "@/auth/auth"
 import { api } from "../api-client"
 
 interface Document {
@@ -60,17 +59,13 @@ export interface DashboardData {
 }
 
 export async function getDashboardData(startDate?: string, endDate?: string) {
-  const officeId = await getCurrentOfficeId()
   const response = await api
-    .get(
-      `dashboard/?office_id=${officeId}&startDate=${startDate}&endDate=${endDate}`,
-      {
-        next: {
-          tags: ["dashboard"],
-          revalidate: 60,
-        },
-      }
-    )
+    .get(`dashboard?from=${startDate ?? ""}&to=${endDate ?? ""}`, {
+      next: {
+        tags: ["dashboard"],
+        revalidate: 60,
+      },
+    })
     .json<DashboardData>()
   return response
 }

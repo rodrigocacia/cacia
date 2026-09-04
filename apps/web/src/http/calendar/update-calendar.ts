@@ -4,7 +4,6 @@
 import { revalidateTag } from "next/cache"
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
 import { AvailableDay } from "@/types/calendar"
 
 interface UpdateCalendarRequest {
@@ -37,12 +36,9 @@ export async function updateCalendar({
   available_days,
 }: UpdateCalendarRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .patch(`calendar/${calendarId}`, {
+      .patch(`calendars/${calendarId}`, {
         json: {
-          office_id,
           title,
           general_roles,
           user,

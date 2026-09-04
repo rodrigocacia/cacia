@@ -5,8 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 export interface CreateProcessRequest {
   customer_id: string
   number: string
@@ -37,12 +35,9 @@ export async function createProcess({
   description,
 }: CreateProcessRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .post("process", {
+      .post("processes", {
         json: {
-          office_id,
           customer_id,
           number,
           description,

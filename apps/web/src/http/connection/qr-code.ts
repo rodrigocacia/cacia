@@ -11,7 +11,7 @@ export interface GetQrCodeResponse {
 
 export async function getQrCode({ connectionId }: { connectionId: string }) {
   const result = await api
-    .get(`connection/${connectionId}/qrcode?ts=${Date.now()}`, {
+    .get(`connections/${connectionId}/qrcode?ts=${Date.now()}`, {
       headers: {
         "Cache-Control": "no-store",
       },

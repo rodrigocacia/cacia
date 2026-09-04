@@ -10,7 +10,8 @@
     "cf:build": "opennextjs-cloudflare build",
     "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "typecheck": "tsc --noEmit",
-    "clean": "rimraf .next .open-next dist .turbo"
+    "clean": "rimraf .next .open-next dist .turbo",
+    "test": "vitest run"
   },
   "dependencies": {
     "@cacia/contracts": "workspace:*",
@@ -73,7 +74,8 @@
     "rimraf": "^6.0.1",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "wrangler": "^4.110.0"
+    "wrangler": "^4.110.0",
+    "vitest": "^3.2.7"
   },
   "optionalDependencies": {
     "@tailwindcss/oxide-linux-x64-gnu": "^4.0.14",

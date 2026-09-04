@@ -1,70 +1,25 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-"use server"
+/**
+ * Assinatura e cobrança — NÃO REIMPLEMENTADAS.
+ *
+ * O sistema anterior cobrava por PIX através da iopay. A reconstrução não
+ * trouxe a integração de pagamento: não há gateway configurado, nem rota na
+ * API, nem decisão tomada sobre qual provedor usar.
+ *
+ * Estas funções devolvem uma falha explícita em vez de chamarem um endpoint
+ * que não existe. A alternativa seria um 404 disfarçado de erro de rede, que é
+ * mais difícil de diagnosticar do que uma mensagem dizendo o que aconteceu.
+ *
+ * Ver docs/ESTADO.md — "Cobrança".
+ */
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
-import { api } from "../api-client"
-
-interface CreateSignatureResponse {
-  signature: {
-    user: string
-    office: string
-    plan: string
-    type: string
-    status: string
-    next_recurrence_at: string
-    gateway: string
-    recurrences: []
-    deleted_at: string | null
-    _id: string
-    created_at: string
-    updated_at: string
-    __v: number
-  }
-  recurrence: {
-    user: string
-    signature: string
-    plan: string
-    office: string
-    total: 12900
-    status: string
-    gateway: "iopay"
-    payment_type: "pix"
-    deleted_at: string | null
-    _id: string
-    created_at: string
-    updated_at: string
-    __v: number
-  }
-  transaction: {
-    qr_code: string
-  }
+export interface CriarAssinaturaResultado {
+  success: false
+  error: string
 }
 
-export async function createSignature() {
-  const office_id = await getCurrentOfficeId()
-
-  try {
-    const result = await api
-      .post("signature", {
-        json: {
-          office: office_id,
-          plan: process.env.NEXT_PUBLIC_PLAN_ID,
-        },
-      })
-      .json<CreateSignatureResponse>()
-
-    return { success: true, data: result }
-  } catch (err: any) {
-    if (err.response) {
-      const errorBody = await err.response.json()
-      return {
-        success: false,
-        error: errorBody.message ?? "Erro na requisição",
-      }
-    }
-
-    console.error("Erro inesperado:", err)
-    return { success: false, error: "Erro interno no servidor" }
+export async function createSignature(): Promise<CriarAssinaturaResultado> {
+  return {
+    success: false,
+    error: "A cobrança ainda não foi reimplementada nesta versão do sistema.",
   }
 }

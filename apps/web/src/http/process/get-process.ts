@@ -2,7 +2,6 @@
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
 import { Process } from "@/types/process"
 
 export interface GetProcessResponse {
@@ -26,10 +25,7 @@ export async function getProcess({
   status,
   customer_id,
 }: QueryParams) {
-  const officeId = await getCurrentOfficeId()
-
   const queryParams = new URLSearchParams({
-    office_id: officeId ?? "",
     page: page.toString(),
   })
 
@@ -46,7 +42,7 @@ export async function getProcess({
   }
 
   const result = await api
-    .get(`process?${queryParams.toString()}`, {
+    .get(`processes?${queryParams.toString()}`, {
       next: {
         tags: ["process"],
         revalidate: 60,

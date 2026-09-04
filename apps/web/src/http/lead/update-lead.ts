@@ -4,8 +4,6 @@
 import { revalidateTag } from "next/cache"
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 interface UpdateLeadRequest {
   leadId: string
   name: string
@@ -36,15 +34,12 @@ export async function updateLead({
   remotejid,
 }: UpdateLeadRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .patch(`lead/${leadId}`, {
+      .patch(`leads/${leadId}`, {
         json: {
           name,
           ...(email && { email }),
           remotejid,
-          office_id,
         },
       })
       .json<UpdateLeadResponse>()

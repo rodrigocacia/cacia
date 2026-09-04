@@ -5,8 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 interface Address {
   street?: string
   number?: string
@@ -55,23 +53,27 @@ export async function createCustomer({
   lead_id,
 }: CreateCustomerRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
-    const result = await api
-      .post("customer", {
-        json: {
-          office_id,
-          name,
-          remotejid,
-          document,
-          ...(email && { email }),
-          legal_name,
-          trade_name,
-          ...(address && address.length > 0 && { address }),
-          ...(lead_id && { lead_id }),
-        },
-      })
-      .json<CreateCustomerResponse>()
+    // Converter um lead é uma rota própria, não um cliente com `lead_id`: a
+    // API marca o lead como convertido e liga o histórico ao novo cliente na
+    // mesma transação. Criar um cliente solto deixaria o lead para trás,
+    // ativo, e o mesmo contato apareceria nas duas listas.
+    const result = lead_id
+      ? await api
+          .post(`leads/${lead_id}/convert`, { json: { document } })
+          .json<CreateCustomerResponse>()
+      : await api
+          .post("customers", {
+            json: {
+              name,
+              remotejid,
+              document,
+              ...(email && { email }),
+              legal_name,
+              trade_name,
+              ...(address && address.length > 0 && { addresses: address }),
+            },
+          })
+          .json<CreateCustomerResponse>()
 
     revalidateTag("customers")
     revalidateTag("leads")

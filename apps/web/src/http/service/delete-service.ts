@@ -10,7 +10,7 @@ import { Service as GetServiceByIdResponse } from "@/types/service"
 export async function deleteService(serviceId: string) {
   try {
     const result = await api
-      .delete(`service/${serviceId}`)
+      .delete(`services/${serviceId}`)
       .json<GetServiceByIdResponse>()
 
     revalidateTag("service")

@@ -2,8 +2,6 @@
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 import { Connection } from "@/types/connection"
 
 export interface GetConnectionResponse {
@@ -11,10 +9,8 @@ export interface GetConnectionResponse {
 }
 
 export async function getConnection() {
-  const officeId = await getCurrentOfficeId()
-
   const result = await api
-    .get(`connection/?office_id=${officeId}`, {
+    .get("connections", {
       next: {
         tags: ["connection"],
         revalidate: 10,

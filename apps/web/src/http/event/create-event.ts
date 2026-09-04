@@ -5,7 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
 import { UserReminder } from "@/schemas/event"
 
 export interface CreateEventRequest {
@@ -53,12 +52,9 @@ export async function createEvent({
   consultation_mode,
 }: CreateEventRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .post(`event?office_id=${office_id}`, {
+      .post("events", {
         json: {
-          office_id,
           calendar_id,
           customer_id,
           process_id,
@@ -68,7 +64,9 @@ export async function createEvent({
           start_time,
           end_time,
           status,
-          user_reminder,
+          // A API recebe apenas as antecedências, em minutos, e cria os
+          // lembretes junto com o compromisso — daí o mapeamento.
+          reminderOffsets: (user_reminder ?? []).map((r) => r.time_trigger),
           consultation_mode,
         },
       })

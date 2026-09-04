@@ -2,7 +2,6 @@
 
 import { revalidateTag } from "next/cache"
 import { api } from "../api-client"
-import { getCurrentOfficeId } from "@/auth/auth"
 
 export interface CreateReminderRequest {
   event: string
@@ -36,28 +35,21 @@ interface CreateReminderResponse {
 
 export async function createReminder({
   event,
-  customer,
-  process,
   title,
   description,
   time_trigger,
-  trigger_at,
 }: CreateReminderRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
+    // `trigger_at` não vai mais: a API calcula o disparo a partir do início do
+    // compromisso. Mandá-lo pronto permitiria um aviso desalinhado do evento a
+    // que pertence. `customer` e `process` também saem — vêm do próprio evento.
     const result = await api
-      .post("reminder", {
+      .post("reminders", {
         json: {
-          office: office_id,
-          event,
-          customer,
-          process,
-          type: "event",
+          eventId: event,
           title,
           description,
-          time_trigger,
-          trigger_at,
+          timeTrigger: time_trigger,
         },
       })
       .json<CreateReminderResponse>()

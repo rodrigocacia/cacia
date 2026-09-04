@@ -10,7 +10,7 @@ import { Calendar as GetCalendarByIdResponse } from "@/types/calendar"
 export async function deleteCalendar(calendarId: string) {
   try {
     const result = await api
-      .delete(`calendar/${calendarId}`)
+      .delete(`calendars/${calendarId}`)
       .json<GetCalendarByIdResponse>()
 
     revalidateTag("calendar")

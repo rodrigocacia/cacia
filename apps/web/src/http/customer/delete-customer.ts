@@ -6,7 +6,7 @@ import { api } from "../api-client"
 
 export async function deleteCustomer(customerId: string) {
   try {
-    const response = await api.delete(`customer/${customerId}`)
+    const response = await api.delete(`customers/${customerId}`)
     const contentType = response.headers.get("content-type")
 
     let data: any = null

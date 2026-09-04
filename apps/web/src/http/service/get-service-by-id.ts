@@ -3,7 +3,7 @@ import { api } from "../api-client"
 
 export async function getServiceById(serviceId: string) {
   const result = await api
-    .get(`service/${serviceId}`)
+    .get(`services/${serviceId}`)
     .json<GetServiceByIdResponse>()
 
   return result

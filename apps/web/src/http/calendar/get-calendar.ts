@@ -2,7 +2,6 @@
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
 import { Calendar } from "@/types/calendar"
 
 export interface GetCalendarResponse {
@@ -18,10 +17,8 @@ interface QueryParams {
 }
 
 export async function getCalendar({ page }: QueryParams) {
-  const officeId = await getCurrentOfficeId()
-
   const result = await api
-    .get(`calendar?office_id=${officeId}&page=${page}`, {
+    .get(`calendars?page=${page}`, {
       next: {
         tags: ["calendar"],
         revalidate: 60,

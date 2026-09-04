@@ -11,7 +11,7 @@ interface HTTPError extends Error {
 
 export async function getDocument(id: string) {
   try {
-    const result = await api.get(`document/${id}`).json<Document>()
+    const result = await api.get(`documents/${id}`).json<Document>()
 
     return { success: true, data: result }
   } catch (err: unknown) {

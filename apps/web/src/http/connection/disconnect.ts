@@ -8,7 +8,7 @@ export interface DisconnectResponse {
 export async function disconnect({ connectionId }: { connectionId: string }) {
   try {
     const result = await api
-      .delete(`connection/${connectionId}/disconnect`, {
+      .delete(`connections/${connectionId}`, {
         next: {
           tags: ["connection"],
           revalidate: 10,

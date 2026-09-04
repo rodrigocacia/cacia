@@ -28,36 +28,35 @@ export async function signInAction(data: FormData) {
   try {
     const {
       token,
-      user: { _id, name, offices, signature },
+      user: { _id, name },
+      offices,
     } = await signIn({
       email,
       password,
     })
 
-    const { _id: officeId, onboarding: onboardingStatus } = offices[0]
+    // Conta sem escritório: acontece quando o cadastro parou no meio.
+    const escritorio = offices[0]
 
-    if (!signature) {
-      cookieStore.set("office_id", officeId, {
-        maxAge: 60 * 60 * 23, // 23 horas
-        path: "/",
-      })
-
+    if (!escritorio) {
       return {
-        success: true,
-        message: "Usuário não possui assinatura",
+        success: false,
+        message: "Sua conta ainda não está vinculada a um escritório",
         errors: null,
-        redirectTo: "/signin?signature=open",
       }
     }
 
-    onboarding = onboardingStatus
+    // A cobrança não foi reimplementada — ver http/plan. O bloqueio por
+    // assinatura ficava aqui e travaria TODO login, porque não há como criar
+    // uma assinatura neste sistema. Voltará junto com o meio de pagamento.
+    onboarding = escritorio.onboarding
 
     cookieStore.set("token", token, {
       maxAge: 60 * 60 * 23, // 23 horas
       path: "/",
     })
 
-    cookieStore.set("office_id", officeId, {
+    cookieStore.set("office_id", escritorio._id, {
       maxAge: 60 * 60 * 23, // 23 horas
       path: "/",
     })

@@ -5,8 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 export interface UpdateServiceRequest {
   service_id: string
   title: string
@@ -46,12 +44,9 @@ export async function updateService({
   value_detail,
 }: UpdateServiceRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .patch(`service/${service_id}`, {
+      .patch(`services/${service_id}`, {
         json: {
-          office_id,
           title,
           description,
           area,

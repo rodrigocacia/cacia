@@ -4,8 +4,6 @@ import { api } from "../api-client"
 
 import { Agent } from "@/types/agent"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 export interface GetAgentsResponse {
   data: Agent[]
   totalItems: number
@@ -15,10 +13,8 @@ export interface GetAgentsResponse {
 }
 
 export async function getAgents() {
-  const officeId = await getCurrentOfficeId()
-
   const result = await api
-    .get(`agent?office_id=${officeId}`, {
+    .get("agents", {
       next: {
         tags: ["agents"],
         revalidate: 60,

@@ -5,7 +5,9 @@ import { Reminder } from "@/types/reminder"
 
 export async function getReminder(eventId: string) {
   try {
-    const result = await api.get(`reminder/event/${eventId}`).json<Reminder[]>()
+    const result = await api
+      .get(`reminders?eventId=${eventId}`)
+      .json<Reminder[]>()
 
     return { success: true, data: result }
   } catch (err: unknown) {

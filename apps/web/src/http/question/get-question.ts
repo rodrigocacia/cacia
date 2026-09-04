@@ -2,7 +2,6 @@
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
 import { Question } from "@/types/question"
 
 export interface GetQuestionResponse {
@@ -19,10 +18,7 @@ interface QueryParams {
 }
 
 export async function getQuestion({ page, search }: QueryParams) {
-  const officeId = await getCurrentOfficeId()
-
   const queryParams = new URLSearchParams({
-    office_id: officeId ?? "",
     page: page.toString(),
   })
 
@@ -31,7 +27,7 @@ export async function getQuestion({ page, search }: QueryParams) {
   }
 
   const result = await api
-    .get(`question?${queryParams.toString()}`, {
+    .get(`questions?${queryParams.toString()}`, {
       next: {
         tags: ["question"],
         revalidate: 60,

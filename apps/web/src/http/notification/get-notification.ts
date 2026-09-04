@@ -2,7 +2,6 @@
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
 import { Notification } from "@/types/notification"
 
 export interface GetNotificationResponse {
@@ -20,10 +19,7 @@ interface QueryParams {
 }
 
 export async function getNotification({ page, search, type }: QueryParams) {
-  const officeId = await getCurrentOfficeId()
-
   const queryParams = new URLSearchParams({
-    office_id: officeId ?? "",
     page: page.toString(),
   })
 
@@ -36,7 +32,7 @@ export async function getNotification({ page, search, type }: QueryParams) {
   }
 
   const result = await api
-    .get(`notification?${queryParams.toString()}`, {
+    .get(`notifications?${queryParams.toString()}`, {
       next: {
         tags: ["notification"],
         revalidate: 60,

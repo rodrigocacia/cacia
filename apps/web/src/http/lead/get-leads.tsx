@@ -3,7 +3,6 @@
 import { Lead } from "@/types/lead"
 
 import { api } from "../api-client"
-import { getCurrentOfficeId } from "@/auth/auth"
 import { isValidLeadStatus } from "@/types/lead-status"
 
 export interface GetLeadsResponse {
@@ -21,10 +20,7 @@ interface QueryParams {
 }
 
 export async function getLeads({ page, search, status }: QueryParams) {
-  const officeId = await getCurrentOfficeId()
-
   const queryParams = new URLSearchParams({
-    office_id: officeId ?? "",
     page: page.toString(),
   })
 
@@ -39,7 +35,7 @@ export async function getLeads({ page, search, status }: QueryParams) {
   }
 
   const result = await api
-    .get(`lead?${queryParams.toString()}`, {
+    .get(`leads?${queryParams.toString()}`, {
       next: {
         tags: ["leads"],
         revalidate: 0,

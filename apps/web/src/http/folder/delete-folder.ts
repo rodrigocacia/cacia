@@ -6,7 +6,7 @@ import { api } from "../api-client"
 
 export async function deleteFolder(folderId: string) {
   try {
-    const response = await api.delete(`folder/${folderId}`)
+    const response = await api.delete(`folders/${folderId}`)
     const contentType = response.headers.get("content-type")
 
     let data: any = null

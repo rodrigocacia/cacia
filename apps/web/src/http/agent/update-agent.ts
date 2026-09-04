@@ -4,8 +4,7 @@
 import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
-
-import { getCurrentOfficeId } from "@/auth/auth"
+import { AgentStyle } from "@/types/agent"
 
 export interface UpdateAgentRequest {
   agentId: string
@@ -28,20 +27,19 @@ export async function updateAgent({
   agentId,
   greeting,
   style,
-  whatsapp_api_key,
-  whatsapp_connection,
 }: UpdateAgentRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
+    // O estilo viaja pela CHAVE do enum. A interface guarda o rótulo em
+    // português ("Claro e Objetivo"); a API valida contra
+    // CLEAR_AND_OBJECTIVE. Mandar o rótulo devolve 400.
+    //
+    // As credenciais de WhatsApp saíram daqui: pertencem à conexão, não ao
+    // agente — ver http/connection.
     const result = await api
-      .patch(`agent/${agentId}`, {
+      .patch(`agents/${agentId}`, {
         json: {
-          office_id,
           greeting,
-          style,
-          whatsapp_api_key,
-          whatsapp_connection,
+          style: chaveDoEstilo(style),
         },
       })
       .json<UpdateAgentResponse>()
@@ -61,4 +59,14 @@ export async function updateAgent({
     console.error("Erro inesperado:", err)
     return { success: false, error: "Erro interno no servidor" }
   }
+}
+
+/** Rótulo em português -> chave do enum, que é o que a API valida. */
+function chaveDoEstilo(rotulo: string): string {
+  const entrada = Object.entries(AgentStyle).find(
+    ([, valor]) => valor === rotulo
+  )
+
+  // Se já vier como chave, segue direto
+  return entrada?.[0] ?? rotulo
 }

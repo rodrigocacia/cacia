@@ -22,6 +22,18 @@ const CAMPOS = {
   tradeName: true,
   createdAt: true,
   updatedAt: true,
+  addresses: {
+    select: {
+      id: true,
+      cep: true,
+      street: true,
+      number: true,
+      complement: true,
+      neighborhood: true,
+      city: true,
+      state: true,
+    },
+  },
 } as const;
 
 /**
@@ -95,8 +107,18 @@ export class CustomersService {
       );
     }
 
+    const { addresses, ...dados } = dto;
+
     return this.prisma.customer.create({
-      data: { ...dto, officeId },
+      data: {
+        ...dados,
+        officeId,
+        ...(addresses?.length && {
+          addresses: {
+            create: addresses.map((endereco) => ({ ...endereco, officeId })),
+          },
+        }),
+      },
       select: CAMPOS,
     });
   }
@@ -104,10 +126,30 @@ export class CustomersService {
   async atualizar(officeId: string, id: string, dto: AtualizarClienteDto) {
     await this.garantirQueExiste(officeId, id);
 
-    return this.prisma.customer.update({
-      where: { id },
-      data: dto,
-      select: CAMPOS,
+    const { addresses, ...dados } = dto;
+
+    return this.prisma.$transaction(async (tx) => {
+      if (addresses) {
+        // Substituição total: a tela envia o endereço inteiro, e um merge
+        // parcial deixaria o bairro antigo junto da rua nova.
+        await tx.customerAddress.deleteMany({ where: { customerId: id } });
+
+        if (addresses.length > 0) {
+          await tx.customerAddress.createMany({
+            data: addresses.map((endereco) => ({
+              ...endereco,
+              customerId: id,
+              officeId,
+            })),
+          });
+        }
+      }
+
+      return tx.customer.update({
+        where: { id },
+        data: dados,
+        select: CAMPOS,
+      });
     });
   }
 

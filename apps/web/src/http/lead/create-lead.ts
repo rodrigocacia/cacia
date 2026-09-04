@@ -4,8 +4,6 @@
 import { revalidateTag } from "next/cache"
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 interface CreateLeadRequest {
   name: string
   remotejid: string
@@ -34,15 +32,12 @@ export async function createLead({
   remotejid,
 }: CreateLeadRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .post("lead", {
+      .post("leads", {
         json: {
           name,
           ...(email && { email }),
           remotejid,
-          office_id,
         },
       })
       .json<CreateLeadResponse>()

@@ -6,7 +6,7 @@ import { api } from "../api-client"
 
 export async function deleteProcess(processId: string) {
   try {
-    const response = await api.delete(`process/${processId}`)
+    const response = await api.delete(`processes/${processId}`)
     const contentType = response.headers.get("content-type")
 
     let data: any = null

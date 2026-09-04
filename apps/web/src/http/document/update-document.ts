@@ -54,7 +54,7 @@ export async function updateDocument({
     if (lead_id !== undefined) updateData.lead_id = lead_id
 
     const result = await api
-      .patch(`document/${_id}`, {
+      .patch(`documents/${_id}`, {
         json: updateData,
       })
       .json<Document>()
@@ -86,7 +86,7 @@ export async function approveDocument(id: string) {
   }
 
   try {
-    const result = await api.patch(`document/${id}/approve`).json<Document>()
+    const result = await api.patch(`documents/${id}`).json<Document>()
 
     revalidateTag("documents")
 

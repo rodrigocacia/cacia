@@ -5,8 +5,6 @@ import { revalidateTag } from "next/cache"
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 export interface UpdateProcessRequest {
   process_id: string
   customer_id: string
@@ -36,12 +34,9 @@ export async function updateProcess({
   description,
 }: UpdateProcessRequest) {
   try {
-    const office_id = await getCurrentOfficeId()
-
     const result = await api
-      .patch(`process/${process_id}`, {
+      .patch(`processes/${process_id}`, {
         json: {
-          office_id,
           customer_id,
           number,
           description,

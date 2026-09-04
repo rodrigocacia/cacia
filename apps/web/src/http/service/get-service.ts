@@ -3,8 +3,6 @@
 import { Service } from "@/types/service"
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
-
 export interface GetServiceResponse {
   data: Service[]
   totalItems: number
@@ -20,10 +18,7 @@ interface QueryParams {
 }
 
 export async function getService({ page, search, status }: QueryParams) {
-  const officeId = await getCurrentOfficeId()
-
   const queryParams = new URLSearchParams({
-    office_id: officeId ?? "",
     page: page.toString(),
   })
 
@@ -36,7 +31,7 @@ export async function getService({ page, search, status }: QueryParams) {
   }
 
   const result = await api
-    .get(`service?${queryParams.toString()}`, {
+    .get(`services?${queryParams.toString()}`, {
       next: {
         tags: ["service"],
         revalidate: 60,

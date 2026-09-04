@@ -2,7 +2,6 @@
 
 import { api } from "../api-client"
 
-import { getCurrentOfficeId } from "@/auth/auth"
 import { Folder } from "@/types/folder"
 
 export interface GetFoldersResponse {
@@ -20,10 +19,7 @@ interface QueryParams {
 }
 
 export async function getFolders({ page, search, sortBy }: QueryParams) {
-  const officeId = await getCurrentOfficeId()
-
   const queryParams = new URLSearchParams({
-    office_id: officeId ?? "",
     page: page.toString(),
   })
 
@@ -36,7 +32,7 @@ export async function getFolders({ page, search, sortBy }: QueryParams) {
   }
 
   const result = await api
-    .get(`folder?${queryParams.toString()}`, {
+    .get(`folders?${queryParams.toString()}`, {
       next: {
         tags: ["folders"],
         revalidate: 60,
