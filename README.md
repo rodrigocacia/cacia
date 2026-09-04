@@ -263,6 +263,25 @@ ferramentas gravava de 3 a 5 entradas das 20 disponíveis, e a janela real virav
 As três camadas degradam de forma independente: sem Redis o agente responde com
 resumo e fatos; sem Qdrant, com os turnos recentes e o resumo.
 
+### Agente
+
+Cinco ferramentas, todas com o escritório vindo do servidor — nunca dos
+argumentos do modelo. Se o `officeId` viesse na chamada da ferramenta, uma
+injeção de prompt bastaria para ler dados de outro escritório.
+
+| Ferramenta             | O que faz                                          |
+| ---------------------- | -------------------------------------------------- |
+| `buscar_em_documentos` | Busca semântica **entre** os documentos do cliente |
+| `consultar_processos`  | Processos com número, status e fase                |
+| `consultar_agenda`     | Próximos compromissos                              |
+| `horarios_disponiveis` | Janelas de atendimento                             |
+| `acionar_atendente`    | Encaminha para uma pessoa                          |
+
+O bloco estático do prompt — identidade, serviços, agenda, perguntas frequentes
+— fica em cache por 15 minutos. O sistema anterior o remontava a cada mensagem,
+com 7 consultas ao banco por interação. Manter o prefixo idêntico também
+habilita o desconto de cache da própria OpenAI.
+
 ---
 
 ## Worker
