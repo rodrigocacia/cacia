@@ -1,4 +1,9 @@
 # Infraestrutura local de desenvolvimento.
+#
+# As portas do host saem das padrões de propósito: a mesma máquina costuma
+# rodar outros projetos com Postgres e Redis, e o conflito de porta só
+# aparece na hora de subir. Dentro da rede do compose as portas são as
+# padrões — muda apenas o que é exposto ao host.
 # Em produção estes serviços são gerenciados — ver docs/ARQUITETURA.md
 #
 #   docker compose up -d
@@ -15,7 +20,7 @@ services:
       POSTGRES_PASSWORD: cacia
       POSTGRES_DB: cacia
     ports:
-      - '5432:5432'
+      - '5434:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -31,7 +36,7 @@ services:
     # appendonly garante que as filas sobrevivam a um restart do contêiner
     command: redis-server --appendonly yes
     ports:
-      - '6379:6379'
+      - '6380:6379'
     volumes:
       - redis_data:/data
     healthcheck:

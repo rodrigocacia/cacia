@@ -20,7 +20,10 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "incremental": true
+    "incremental": true,
+    // Dentro do outDir de propósito: apagar o dist precisa invalidar o
+    // cache junto. Fora dele, o tsc julga tudo atualizado e não emite nada.
+    "tsBuildInfoFile": "${configDir}/dist/.tsbuildinfo"
   },
   "exclude": ["node_modules", "dist", "build", ".next", "out"]
 }

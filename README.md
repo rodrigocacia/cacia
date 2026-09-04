@@ -99,6 +99,10 @@ Suba a infraestrutura local (PostgreSQL, Redis e Qdrant):
 docker compose up -d
 ```
 
+As portas expostas ao host saem das padrões — `5434` para o PostgreSQL e `6380`
+para o Redis — porque a mesma máquina costuma rodar outros projetos nas portas
+padrão. Dentro da rede do compose as portas são as usuais.
+
 Aplique as migrations e gere o client:
 
 ```bash
@@ -129,6 +133,51 @@ gerar o outro reprova a verificação.
 `Office` é a fronteira entre clientes. **Toda consulta a uma entidade filha
 precisa filtrar por `officeId`.** Cada tabela tem índice composto começando por
 essa coluna, então o filtro é barato — não há motivo para omiti-lo.
+
+---
+
+## Rotas
+
+Toda rota exige `Authorization: Bearer <token>`, salvo as de `/auth`.
+As rotas de escritório exigem também o cabeçalho `x-office-id`.
+
+### Autenticação — público
+
+| Método | Rota                   | O que faz                                 |
+| ------ | ---------------------- | ----------------------------------------- |
+| POST   | `/auth/register`       | Cria conta                                |
+| POST   | `/auth/login`          | Devolve token e os escritórios do usuário |
+| POST   | `/auth/forgot`         | Gera código de recuperação                |
+| POST   | `/auth/validate-code`  | Confere o código                          |
+| POST   | `/auth/reset-password` | Redefine a senha com o código             |
+
+### Usuário — sem escritório
+
+| Método | Rota                 | O que faz            |
+| ------ | -------------------- | -------------------- |
+| GET    | `/users/me`          | Perfil e escritórios |
+| PATCH  | `/users/me`          | Atualiza o perfil    |
+| PUT    | `/users/me/password` | Troca a senha        |
+
+### Escritórios
+
+| Método | Rota                               | Papel    | O que faz                              |
+| ------ | ---------------------------------- | -------- | -------------------------------------- |
+| GET    | `/offices`                         | —        | Escritórios do usuário                 |
+| POST   | `/offices`                         | —        | Cria escritório (o criador vira ADMIN) |
+| GET    | `/offices/current`                 | qualquer | Dados do escritório                    |
+| PATCH  | `/offices/current`                 | ADMIN    | Atualiza                               |
+| GET    | `/offices/current/members`         | qualquer | Lista membros                          |
+| POST   | `/offices/current/members`         | ADMIN    | Adiciona membro                        |
+| DELETE | `/offices/current/members/:userId` | ADMIN    | Remove membro                          |
+
+### Planos e saúde
+
+| Método | Rota            | O que faz                                   |
+| ------ | --------------- | ------------------------------------------- |
+| GET    | `/plans`        | Catálogo de planos ativos                   |
+| GET    | `/health`       | O processo está vivo                        |
+| GET    | `/health/ready` | Consegue atender (checa PostgreSQL e Redis) |
 
 ---
 
