@@ -1,7 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { getQueueToken } from '@nestjs/bullmq';
+import type { Job, Queue } from 'bullmq';
 import { DocumentVectorStatus } from '@cacia/database';
 import { DocumentsService } from '@/modules/documents/documents.service';
 import { RagService } from '@/ai/rag/rag.service';
+import { IndexacaoDocumentoProcessor } from '@/worker/processadores/indexacao-documento.processor';
+import { FILA, type JobIndexacaoDocumento } from '@/worker/filas/filas';
 import { criarAplicacao, type AplicacaoDeTeste } from './apoio/aplicacao';
 import { criarDuasContas, type Conta } from './apoio/contas';
 
@@ -26,15 +30,22 @@ describe('documentos (e2e)', () => {
   let b: Conta;
   let documentos: DocumentsService;
   let rag: RagService;
+  let fila: Queue<JobIndexacaoDocumento>;
+  let processador: IndexacaoDocumentoProcessor;
 
   beforeAll(async () => {
     aplicacao = await criarAplicacao();
     [a, b] = await criarDuasContas(aplicacao.url);
     documentos = aplicacao.app.get(DocumentsService);
     rag = aplicacao.app.get(RagService);
+    fila = aplicacao.app.get(getQueueToken(FILA.INDEXACAO_DOCUMENTO));
+    processador = new IndexacaoDocumentoProcessor(documentos);
+
+    await fila.obliterate({ force: true }).catch(() => undefined);
   });
 
   afterAll(async () => {
+    await fila.obliterate({ force: true }).catch(() => undefined);
     await aplicacao.encerrar();
   });
 
@@ -95,6 +106,77 @@ describe('documentos (e2e)', () => {
       const resposta = await b.api.get(`/documents/${id}/download`);
 
       expect(resposta.status).toBe(404);
+    });
+  });
+
+  describe('a indexação é pedida ao worker', () => {
+    it('o upload enfileira a leitura do documento', async () => {
+      // Sem isto, o documento ficava PENDING para sempre: a busca semântica
+      // nunca o alcançava, e quem perguntasse sobre o contrato recém-enviado
+      // receberia "nenhum trecho relevante encontrado".
+      await fila.obliterate({ force: true }).catch(() => undefined);
+
+      const enviado = await a.api.postArquivo<Documento>('/documents', {
+        nome: 'para-indexar.txt',
+        conteudo: TEXTO,
+        tipo: 'text/plain',
+      });
+
+      const jobs = await fila.getJobs(['waiting', 'delayed']);
+
+      expect(jobs).toHaveLength(1);
+      expect(jobs[0]?.data).toEqual({
+        officeId: a.officeId,
+        documentId: enviado.corpo.id,
+      });
+    });
+
+    it('o worker lê o job e indexa de verdade', async () => {
+      const [job] = await fila.getJobs(['waiting', 'delayed']);
+
+      const resultado = await processador.process(
+        job as unknown as Job<JobIndexacaoDocumento>,
+      );
+
+      expect(resultado.trechos).toBeGreaterThan(0);
+
+      const documento = await a.api.get<Documento>(
+        `/documents/${job!.data.documentId}`,
+      );
+      expect(documento.corpo.vectorStatus).toBe(DocumentVectorStatus.COMPLETED);
+
+      await job!.remove();
+    });
+
+    it('o mesmo documento não é enfileirado duas vezes', async () => {
+      // O `jobId` derivado do documento torna o reenfileiramento inofensivo —
+      // a varredura de segurança pode repetir o pedido sem indexar em dobro.
+      await fila.obliterate({ force: true }).catch(() => undefined);
+
+      const enviado = await a.api.postArquivo<Documento>('/documents', {
+        nome: 'duplicado.txt',
+        conteudo: TEXTO,
+        tipo: 'text/plain',
+      });
+
+      await fila.add(
+        'indexar',
+        { officeId: a.officeId, documentId: enviado.corpo.id },
+        { jobId: `documento-${enviado.corpo.id}` },
+      );
+
+      expect(await fila.getJobs(['waiting', 'delayed'])).toHaveLength(1);
+    });
+
+    it('a varredura encontra o que ficou para trás', async () => {
+      // Rede de segurança: Redis fora do ar no momento do upload, worker que
+      // morreu com o job na mão, documentos anteriores a esta funcionalidade.
+      const pendentes = await documentos.listarPendentesDeIndexacao();
+
+      expect(pendentes.length).toBeGreaterThan(0);
+      for (const pendente of pendentes) {
+        expect(pendente.officeId).toBeTypeOf('string');
+      }
     });
   });
 

@@ -1,14 +1,17 @@
+import { InjectQueue } from '@nestjs/bullmq';
 import {
   BadRequestException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import type { Queue } from 'bullmq';
 import { DocumentType, DocumentVectorStatus } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
 import { StorageService } from '@/infra/storage/storage.service';
 import { RagService } from '@/ai/rag/rag.service';
 import { janela, montarPaginacao } from '@/common/dto/paginacao.dto';
+import { FILA, type JobIndexacaoDocumento } from '@/worker/filas/filas';
 import { fragmentar } from './fragmentacao';
 import { extrairTexto } from './extracao-de-texto';
 import type { ListarDocumentosDto } from './dto/document.dto';
@@ -41,6 +44,8 @@ export class DocumentsService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly rag: RagService,
+    @InjectQueue(FILA.INDEXACAO_DOCUMENTO)
+    private readonly indexacao: Queue<JobIndexacaoDocumento>,
   ) {}
 
   async listar(officeId: string, dto: ListarDocumentosDto) {
@@ -137,7 +142,7 @@ export class DocumentsService {
       mimetype: params.arquivo.mimetype,
     });
 
-    return this.prisma.document.create({
+    const documento = await this.prisma.document.create({
       data: {
         officeId: params.officeId,
         customerId: params.customerId,
@@ -151,6 +156,64 @@ export class DocumentsService {
         vectorStatus: DocumentVectorStatus.PENDING,
       },
       select: CAMPOS,
+    });
+
+    await this.pedirIndexacao(params.officeId, documento.id);
+
+    return documento;
+  }
+
+  /**
+   * Enfileira a leitura do documento.
+   *
+   * A falha não desfaz o upload: o arquivo está salvo e o documento fica em
+   * PENDING, que é exatamente o estado que a varredura do worker procura. O
+   * pior caso é a busca semântica alcançá-lo alguns minutos depois.
+   */
+  private async pedirIndexacao(
+    officeId: string,
+    documentId: string,
+  ): Promise<void> {
+    try {
+      await this.indexacao.add(
+        'indexar',
+        { officeId, documentId },
+        {
+          // O id do documento como jobId torna o enfileiramento idempotente:
+          // a varredura pode repetir o pedido sem criar um segundo job.
+          jobId: `documento-${documentId}`,
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 10_000 },
+          removeOnComplete: true,
+          removeOnFail: { count: 200 },
+        },
+      );
+    } catch (erro) {
+      this.logger.warn(
+        `Não foi possível enfileirar a indexação do documento ${documentId}: ${
+          erro instanceof Error ? erro.message : 'erro'
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Documentos esperando indexação, de todos os escritórios.
+   *
+   * Sem escopo de tenant de propósito: quem chama é a varredura do worker, que
+   * não roda no contexto de uma requisição. O `officeId` de cada um viaja no
+   * job e volta a limitar tudo dali em diante.
+   */
+  listarPendentesDeIndexacao(limite = 50) {
+    return this.prisma.document.findMany({
+      where: {
+        deletedAt: null,
+        vectorStatus: DocumentVectorStatus.PENDING,
+        contentUrl: { not: null },
+      },
+      select: { id: true, officeId: true },
+      orderBy: { createdAt: 'asc' },
+      take: limite,
     });
   }
 

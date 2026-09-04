@@ -155,6 +155,33 @@ describe('isolamento entre escritórios (e2e)', () => {
     });
   });
 
+  describe('exclusão de processo encerra o acompanhamento', () => {
+    it('avisa a Judit para parar de monitorar', async () => {
+      // Sem isso o escritório seguiria pagando o acompanhamento de um processo
+      // que excluiu, e os webhooks continuariam chegando.
+      const processo = await a.api.post<{ id: string }>('/processes', {
+        customerId: recursos.customer,
+        number: '30000000000000000003',
+      });
+
+      aplicacao.judit.limpar();
+
+      const exclusao = await a.api.delete(`/processes/${processo.corpo.id}`);
+      expect(exclusao.status).toBe(204);
+
+      expect(aplicacao.judit.vezes('pararMonitoramento')).toBe(1);
+    });
+
+    it('o outro escritório não consegue encerrar o acompanhamento alheio', async () => {
+      aplicacao.judit.limpar();
+
+      const tentativa = await b.api.delete(`/processes/${recursos.process}`);
+
+      expect(tentativa.status).toBe(404);
+      expect(aplicacao.judit.vezes('pararMonitoramento')).toBe(0);
+    });
+  });
+
   describe('listagens', () => {
     it('não trazem nada do outro escritório', async () => {
       const clientes = await b.api.get<{ data: { id: string }[] }>(

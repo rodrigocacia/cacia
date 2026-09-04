@@ -1,6 +1,6 @@
 # Estado da reconstrução
 
-> Atualizado em 04/09/2026, após ligar o atendimento automático.
+> Atualizado em 04/09/2026, após ligar as peças que faltavam.
 
 Documento de acompanhamento: o que foi feito, o que mudou em relação ao
 [plano original](ARQUITETURA.md) e o que continua pendente.
@@ -11,10 +11,10 @@ Documento de acompanhamento: o que foi feito, o que mudou em relação ao
 
 |                                |                                                                    |
 | ------------------------------ | ------------------------------------------------------------------ |
-| Pull requests integrados       | 18                                                                 |
+| Pull requests integrados       | 19                                                                 |
 | Entidades no banco             | 28                                                                 |
 | Arquivos TypeScript na API     | 132                                                                |
-| Testes automatizados           | 302 — 175 unitários e 127 de ponta a ponta                         |
+| Testes automatizados           | 316 — 183 unitários e 133 de ponta a ponta                         |
 | Cobertura de verificação no CI | formatação, lint, tipos, build, testes, E2E, migrations, auditoria |
 
 Ponto de partida: **0,6% de cobertura de testes e zero pipelines de CI**.
@@ -141,7 +141,24 @@ teste.
 
 ---
 
-## A lacuna mais séria, e como apareceu
+## Peças construídas e nunca ligadas
+
+Quatro, encontradas ao procurar quem chamava cada serviço. Todas passavam nos
+testes de unidade, porque cada peça funcionava isolada — o que faltava era
+justamente aquilo que nenhuma peça é.
+
+| Peça                              | O efeito de não estar ligada                       |
+| --------------------------------- | -------------------------------------------------- |
+| `AgenteService.responder`         | a IA nunca respondia a ninguém                     |
+| `DocumentsService.indexar`        | documento enviado nunca entrava na busca           |
+| `PromptService.invalidar`         | mudar a agenda levava 15 min para chegar ao agente |
+| `JuditService.pararMonitoramento` | processo excluído seguia sendo cobrado             |
+
+E uma fila declarada, `atualizacao-processo`, sem ninguém publicando nem
+consumindo. Virou `acompanhamento-processo`, com uma varredura que retoma o
+monitoramento dos processos cadastrados enquanto a Judit estava fora do ar.
+
+### A mais séria
 
 **O agente nunca era chamado.** Uma mensagem chegava pelo webhook, o lead era
 criado, a conversa era criada, a mensagem era gravada — e o sistema parava aí.
@@ -153,6 +170,11 @@ teste de unidade não pega isso, porque cada peça funcionava.
 
 Apareceu ao escrever o teste da conversa de ponta a ponta: ao procurar quem
 chamava `AgenteService.responder`, a resposta foi ninguém.
+
+O mesmo vale para os documentos: um arquivo enviado nascia `PENDING` e ficava
+assim para sempre. Quem perguntasse ao agente sobre o contrato recém-enviado
+receberia "nenhum trecho relevante encontrado" — a funcionalidade inteira
+existia e não funcionava.
 
 O elo é a fila `atendimento` e o `AtendimentoProcessor`. Três cuidados no
 desenho, cada um por um motivo concreto:

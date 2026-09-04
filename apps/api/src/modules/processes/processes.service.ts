@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ProcessUpdateStatus } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
 import { JuditService } from '@/integrations/judit/judit.service';
 import { janela, montarPaginacao } from '@/common/dto/paginacao.dto';
@@ -159,10 +160,13 @@ export class ProcessesService {
    * de processos, quando deveria ser um acompanhamento.
    *
    * Falhar aqui não desfaz o cadastro — o processo existe e pode ser
-   * acompanhado depois. Mas fica registrado e aparece em
-   * GET /processes/unmonitored.
+   * acompanhado depois. Fica em ERROR, aparece em GET /processes/unmonitored
+   * e a varredura do worker tenta de novo.
+   *
+   * Pública porque essa nova tentativa vem de fora: do processador de fila,
+   * sem requisição HTTP por trás.
    */
-  private async ativarAcompanhamento(
+  async ativarAcompanhamento(
     officeId: string,
     processId: string,
     numero: string,
@@ -185,7 +189,7 @@ export class ProcessesService {
         data: {
           requestId: consulta.request_id,
           juditTrackingId: monitoramento.tracking_id,
-          updateStatus: 'PROCESSING',
+          updateStatus: ProcessUpdateStatus.PROCESSING,
         },
       });
     } catch (erro) {
@@ -197,7 +201,7 @@ export class ProcessesService {
 
       await this.prisma.process.update({
         where: { id: processId },
-        data: { updateStatus: 'ERROR' },
+        data: { updateStatus: ProcessUpdateStatus.ERROR },
       });
     }
   }
@@ -208,6 +212,29 @@ export class ProcessesService {
    * Existe para tornar visível o que antes era silencioso: um processo que
    * não recebe movimentação parece apenas um processo parado.
    */
+  /**
+   * Processos sem acompanhamento, de todos os escritórios.
+   *
+   * Sem escopo de tenant de propósito: quem chama é a varredura do worker, que
+   * não roda no contexto de uma requisição. O `officeId` de cada um viaja no
+   * job e volta a limitar tudo dali em diante.
+   *
+   * Só os que já falharam: um processo recém-cadastrado ainda está em
+   * PROCESSING e não deve ser tentado de novo por cima.
+   */
+  listarParaRetomarAcompanhamento(limite = 50) {
+    return this.prisma.process.findMany({
+      where: {
+        deletedAt: null,
+        juditTrackingId: null,
+        updateStatus: ProcessUpdateStatus.ERROR,
+      },
+      select: { id: true, officeId: true, number: true },
+      orderBy: { updatedAt: 'asc' },
+      take: limite,
+    });
+  }
+
   listarSemAcompanhamento(officeId: string) {
     return this.prisma.process.findMany({
       where: { officeId, deletedAt: null, juditTrackingId: null },
@@ -231,13 +258,37 @@ export class ProcessesService {
     });
   }
 
+  /**
+   * Exclusão lógica, com o monitoramento encerrado na Judit.
+   *
+   * Sem encerrar, o escritório continuaria pagando o acompanhamento de um
+   * processo que excluiu — e os webhooks seguiriam chegando para um registro
+   * que ninguém vê mais.
+   */
   async remover(officeId: string, id: string): Promise<void> {
-    await this.garantirQueExiste(officeId, id);
+    const processo = await this.prisma.process.findFirst({
+      where: { id, officeId, deletedAt: null },
+      select: { juditTrackingId: true },
+    });
+
+    if (!processo) throw new NotFoundException('Processo não encontrado');
 
     await this.prisma.process.update({
       where: { id },
       data: { deletedAt: new Date() },
     });
+
+    if (!processo.juditTrackingId) return;
+
+    // Depois da exclusão e sem propagar: o processo já saiu da vista do
+    // usuário, e uma indisponibilidade da Judit não pode desfazer isso.
+    await this.judit
+      .pararMonitoramento(processo.juditTrackingId)
+      .catch((erro: Error) => {
+        this.logger.warn(
+          `Processo ${id} excluído, mas o monitoramento ${processo.juditTrackingId} segue ativo na Judit: ${erro.message}`,
+        );
+      });
   }
 
   /** Andamentos do processo, do mais recente para o mais antigo. */

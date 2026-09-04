@@ -3,11 +3,17 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { IaModule } from '@/ai/ia.module';
 import { IntegracoesModule } from '@/integrations/integracoes.module';
 import { ChatsModule } from '@/modules/chats/chats.module';
+import { DocumentsModule } from '@/modules/documents/documents.module';
+import { ProcessesModule } from '@/modules/processes/processes.module';
 import { RemindersModule } from '@/modules/reminders/reminders.module';
 import { FilasModule } from './filas/filas.module';
+import { AcompanhamentoProcessoProcessor } from './processadores/acompanhamento-processo.processor';
 import { AtendimentoProcessor } from './processadores/atendimento.processor';
 import { EnvioWhatsappProcessor } from './processadores/envio-whatsapp.processor';
+import { IndexacaoDocumentoProcessor } from './processadores/indexacao-documento.processor';
 import { LembretesProcessor } from './processadores/lembretes.processor';
+import { AcompanhamentoTarefa } from './tarefas/acompanhamento.tarefa';
+import { IndexacaoTarefa } from './tarefas/indexacao.tarefa';
 import { LembretesTarefa } from './tarefas/lembretes.tarefa';
 
 /**
@@ -25,12 +31,18 @@ import { LembretesTarefa } from './tarefas/lembretes.tarefa';
     RemindersModule,
     ChatsModule,
     IaModule,
+    DocumentsModule,
+    ProcessesModule,
   ],
   providers: [
     AtendimentoProcessor,
     EnvioWhatsappProcessor,
+    IndexacaoDocumentoProcessor,
+    AcompanhamentoProcessoProcessor,
     LembretesProcessor,
     LembretesTarefa,
+    IndexacaoTarefa,
+    AcompanhamentoTarefa,
   ],
 })
 export class WorkerModule {}
