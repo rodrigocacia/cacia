@@ -1,0 +1,92 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use server"
+
+import { revalidateTag } from "next/cache"
+
+import { api } from "../api-client"
+
+import { getCurrentOfficeId } from "@/auth/auth"
+import { UserReminder } from "@/schemas/event"
+
+export interface CreateEventRequest {
+  calendar_id: string
+  customer_id: string | null
+  process_id: string | null
+  type: string
+  description: string
+  title: string
+  start_time: string
+  end_time: string
+  status: string
+  user_reminder?: UserReminder[]
+  consultation_mode: string
+}
+
+interface CreateEventResponse {
+  office: string
+  calendar: string
+  process: string
+  customer: string
+  type: string
+  title: string
+  start_time: string
+  end_time: string
+  status: string
+  deleted_at: null
+  _id: string
+  created_at: string
+  updated_at: string
+  __v: number
+}
+
+export async function createEvent({
+  calendar_id,
+  customer_id,
+  process_id,
+  type,
+  title,
+  description,
+  start_time,
+  end_time,
+  status,
+  user_reminder,
+  consultation_mode,
+}: CreateEventRequest) {
+  try {
+    const office_id = await getCurrentOfficeId()
+
+    const result = await api
+      .post(`event?office_id=${office_id}`, {
+        json: {
+          office_id,
+          calendar_id,
+          customer_id,
+          process_id,
+          type,
+          title,
+          description,
+          start_time,
+          end_time,
+          status,
+          user_reminder,
+          consultation_mode,
+        },
+      })
+      .json<CreateEventResponse>()
+
+    revalidateTag("events")
+    revalidateTag("reminders")
+    return { success: true, data: result }
+  } catch (err: any) {
+    if (err.response) {
+      const errorBody = await err.response.json()
+      return {
+        success: false,
+        error: errorBody,
+      }
+    }
+
+    console.error("Erro inesperado:", err)
+    return { success: false, error: "Erro interno no servidor" }
+  }
+}

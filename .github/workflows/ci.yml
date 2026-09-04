@@ -16,6 +16,8 @@ env:
   PNPM_VERSION: '10.34.5'
   # O Prisma exige a variável para gerar o client, mesmo sem conectar
   DATABASE_URL: 'postgresql://cacia:cacia@localhost:5432/cacia?schema=public'
+  # Os frontends leem esta variável em tempo de build
+  NEXT_PUBLIC_API_URL: 'http://localhost:3000'
 
 jobs:
   verificacao:

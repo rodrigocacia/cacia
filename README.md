@@ -244,6 +244,36 @@ atendimento de um escritório.
 
 ---
 
+## Frontends
+
+| App               | Deploy                           |
+| ----------------- | -------------------------------- |
+| `apps/web`        | Cloudflare Workers, via OpenNext |
+| `apps/backoffice` | Cloudflare Workers, via OpenNext |
+
+Ambos enviam o escritório à API pelo cabeçalho `x-office-id`, que é como a API
+resolve o tenant — nunca por query ou corpo.
+
+### Sobre exportação estática e Cloudflare Pages
+
+O plano original previa converter os frontends para exportação estática e
+publicá-los no Pages. **A medição mostrou que isso não é viável sem reescrever
+a camada de dados:**
+
+```
+apps/web         41 rotas dinâmicas · 3 estáticas · 64 arquivos com Server Actions
+apps/backoffice  12 páginas, nenhuma com "use client" · 21 arquivos com Server Actions
+```
+
+As páginas são Server Components que buscam dados no servidor e hidratam o SWR.
+Convertê-las exigiria refazer a busca de dados de 54 páginas.
+
+Os Workers são igualmente gratuitos no volume atual e são o caminho que a
+Cloudflare recomenda para Next.js com renderização no servidor. A conversão
+para estático continua possível, mas é um projeto próprio — não um ajuste.
+
+---
+
 ## Memória da IA
 
 Três camadas, com orçamento de contexto **fixo** — uma conversa de duzentas

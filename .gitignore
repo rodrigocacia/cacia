@@ -36,3 +36,8 @@ coverage/
 
 # prisma
 packages/database/generated/
+
+# next.js
+.next/
+.open-next/
+next-env.d.ts
