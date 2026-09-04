@@ -17,7 +17,7 @@ export async function deleteOffice({
   id,
 }: DeleteOfficeRequest): Promise<DeleteOfficeResponse> {
   try {
-    await api.delete(`office/${id}`).json();
+    await api.delete(`admin/offices/${id}`).json();
 
     revalidateTag('offices');
 

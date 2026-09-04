@@ -4,8 +4,6 @@
 import { api } from '../api-client';
 import { revalidateTag } from 'next/cache';
 
-import { getCurrentOfficeId } from '@/auth/auth';
-
 interface Address {
   street: string;
   number: string;
@@ -22,8 +20,24 @@ export interface CreateOfficeRequest {
   trade_name: string;
   remotejid: string;
   description: string;
-  plan: string;
+  /**
+   * Plano contratado — sem uso hoje.
+   *
+   * A cobrança não foi reimplementada e não há assinatura a vincular. Continua
+   * no tipo, opcional, para não quebrar quem já passa o campo.
+   */
+  plan?: string;
   address: Address[];
+
+  /** Registro na OAB — a API recusa o cadastro sem ele. */
+  oab_number: string;
+  oab_uf: string;
+
+  /** O responsável, criado junto: escritório sem membro é inacessível. */
+  owner_name: string;
+  owner_email: string;
+  owner_password: string;
+  owner_phone?: string;
 }
 
 interface CreateOfficeResponse {
@@ -48,24 +62,34 @@ export async function createOffice({
   trade_name,
   remotejid,
   description,
-  plan,
   address,
+  oab_number,
+  oab_uf,
+  owner_name,
+  owner_email,
+  owner_password,
+  owner_phone,
 }: CreateOfficeRequest) {
   try {
-    const office_id = await getCurrentOfficeId();
-
+    // `plan` continua na assinatura para não mexer em quem chama, mas não é
+    // enviado: a cobrança não foi reimplementada e não há assinatura a
+    // vincular — ver docs/ESTADO.md.
     const result = await api
-      .post(`office?office_id=${office_id}`, {
+      .post('admin/offices', {
         json: {
-          office_id,
           name,
           remotejid,
           document,
           legal_name,
           trade_name,
-          address,
           description,
-          plan,
+          oab_number,
+          oab_uf,
+          owner_name,
+          owner_email,
+          owner_password,
+          owner_phone,
+          addresses: address,
         },
       })
       .json<CreateOfficeResponse>();

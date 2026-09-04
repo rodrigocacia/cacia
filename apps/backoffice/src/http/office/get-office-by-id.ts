@@ -26,7 +26,9 @@ interface GetOfficeByIdResponse {
 
 export async function getOfficeById({ id }: GetOfficeByIdRequest) {
   try {
-    const result = await api.get(`office/${id}`).json<GetOfficeByIdResponse>();
+    const result = await api
+      .get(`admin/offices/${id}`)
+      .json<GetOfficeByIdResponse>();
 
     return { success: true, data: result };
   } catch (err: any) {

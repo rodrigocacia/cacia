@@ -37,7 +37,7 @@ export async function getUsers({ page, search, limit, role }: QueryParams) {
   }
 
   const result = await api
-    .get(`user?${queryParams.toString()}`, {
+    .get(`admin/users?${queryParams.toString()}`, {
       next: {
         tags: ['users'],
         revalidate: 60,

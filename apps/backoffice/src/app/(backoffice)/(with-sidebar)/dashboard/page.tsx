@@ -75,8 +75,15 @@ export default async function Dashboard({
   const data: DashboardData = {
     users: apiData.users,
     offices: apiData.offices,
-    revenue: formatCurrency(apiData.revenue),
-    averageTicket: formatCurrency(apiData.averageTicket),
+    // "Indisponível", e não R$ 0,00: zero se confunde com "nenhuma venda no
+    // período", que é outra coisa. A cobrança não foi reimplementada — ver
+    // docs/ESTADO.md.
+    revenue: apiData.faturamentoDisponivel
+      ? formatCurrency(apiData.revenue)
+      : "Indisponível",
+    averageTicket: apiData.faturamentoDisponivel
+      ? formatCurrency(apiData.averageTicket)
+      : "Indisponível",
     plans: apiData.plans,
     subscriptionsByMonth: apiData.subscriptionsByMonth,
     recentSubscriptions: apiData.recentSubscriptions.map((sub) => ({

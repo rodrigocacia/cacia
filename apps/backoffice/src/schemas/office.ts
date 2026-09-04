@@ -27,6 +27,32 @@ export const officeFormSchema = z
       .string()
       .min(6, { message: 'Insira um número de telefone válido' }),
     description: z.string().min(6, { message: 'Insira uma biografia válida' }),
+
+    /**
+     * Registro na OAB.
+     *
+     * Obrigatório: o escritório é de advocacia, e a API recusa o cadastro sem
+     * ele. Antes o campo não existia no formulário e o cadastro nascia
+     * incompleto.
+     */
+    oab_number: z.string().min(1, { message: 'Insira o número da OAB' }),
+    oab_uf: z
+      .string()
+      .length(2, { message: 'Informe a UF da OAB com 2 letras' }),
+
+    /**
+     * O dono do escritório.
+     *
+     * Nasce junto: um escritório sem membro é inacessível — o acesso passa
+     * por office_members, e nem quem o criou conseguiria entrar.
+     */
+    owner_name: z.string().min(2, { message: 'Insira o nome do responsável' }),
+    owner_email: z.string().email({ message: 'Insira um e-mail válido' }),
+    owner_password: z
+      .string()
+      .min(8, { message: 'A senha precisa de ao menos 8 caracteres' }),
+    owner_phone: z.string().optional(),
+
     street: z.string().optional(),
     number: z.string().optional(),
     cep: z.string().optional(),

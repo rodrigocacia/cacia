@@ -116,6 +116,11 @@ export function PersonalData({
             trade_name: data.trade_name,
             remotejid: data.remotejid,
             description: data.description,
+            oab_number: data.oab_number,
+            oab_uf: data.oab_uf,
+            owner_name: data.owner_name,
+            owner_email: data.owner_email,
+            owner_password: data.owner_password,
             address: data.street
               ? {
                   street: data.street,
@@ -212,6 +217,57 @@ export function PersonalData({
           iconName="person"
           placeholder="Insira o nome comercial do cliente..."
           error={errors?.trade_name}
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="sm:col-span-2">
+            <Input
+              {...register("oab_number")}
+              label="Número da OAB"
+              iconName="balance"
+              placeholder="Insira o número da OAB..."
+              error={errors?.oab_number}
+            />
+          </div>
+
+          <Input
+            {...register("oab_uf")}
+            label="UF da OAB"
+            iconName="balance"
+            placeholder="SP"
+            maxLength={2}
+            error={errors?.oab_uf}
+          />
+        </div>
+
+        {/*
+          O responsável nasce junto com o escritório: um escritório sem membro
+          é inacessível, porque o acesso passa por office_members — nem quem o
+          cadastrou conseguiria entrar.
+        */}
+        <Input
+          {...register("owner_name")}
+          label="Nome do responsável"
+          iconName="person"
+          placeholder="Quem vai administrar o escritório..."
+          error={errors?.owner_name}
+        />
+
+        <Input
+          {...register("owner_email")}
+          label="E-mail do responsável"
+          iconName="mail"
+          placeholder="Ele entra no sistema com este e-mail..."
+          error={errors?.owner_email}
+        />
+
+        <Input
+          {...register("owner_password")}
+          label="Senha provisória"
+          type="password"
+          iconName="lock"
+          placeholder="Ao menos 8 caracteres..."
+          error={errors?.owner_password}
         />
 
         <InputPhone

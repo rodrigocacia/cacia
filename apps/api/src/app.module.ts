@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { TenantGuard } from './auth/guards/tenant.guard';
 import { OfficeRoleGuard } from './auth/guards/office-role.guard';
+import { AdminGuard } from './auth/guards/admin.guard';
 import { UsersModule } from './modules/users/users.module';
 import { OfficesModule } from './modules/offices/offices.module';
 import { PlansModule } from './modules/plans/plans.module';
@@ -35,6 +36,7 @@ import { QuestionsModule } from './modules/questions/questions.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { ConsultationsModule } from './modules/consultations/consultations.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -83,6 +85,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     SettingsModule,
     ConsultationsModule,
     DashboardModule,
+    AdminModule,
   ],
   providers: [
     // Ambos globais e nesta ordem: autentica, depois resolve o escritório.
@@ -94,6 +97,9 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: TenantGuard },
     { provide: APP_GUARD, useClass: OfficeRoleGuard },
+    // Por último: as rotas administrativas atravessam escritórios, e o
+    // portão delas é o papel global, não o vínculo com um tenant.
+    { provide: APP_GUARD, useClass: AdminGuard },
   ],
 })
 export class AppModule {}

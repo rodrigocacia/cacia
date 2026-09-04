@@ -1,8 +1,21 @@
 'use server';
 
-import { api } from '../api-client';
-
 import { Recurrence } from '@/types/recurrence';
+
+/**
+ * Cobranças recorrentes — NÃO REIMPLEMENTADAS.
+ *
+ * O sistema anterior cobrava por PIX através da iopay, e esta listagem era a
+ * tela financeira do painel. A reconstrução não trouxe a integração de
+ * pagamento: não há gateway configurado, nem rota na API, nem decisão tomada
+ * sobre qual provedor usar.
+ *
+ * Devolve uma página vazia em vez de chamar um endpoint inexistente. A
+ * alternativa seria um 404 disfarçado de erro de rede, mais difícil de
+ * diagnosticar do que uma tela vazia com o motivo escrito.
+ *
+ * Ver docs/ESTADO.md — "Cobrança".
+ */
 
 export interface GetRecurrencesResponse {
   data: Recurrence[];
@@ -10,6 +23,8 @@ export interface GetRecurrencesResponse {
   totalPages: number;
   currentPage: number;
   perPage: number;
+  /** Falso enquanto a cobrança não voltar. */
+  disponivel: boolean;
 }
 
 interface QueryParams {
@@ -24,46 +39,14 @@ interface QueryParams {
 
 export async function getRecurrences({
   page = 1,
-  search,
   limit = 10,
-  office_id,
-  user_id,
-  plan_id,
-  status,
-}: QueryParams) {
-  const queryParams = new URLSearchParams({
-    page: page.toString(),
-    limit: limit.toString(),
-  });
-
-  if (search) {
-    queryParams.set('search', search);
-  }
-
-  if (office_id) {
-    queryParams.set('office_id', office_id);
-  }
-
-  if (user_id) {
-    queryParams.set('user_id', user_id);
-  }
-
-  if (plan_id) {
-    queryParams.set('plan_id', plan_id);
-  }
-
-  if (status) {
-    queryParams.set('status', status);
-  }
-
-  const result = await api
-    .get(`recurrence?${queryParams.toString()}`, {
-      next: {
-        tags: ['recurrence'],
-        revalidate: 60,
-      },
-    })
-    .json<GetRecurrencesResponse>();
-
-  return result;
+}: QueryParams): Promise<GetRecurrencesResponse> {
+  return {
+    data: [],
+    totalItems: 0,
+    totalPages: 1,
+    currentPage: page,
+    perPage: limit,
+    disponivel: false,
+  };
 }

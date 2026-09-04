@@ -31,7 +31,7 @@ export async function updateUser({
 }: UpdateUserRequest) {
   try {
     const result = await api
-      .patch(`user/${id}`, {
+      .patch(`admin/users/${id}`, {
         json: {
           name,
           email,

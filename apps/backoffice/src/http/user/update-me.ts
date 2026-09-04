@@ -17,7 +17,7 @@ type UpdateMeResponse = User;
 export async function updateMe(data: UpdateMeRequest) {
   try {
     const result = await api
-      .patch('user', {
+      .patch('users/me', {
         json: data,
       })
       .json<UpdateMeResponse>();

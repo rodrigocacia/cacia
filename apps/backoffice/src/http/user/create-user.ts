@@ -32,7 +32,7 @@ export async function createUser({
 }: CreateUserRequest) {
   try {
     const result = await api
-      .post(`user`, {
+      .post('admin/users', {
         json: {
           name,
           email,

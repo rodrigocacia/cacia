@@ -27,7 +27,7 @@ export async function getOfficePerformance({
 }: GetOfficePerformanceRequest) {
   try {
     const result = await api
-      .get(`performance/office/${officeId}?periodInDays=${periodInDays}`)
+      .get(`admin/offices/${officeId}/performance?periodInDays=${periodInDays}`)
       .json<GetOfficePerformanceResponse>();
 
     return { success: true, data: result };

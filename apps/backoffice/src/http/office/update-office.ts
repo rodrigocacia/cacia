@@ -49,7 +49,7 @@ export async function updateOffice({
 }: UpdateOfficeRequest) {
   try {
     const result = await api
-      .patch(`office/${id}`, {
+      .patch(`admin/offices/${id}`, {
         json: {
           name,
           remotejid,

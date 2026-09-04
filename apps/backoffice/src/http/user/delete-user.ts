@@ -10,7 +10,7 @@ export interface DeleteUserRequest {
 
 export async function deleteUser({ id }: DeleteUserRequest) {
   try {
-    await api.delete(`user/${id}`).json();
+    await api.delete(`admin/users/${id}`).json();
 
     revalidateTag('users');
 

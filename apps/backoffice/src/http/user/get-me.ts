@@ -8,7 +8,7 @@ type GetMeResponse = User;
 
 export async function getMe() {
   try {
-    const result = await api.get('user/me').json<GetMeResponse>();
+    const result = await api.get('users/me').json<GetMeResponse>();
 
     return { success: true, data: result };
   } catch (err: any) {

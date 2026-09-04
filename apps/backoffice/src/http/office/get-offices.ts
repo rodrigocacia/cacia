@@ -42,7 +42,7 @@ export async function getOffices({
   }
 
   const result = await api
-    .get(`office?${queryParams.toString()}`, {
+    .get(`admin/offices?${queryParams.toString()}`, {
       next: {
         tags: ['offices'],
         revalidate: 60,

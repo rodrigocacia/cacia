@@ -12,7 +12,8 @@
     "cf:build": "opennextjs-cloudflare build",
     "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "typecheck": "tsc --noEmit",
-    "clean": "rimraf .next .open-next dist .turbo"
+    "clean": "rimraf .next .open-next dist .turbo",
+    "test": "vitest run"
   },
   "dependencies": {
     "@cacia/contracts": "workspace:*",
@@ -58,6 +59,7 @@
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.0",
     "typescript": "^5",
-    "wrangler": "^4.110.0"
+    "wrangler": "^4.110.0",
+    "vitest": "^3.2.7"
   }
 }

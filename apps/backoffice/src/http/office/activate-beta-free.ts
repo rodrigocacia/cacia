@@ -17,12 +17,17 @@ export async function activateBetaFree({
   id,
 }: ActivateBetaFreeRequest): Promise<ActivateBetaFreeResponse> {
   try {
-    await api.post(`office/${id}/activate-beta-free`).json();
+    // A cobrança não foi reimplementada — não há plano a ativar. O que este
+    // botão faz hoje é o efeito prático que se esperava dele: colocar o
+    // escritório em atividade. Ver docs/ESTADO.md, "Cobrança".
+    await api
+      .patch(`admin/offices/${id}/status`, { json: { status: 'ACTIVE' } })
+      .json();
 
     revalidateTag('office');
     revalidateTag('recurrence');
 
-    return { success: true, message: 'Plano Beta FREE ativado com sucesso!' };
+    return { success: true, message: 'Escritório ativado com sucesso!' };
   } catch (err: any) {
     if (err.response) {
       const errorBody = await err.response.json();

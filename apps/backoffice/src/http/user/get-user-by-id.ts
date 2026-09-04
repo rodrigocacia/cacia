@@ -22,7 +22,9 @@ interface GetUserByIdResponse {
 
 export async function getUserById({ id }: GetUserByIdRequest) {
   try {
-    const result = await api.get(`user/${id}`).json<GetUserByIdResponse>();
+    const result = await api
+      .get(`admin/users/${id}`)
+      .json<GetUserByIdResponse>();
 
     return { success: true, data: result };
   } catch (err: any) {

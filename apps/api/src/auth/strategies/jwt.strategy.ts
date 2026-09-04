@@ -32,13 +32,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: PayloadJwt): Promise<UsuarioAutenticado> {
     const usuario = await this.prisma.user.findFirst({
       where: { id: payload.sub, deletedAt: null },
-      select: { id: true, email: true },
+      select: { id: true, email: true, role: true },
     });
 
     if (!usuario) {
       throw new UnauthorizedException('Usuário inválido ou removido');
     }
 
-    return { userId: usuario.id, email: usuario.email };
+    // O papel vem do banco a cada requisição, nunca do token: revogar a
+    // administração de alguém precisa surtir efeito na hora, e não só quando
+    // o token dele expirar.
+    return {
+      userId: usuario.id,
+      email: usuario.email,
+      role: usuario.role,
+    };
   }
 }

@@ -4,6 +4,11 @@ import type { Role } from '@cacia/database';
 export interface UsuarioAutenticado {
   userId: string;
   email: string;
+  /**
+   * Papel GLOBAL, do sistema — não confundir com `officeRole`, que é o papel
+   * dentro de um escritório. Só o operador da plataforma é ADMIN aqui.
+   */
+  role: Role;
 }
 
 export interface RequisicaoAutenticada extends Request {

@@ -50,6 +50,12 @@ export async function createOfficeAction(data: {
   trade_name: string;
   remotejid: string;
   description: string;
+  oab_number: string;
+  oab_uf: string;
+  owner_name: string;
+  owner_email: string;
+  owner_password: string;
+  owner_phone?: string;
   address?: {
     street: string;
     number: string;
@@ -67,7 +73,12 @@ export async function createOfficeAction(data: {
       trade_name: data.trade_name,
       remotejid: data.remotejid,
       description: data.description,
-      plan: process.env.NEXT_PUBLIC_PLAN_ID || "",
+      oab_number: data.oab_number,
+      oab_uf: data.oab_uf,
+      owner_name: data.owner_name,
+      owner_email: data.owner_email,
+      owner_password: data.owner_password,
+      owner_phone: data.owner_phone,
       address: data.address ? [data.address] : [],
     });
 

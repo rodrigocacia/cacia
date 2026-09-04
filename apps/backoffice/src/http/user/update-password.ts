@@ -16,7 +16,7 @@ interface UpdatePasswordResponse {
 export async function updatePassword(data: UpdatePasswordRequest) {
   try {
     const result = await api
-      .put('user/password', {
+      .put('users/me/password', {
         json: data,
       })
       .json<UpdatePasswordResponse>();
