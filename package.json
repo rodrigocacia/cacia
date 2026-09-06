@@ -17,7 +17,9 @@
     "clean": "turbo run clean && rimraf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,json,md,yml,yaml}\"",
-    "test:e2e": "pnpm --filter @cacia/api test:e2e"
+    "test:e2e": "pnpm --filter @cacia/api test:e2e",
+    "db:migrate": "node packages/database/node_modules/prisma/build/index.js migrate deploy --schema packages/database/prisma/schema.prisma",
+    "db:studio": "node packages/database/node_modules/prisma/build/index.js studio --schema packages/database/prisma/schema.prisma"
   },
   "devDependencies": {
     "@cacia/config": "workspace:*",

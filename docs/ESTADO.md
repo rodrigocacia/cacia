@@ -316,7 +316,7 @@ Corrigidos, e agora há um `tsconfig.test.json` que verifica os testes junto.
 docker compose up -d
 pnpm install
 cp .env.example .env          # preencha o que estiver marcado [obrigatória]
-pnpm --filter @cacia/database migrate:deploy
+pnpm db:migrate
 pnpm dev
 ```
 

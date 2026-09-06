@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -44,6 +45,14 @@ import { AdminModule } from './modules/admin/admin.module';
       isGlobal: true,
       validate: validateEnv,
       cache: true,
+      // O `.env` fica na RAIZ do monorepo — é o que o README manda criar, e é
+      // o mesmo arquivo que o Prisma e os frontends leem. Sem apontar para lá,
+      // o Nest procuraria só no diretório do processo (`apps/api`) e a
+      // aplicação não subiria com a configuração documentada.
+      //
+      // Os dois caminhos, nesta ordem: um `.env` dentro de apps/api vence,
+      // para quem quiser sobrepor algo sem mexer no arquivo compartilhado.
+      envFilePath: ['.env', resolve(__dirname, '../../../.env')],
     }),
     // Limite por IP. Não protege contra ataque distribuído, mas impede que um
     // cliente com laço de repetição derrube a API para todo mundo.
