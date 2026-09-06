@@ -281,13 +281,50 @@ describe('administração da plataforma (e2e)', () => {
       expect(JSON.stringify(resposta.corpo)).not.toContain('password');
     });
 
-    it('detalha com os escritórios de que participa', async () => {
+    it('detalha com os escritórios de que participa, e o endereço deles', async () => {
+      // A tela de escritórios do usuário mostra rua, cidade e estado — sem
+      // isso ela renderiza linhas vazias.
       const resposta = await operador.get<{
-        memberships: { role: string; office: { id: string } }[];
+        offices: {
+          id: string;
+          role: string;
+          addresses: { city: string }[];
+        }[];
       }>(`/admin/users/${a.userId}`);
 
-      expect(resposta.corpo.memberships[0]?.office.id).toBe(a.officeId);
-      expect(resposta.corpo.memberships[0]?.role).toBe('ADMIN');
+      expect(resposta.corpo.offices[0]?.id).toBe(a.officeId);
+      expect(resposta.corpo.offices[0]?.role).toBe('ADMIN');
+      expect(Array.isArray(resposta.corpo.offices[0]?.addresses)).toBe(true);
+    });
+
+    it('a listagem traz os escritórios, que é a coluna de quantidade', async () => {
+      // A tabela lê `user.offices.length`. Sem o campo, a tela quebrava com
+      // "Cannot read properties of undefined".
+      const resposta = await operador.get<{
+        data: { id: string; offices: { id: string }[] }[];
+      }>('/admin/users');
+
+      for (const usuario of resposta.corpo.data) {
+        expect(Array.isArray(usuario.offices)).toBe(true);
+      }
+
+      const comEscritorio = resposta.corpo.data.find((u) => u.id === a.userId);
+      expect(comEscritorio?.offices.length).toBeGreaterThan(0);
+    });
+
+    it('a listagem NÃO carrega o endereço de cada escritório', async () => {
+      // A coluna mostra a quantidade. Carregar o endereço de vinte usuários
+      // por página seria pagar por dado que ninguém olha.
+      const resposta = await operador.get<{
+        data: { offices: Record<string, unknown>[] }[];
+      }>('/admin/users');
+
+      const escritorio = resposta.corpo.data
+        .flatMap((u) => u.offices)
+        .find(Boolean);
+
+      expect(escritorio).toBeDefined();
+      expect(escritorio).not.toHaveProperty('addresses');
     });
 
     it('concede e revoga a administração', async () => {
