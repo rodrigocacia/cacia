@@ -150,14 +150,19 @@ padrão. Dentro da rede do compose as portas são as usuais.
 Aplique as migrations e gere o client:
 
 ```bash
-pnpm --filter @cacia/database migrate:deploy
+pnpm db:migrate
 pnpm --filter @cacia/database generate
 ```
+
+Os comandos de banco rodam **a partir da raiz** de propósito: o Prisma procura
+o `.env` no diretório do processo, e o arquivo fica aqui. Rodá-los pelo pacote
+(`pnpm --filter @cacia/database ...`) falha com `Environment variable not
+found: DATABASE_URL`.
 
 Para inspecionar os dados em uma interface web:
 
 ```bash
-pnpm --filter @cacia/database studio
+pnpm db:studio
 ```
 
 ### Ao alterar o schema

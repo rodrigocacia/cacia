@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { resolve } from 'node:path';
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -20,6 +21,8 @@ import { WorkerModule } from './worker/worker.module';
       isGlobal: true,
       validate: validateEnv,
       cache: true,
+      // Mesmo `.env` da API, na raiz do monorepo — ver app.module.ts
+      envFilePath: ['.env', resolve(__dirname, '../../../.env')],
     }),
     PrismaModule,
     RedisModule,

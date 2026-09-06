@@ -23,8 +23,6 @@ export async function signInAction(data: FormData) {
 
   const { email, password } = result.data;
 
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-
   try {
     const {
       token,
@@ -35,12 +33,6 @@ export async function signInAction(data: FormData) {
     });
 
     cookieStore.set("token:backoffice", token, {
-      maxAge: 60 * 60 * 24,
-      httpOnly: true,
-      path: "/",
-    });
-
-    cookieStore.set("_id", _id, {
       maxAge: 60 * 60 * 24,
       httpOnly: true,
       path: "/",
