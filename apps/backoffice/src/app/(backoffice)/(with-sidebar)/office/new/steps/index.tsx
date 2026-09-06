@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { DialogTitle } from "@radix-ui/react-dialog";
 
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/icone";
 
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";

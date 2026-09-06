@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/custom-button"
 import { Input } from "@/components/ui/custom-input"
 import { CustomTextarea } from "@/components/ui/custom-textarea"
 import { Switch } from "@/components/ui/switch"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export function AssistantDetail() {
   return (

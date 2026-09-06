@@ -1,6 +1,6 @@
 "use client"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { FormOficialApi } from "./forms/form-oficial-api"
 import { FormEvolutionApi } from "./forms/form-evolution-api"
 import { FormWaha } from "./forms/form-waha"

@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { deleteDocument } from "@/http/document/delete-document"
 import { useState } from "react"
 

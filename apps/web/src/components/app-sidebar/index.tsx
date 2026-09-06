@@ -2,10 +2,11 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 
 import { usePathname, useRouter } from "next/navigation"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import {
   Sidebar,
@@ -96,7 +97,7 @@ export function AppSidebar() {
                       }`}
                       asChild
                     >
-                      <a className="" href={item.url}>
+                      <Link className="" href={item.url}>
                         <IconComponent
                           className={`${
                             isActive ? "text-[#348C98]" : "text-[#707070]"
@@ -110,7 +111,7 @@ export function AppSidebar() {
                         >
                           {item.title}
                         </span>
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )
@@ -122,7 +123,7 @@ export function AppSidebar() {
 
       <SidebarFooter className="bg-[#24211E] rounded-bl-3xl rounded-br-3xl max-md:rounded-none">
         <div className="w-full flex flex-col gap-2 pb-8 px-2.5">
-          <a
+          <Link
             href="/setting/ia-service"
             className={`flex items-center gap-3 rounded-full py-[7px] data-[state=active]:bg-transparent active:bg-transparent ${
               currentSegment === "setting"
@@ -146,9 +147,9 @@ export function AppSidebar() {
             >
               Configurações
             </span>
-          </a>
+          </Link>
 
-          <a
+          <Link
             href="/support"
             className="w-full py-[7px]  flex items-center justify-start gap-2 cursor-pointer"
           >
@@ -158,7 +159,7 @@ export function AppSidebar() {
             />
 
             <span className="text-[#BDBDBD] text-sm">Precisa de ajuda?</span>
-          </a>
+          </Link>
 
           <div
             onClick={handleLogout}

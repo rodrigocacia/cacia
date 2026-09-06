@@ -7,7 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 import { HTTPError } from "ky"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { Check } from "lucide-react"
 
 import { SubmitHandler, useForm } from "react-hook-form"

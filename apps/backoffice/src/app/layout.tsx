@@ -2,7 +2,6 @@ import "./globals.css";
 
 import { Montserrat, Plus_Jakarta_Sans } from "next/font/google";
 
-import { IconesOffline } from "@/components/icones-offline";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -35,7 +34,6 @@ export default function RootLayout({
       className={`${montserrat.variable} ${plusJakarta.variable}`}
     >
       <body className="bg-[#FCFCFD]">
-        <IconesOffline />
         {children}
       </body>
     </html>

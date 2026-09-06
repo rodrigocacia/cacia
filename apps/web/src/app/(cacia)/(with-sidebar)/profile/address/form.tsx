@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import { Button } from "@/components/ui/custom-button"
 import { Input } from "@/components/ui/custom-input"

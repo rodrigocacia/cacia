@@ -1,7 +1,7 @@
 "use client"
 
 import { clsx } from "clsx"
-import { Icon } from "@iconify/react"
+import { Icon } from "@/components/icone"
 import { LeadStatus } from "@/types/lead-status"
 
 interface LeadBadgeProps {

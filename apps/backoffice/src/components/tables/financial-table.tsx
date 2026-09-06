@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { MoreVertical } from "lucide-react";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@/components/icone";
 import { formatDate } from "date-fns";
 import { mutate } from "swr";
 

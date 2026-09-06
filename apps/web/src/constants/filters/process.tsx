@@ -1,5 +1,5 @@
 import { ProcessStatus } from "@/types/process"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export const processFilters = [
   { id: "0", name: "Todos", status: "", icon: null },

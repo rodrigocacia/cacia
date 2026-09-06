@@ -20,7 +20,7 @@ import {
 
 import { CustomPagination } from "../ui/custom-pagination"
 import { Button } from "../ui/button"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { Spinner } from "../ui/sppiner"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { EmptySearch } from "../empty-search"

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 
 import QRCode from "react-qr-code"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import { useSignature } from "@/http/hooks/signature"
 

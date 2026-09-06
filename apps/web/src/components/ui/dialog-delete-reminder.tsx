@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "./custom-button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { deleteReminder } from "@/http/reminder/delete-reminder"
 
 interface DialogDeleteReminderProps {

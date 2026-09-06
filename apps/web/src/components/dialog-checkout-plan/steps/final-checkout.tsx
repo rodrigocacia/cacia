@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/custom-button"
 import { Toast } from "@/components/ui/toast"
 import { createSignature } from "@/http/plan/create-signature"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { ArrowRight, Check } from "lucide-react"
 import { useState } from "react"
 import { BiLeftArrowAlt } from "react-icons/bi"

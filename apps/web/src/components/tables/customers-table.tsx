@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 
 import { MoreVertical } from "lucide-react"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import { useCustomers } from "@/http/hooks/customer"
 

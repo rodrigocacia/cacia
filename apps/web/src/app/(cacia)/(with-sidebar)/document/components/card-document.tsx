@@ -16,7 +16,7 @@ import { FileIcon, MoreVertical, UserIcon } from "lucide-react"
 import { Folder } from "@/types/folder"
 import { DocumentType } from "@/types/document"
 import { formatName } from "@/utils/formatters"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 interface CardFolderProps {
   folder: Folder

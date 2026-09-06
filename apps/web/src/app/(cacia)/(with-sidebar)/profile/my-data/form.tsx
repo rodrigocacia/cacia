@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import { Button } from "@/components/ui/custom-button"
 import { Input } from "@/components/ui/custom-input"

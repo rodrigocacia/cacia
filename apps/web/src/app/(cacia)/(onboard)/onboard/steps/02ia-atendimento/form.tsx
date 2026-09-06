@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { z } from "zod"

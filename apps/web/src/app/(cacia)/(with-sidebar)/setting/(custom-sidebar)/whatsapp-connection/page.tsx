@@ -1,7 +1,7 @@
 import { Detail } from "./detail"
 import { Header } from "@/components/header"
 import { CustomTab } from "@/components/ui/custom-tab"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { NavLinks } from "../navs"
 import { getConnection } from "@/http/connection/get-connection"
 import { getQrCode } from "@/http/connection/qr-code"

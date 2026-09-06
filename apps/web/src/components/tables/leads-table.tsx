@@ -31,7 +31,7 @@ import { Spinner } from "../ui/sppiner"
 import { EmptySearch } from "../empty-search"
 import { formatPhone, formatName } from "@/utils/formatters"
 import Link from "next/link"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export function LeadsTable() {
   const searchParams = useSearchParams()

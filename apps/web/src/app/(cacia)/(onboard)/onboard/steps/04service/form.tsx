@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/custom-button"
 import { HeaderSteps } from "../components/header-steps"
 import { Form } from "@/app/(cacia)/(with-sidebar)/setting/(custom-sidebar)/service/new/form"
 import { ServiceTable } from "@/components/tables/service-table"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export function FormService() {
   const { nextStep, prevStep } = useOnboardingStore()

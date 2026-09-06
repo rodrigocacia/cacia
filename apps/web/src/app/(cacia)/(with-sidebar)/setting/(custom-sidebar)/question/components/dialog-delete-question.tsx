@@ -12,7 +12,7 @@ import {
 import { Toast } from "@/components/ui/toast"
 import { useQuestion, useQuestionById } from "@/http/hooks/question"
 import { deleteQuestion } from "@/http/question/delete-question"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export function DialogDeleteQuestion() {
   const [isOpen, setIsOpen] = useState(false)

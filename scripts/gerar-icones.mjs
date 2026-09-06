@@ -49,8 +49,26 @@ const APPS = [
   },
 ];
 
-/** `icon="mdi:account"` e `icon={"mdi:account"}`, em .ts e .tsx. */
-const PADRAO = /icon=\{?["']([a-z0-9-]+):([a-z0-9-]+)["']/g;
+/**
+ * As duas formas de nomear um ícone no código:
+ *
+ *   <Icon icon="mdi:account" />   e   icon={"mdi:account"}
+ *   { rotulo: "Ativo", icon: "mdi:account" }
+ *
+ * A segunda — o ícone declarado como campo de um objeto de configuração — é
+ * fácil de esquecer, e foi o que faltou na primeira versão deste script: 22
+ * ícones de badges, tipos de documento e status de processo ficavam de fora,
+ * e continuavam sendo buscados pela rede enquanto todo o resto já era local.
+ */
+const PADRAO = /icon\s*[=:]\s*\{?["']([a-z0-9-]+):([a-z0-9-]+)["']/g;
+
+/**
+ * Importar `Icon` direto do pacote fura tudo o que este script faz: traz de
+ * volta o build com busca pela rede, e o ícone volta a piscar em uma tela só,
+ * o que é bem mais difícil de perceber do que o problema original.
+ */
+const IMPORT_PROIBIDO = /from\s+["']@iconify\/react[^"']*["']/;
+const ARQUIVO_DO_ICONE = 'icone.tsx';
 
 function arquivosDe(diretorio) {
   const encontrados = [];
@@ -97,6 +115,18 @@ function conjuntoInstalado(prefixo) {
 let houveFalta = false;
 
 for (const app of APPS) {
+  for (const arquivo of arquivosDe(resolve(RAIZ, app.origem))) {
+    if (arquivo.endsWith(ARQUIVO_DO_ICONE)) continue;
+
+    if (IMPORT_PROIBIDO.test(readFileSync(arquivo, 'utf-8'))) {
+      houveFalta = true;
+      console.error(
+        `  ✗ ${app.nome}: ${arquivo} importa de "@iconify/react" — ` +
+          `use "@/components/icone", ou o ícone volta a ser buscado pela rede`,
+      );
+    }
+  }
+
   const porPrefixo = nomesUsados(app.origem);
   const colecoes = [];
   let total = 0;
@@ -135,11 +165,10 @@ for (const app of APPS) {
     }
   }
 
-  // `eslint-disable` porque o arquivo é gerado: regras de estilo escritas
-  // para código humano (aspas, largura de linha) não têm o que dizer sobre
-  // 30 KB de dados de desenho.
-  const arquivo = `/* eslint-disable */
-// GERADO POR scripts/gerar-icones.mjs — NÃO EDITE À MÃO.
+  // O arquivo é ignorado pelo eslint de cada app (ver eslint.config.mjs):
+  // regras escritas para código humano não têm o que dizer sobre 30 KB de
+  // dados de desenho.
+  const arquivo = `// GERADO POR scripts/gerar-icones.mjs — NÃO EDITE À MÃO.
 //
 // Os desenhos dos ícones usados na interface, embutidos no pacote para que o
 // @iconify/react não precise buscá-los pela rede. Ver o script para o porquê.

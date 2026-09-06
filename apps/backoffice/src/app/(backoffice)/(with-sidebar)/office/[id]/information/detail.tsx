@@ -1,7 +1,7 @@
 "use client";
 
 import type { Address } from "@/types/address";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@/components/icone";
 import { formatPhone, formatName } from "@/utils/formatters";
 
 interface OfficeDetailProps {

@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { deleteCustomer } from "@/http/customer/delete-customer"
 import { Toast } from "@/components/ui/toast"
 import { useCustomers } from "@/http/hooks/customer"

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 
 import { SWRConfig } from "swr";
 
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@/components/icone";
 
 import { getOffices } from "@/http/office/get-offices";
 

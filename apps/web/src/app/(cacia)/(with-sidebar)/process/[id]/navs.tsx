@@ -1,4 +1,4 @@
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export function navLinks(processId: string) {
   return [

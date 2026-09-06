@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/custom-button"
 import { Switch } from "@/components/ui/switch"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export function AdministratorDetail() {
   return (

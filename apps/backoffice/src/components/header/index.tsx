@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@/components/icone";
 import { Bell } from "lucide-react";
 
 import { SidebarTrigger } from "../ui/sidebar";

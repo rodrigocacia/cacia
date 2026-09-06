@@ -1,6 +1,6 @@
 "use client";
 
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@/components/icone";
 import { formatDocument, formatPhone } from "@/utils/formatters";
 
 interface UserDetailProps {

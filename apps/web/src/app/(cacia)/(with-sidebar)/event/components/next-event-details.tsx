@@ -6,7 +6,7 @@ import { GetEventResponse } from "@/http/event/get-event"
 
 import CardEvent from "@/app/(cacia)/(with-sidebar)/event/components/card-event"
 import { getDateRange } from "@/utils/get-date-range"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { EmptySearch } from "@/components/empty-search"
 import { addHours } from "@/utils/add-hours"
 import { DialogShowEvent } from "./calendar/dialog-show-event"

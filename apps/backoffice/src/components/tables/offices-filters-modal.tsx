@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/icone";
 import { MdTune, MdCheck, MdDelete } from "react-icons/md";
 
 import {

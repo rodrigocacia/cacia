@@ -1,5 +1,5 @@
 import { AssistantDetail } from "./detail"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export default function ProccessDetail() {
   return (
