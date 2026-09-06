@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { RichTextEditor } from "./rich-text-editor"
-import { Icon } from "@iconify/react"
+import { Icon } from "@/components/icone"
 import { Button } from "@/components/ui/custom-button"
 
 interface DocumentEditorProps {

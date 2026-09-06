@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/custom-button"
 
 import { HeaderSteps } from "../components/header-steps"
 import { QuestionsTable } from "@/components/tables/questions-table"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { Form } from "@/app/(cacia)/(with-sidebar)/setting/(custom-sidebar)/question/new/form"
 
 export function FormQuestion() {

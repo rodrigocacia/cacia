@@ -1,5 +1,5 @@
 import { NotificationType } from "@/types/notification"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export const navLinks = [
   {

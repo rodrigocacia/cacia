@@ -3,7 +3,7 @@
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import { ProcessBadge } from "@/components/ui/badge/proccess.badge"
 import { Process } from "@/types/process"

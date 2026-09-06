@@ -10,7 +10,7 @@ import Highlight from "@tiptap/extension-highlight"
 import Link from "@tiptap/extension-link"
 import { Extension } from "@tiptap/core"
 import { Button } from "@/components/ui/button"
-import { Icon } from "@iconify/react"
+import { Icon } from "@/components/icone"
 import { useEffect, useCallback, useMemo, useState } from "react"
 
 const FontSize = Extension.create({

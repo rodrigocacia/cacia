@@ -15,7 +15,7 @@ import { updateOffice } from "@/http/office/udpate-office"
 import { Toast } from "@/components/ui/toast"
 
 import { Check } from "lucide-react"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { Switch } from "@/components/ui/switch"
 import { formatDocument } from "@/utils/formatters"
 

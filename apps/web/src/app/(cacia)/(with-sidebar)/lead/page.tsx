@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import { Header } from "@/components/header"
 import { LeadsTable } from "@/components/tables/leads-table"

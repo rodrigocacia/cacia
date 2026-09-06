@@ -1,6 +1,6 @@
 "use client"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { DialogDeleteFolder } from "./components/dialog-delete-folder"
 import { Toast } from "@/components/ui/toast"
 import { useState } from "react"

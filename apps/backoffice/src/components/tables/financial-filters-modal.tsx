@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/icone";
 import { MdTune, MdCheck, MdDelete } from "react-icons/md";
 
 import {
@@ -76,9 +76,14 @@ export function FinancialFiltersModal({
   };
 
   const getQuickFilterStatus = () => {
-    if (filters.status === RecurrenceStatus.ACTIVE) return "active";
-    if (filters.status === RecurrenceStatus.PENDING) return "pending";
-    if (filters.status === RecurrenceStatus.CANCELLED) return "cancelled";
+    // O atalho devolve o próprio valor do enum: era um token minúsculo à
+    // parte, que deixou de bater com o enum e apagava o destaque do filtro.
+    if (filters.status === RecurrenceStatus.ACTIVE)
+      return RecurrenceStatus.ACTIVE;
+    if (filters.status === RecurrenceStatus.PENDING)
+      return RecurrenceStatus.PENDING;
+    if (filters.status === RecurrenceStatus.CANCELLED)
+      return RecurrenceStatus.CANCELLED;
     return "none";
   };
 
@@ -112,9 +117,9 @@ export function FinancialFiltersModal({
 
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => handleQuickFilter("active")}
+                  onClick={() => handleQuickFilter(RecurrenceStatus.ACTIVE)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    getQuickFilterStatus() === "active"
+                    getQuickFilterStatus() === RecurrenceStatus.ACTIVE
                       ? "bg-[#348C98] text-white"
                       : "bg-gray-100 text-[#707070] hover:bg-gray-200"
                   }`}
@@ -124,9 +129,9 @@ export function FinancialFiltersModal({
                 </button>
 
                 <button
-                  onClick={() => handleQuickFilter("pending")}
+                  onClick={() => handleQuickFilter(RecurrenceStatus.PENDING)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    getQuickFilterStatus() === "pending"
+                    getQuickFilterStatus() === RecurrenceStatus.PENDING
                       ? "bg-[#348C98] text-white"
                       : "bg-gray-100 text-[#707070] hover:bg-gray-200"
                   }`}
@@ -136,9 +141,9 @@ export function FinancialFiltersModal({
                 </button>
 
                 <button
-                  onClick={() => handleQuickFilter("cancelled")}
+                  onClick={() => handleQuickFilter(RecurrenceStatus.CANCELLED)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    getQuickFilterStatus() === "cancelled"
+                    getQuickFilterStatus() === RecurrenceStatus.CANCELLED
                       ? "bg-[#348C98] text-white"
                       : "bg-gray-100 text-[#707070] hover:bg-gray-200"
                   }`}

@@ -3,7 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 
 import ReactMarkdown from "react-markdown"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import { ClockIcon } from "lucide-react"
 

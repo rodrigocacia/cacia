@@ -1,7 +1,7 @@
 "use client"
 
 import { Document } from "@/types/document"
-import { Icon } from "@iconify/react"
+import { Icon } from "@/components/icone"
 
 interface DocumentPreviewProps {
   document: Document

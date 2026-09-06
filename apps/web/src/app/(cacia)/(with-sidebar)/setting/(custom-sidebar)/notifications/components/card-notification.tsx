@@ -1,6 +1,6 @@
 import clsx from "clsx"
 
-import { Icon } from "@iconify/react"
+import { Icon } from "@/components/icone"
 import { Switch } from "@/components/ui/switch"
 import { SettinFormData } from "@/schemas/setting"
 import { Control, Controller } from "react-hook-form"

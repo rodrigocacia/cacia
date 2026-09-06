@@ -1,7 +1,7 @@
 import { CustomTab } from "@/components/ui/custom-tab"
 import { NotificationList } from "./detail"
 import { tabs } from "./components/tabs"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { getNotification } from "@/http/notification/get-notification"
 import { SWRConfig } from "swr"
 import { getNotificationUnreadCount } from "@/http/notification/get-notification-unread-count"

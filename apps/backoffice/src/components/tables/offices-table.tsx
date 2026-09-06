@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { MoreVertical } from "lucide-react";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@/components/icone";
 
 import { useOffices } from "@/http/hooks/office";
 

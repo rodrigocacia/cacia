@@ -1,4 +1,4 @@
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { NotificationType } from "@/types/notification"
 
 export const tabs = [

@@ -1,6 +1,6 @@
 "use client"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { useMemo } from "react"
 import { useSearchParams } from "next/navigation"
 

@@ -1,12 +1,17 @@
-import { ProcessStatus } from "@/types/process"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { ProcessStatus, processStatusConfig } from "@/types/process"
+import { Icon } from "@/components/icone"
 
+/**
+ * `name` é o que aparece na tela; `status` é o que vai na query para a API.
+ * Eram os dois em português, e a API respondia 400 a qualquer filtro de status
+ * escolhido — o rótulo agora sai de processStatusConfig, que é onde ele mora.
+ */
 export const processFilters = [
   { id: "0", name: "Todos", status: "", icon: null },
   {
     id: "1",
-    name: ProcessStatus.ACTIVE,
-    status: "Ativo",
+    name: processStatusConfig[ProcessStatus.ACTIVE].label,
+    status: ProcessStatus.ACTIVE,
     icon: (
       <Icon
         icon="mdi:folder-check-outline"
@@ -16,8 +21,8 @@ export const processFilters = [
   },
   {
     id: "2",
-    name: ProcessStatus.CONCLUDED,
-    status: "Concluído",
+    name: processStatusConfig[ProcessStatus.CONCLUDED].label,
+    status: ProcessStatus.CONCLUDED,
     icon: (
       <Icon
         icon="mdi:folder-alert-outline"
@@ -27,8 +32,8 @@ export const processFilters = [
   },
   {
     id: "3",
-    name: ProcessStatus.ARCHIVED,
-    status: "Arquivado",
+    name: processStatusConfig[ProcessStatus.ARCHIVED].label,
+    status: ProcessStatus.ARCHIVED,
     icon: (
       <Icon
         icon="mdi:folder-clock-outline"
@@ -38,8 +43,8 @@ export const processFilters = [
   },
   {
     id: "4",
-    name: ProcessStatus.FINISHED,
-    status: "Finalizado",
+    name: processStatusConfig[ProcessStatus.FINISHED].label,
+    status: ProcessStatus.FINISHED,
     icon: (
       <Icon
         icon="mdi:check-circle-outline"

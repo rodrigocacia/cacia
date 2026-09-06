@@ -2,7 +2,7 @@ import { Suspense } from "react";
 
 import { SWRConfig } from "swr";
 
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@/components/icone";
 
 import { getUsers } from "@/http/user/get-users";
 

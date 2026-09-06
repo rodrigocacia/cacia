@@ -1,9 +1,9 @@
 export enum NotificationType {
-  PROCESS_UPDATE = "process_update",
-  PROGRESS_UPDATE = "progress_update",
-  NEW_EVENT = "new_event",
-  CONFIRM_DOC = "confirm_doc",
-  NEW_LEAD = "new_lead",
+  PROCESS_UPDATE = "PROCESS_UPDATE",
+  PROGRESS_UPDATE = "PROGRESS_UPDATE",
+  NEW_EVENT = "NEW_EVENT",
+  CONFIRM_DOC = "CONFIRM_DOC",
+  NEW_LEAD = "NEW_LEAD",
 }
 
 export interface Notification {

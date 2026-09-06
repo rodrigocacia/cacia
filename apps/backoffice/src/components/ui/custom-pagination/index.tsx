@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/icone";
 
 type PaginationProps = {
   totalItems: number;

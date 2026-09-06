@@ -1,5 +1,5 @@
 import { DocumentCategory, documentCategoryConfig } from "@/types/document"
-import { Icon } from "@iconify/react"
+import { Icon } from "@/components/icone"
 
 interface DocumentCategoryBadgeProps {
   category: DocumentCategory

@@ -6,7 +6,7 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import { Button } from "@/components/ui/custom-button"
 import { CustomTextarea } from "@/components/ui/custom-textarea"

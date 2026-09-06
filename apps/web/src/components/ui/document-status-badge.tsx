@@ -1,5 +1,5 @@
 import { DocumentStatus, documentStatusConfig } from "@/types/document"
-import { Icon } from "@iconify/react"
+import { Icon } from "@/components/icone"
 
 interface DocumentStatusBadgeProps {
   status: DocumentStatus

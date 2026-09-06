@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { useRouter } from "next/navigation"
 import { deleteFolder } from "@/http/folder/delete-folder"
 import { useState } from "react"

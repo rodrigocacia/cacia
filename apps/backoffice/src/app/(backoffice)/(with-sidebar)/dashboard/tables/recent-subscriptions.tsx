@@ -1,5 +1,5 @@
 import { CustomAvatar } from "@/components/ui/custom-avatar";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/icone";
 import Link from "next/link";
 
 interface Subscription {

@@ -1,7 +1,7 @@
 "use client"
 
 import { EmptySearch } from "@/components/empty-search"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { CardAgenda } from "./components/card-agenda"
 import { Button } from "@/components/ui/custom-button"
 import Link from "next/link"

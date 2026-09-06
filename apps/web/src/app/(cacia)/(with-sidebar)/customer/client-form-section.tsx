@@ -1,6 +1,6 @@
 "use client"
 import { Suspense } from "react"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { SWRConfig } from "swr"
 import { Form } from "./new/steps"
 import { CustomersTable } from "@/components/tables/customers-table"

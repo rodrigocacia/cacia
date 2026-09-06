@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { deleteNotification } from "@/http/notification/delete-notification"
 import { useState } from "react"
 import { useNotification } from "@/http/hooks/notification"

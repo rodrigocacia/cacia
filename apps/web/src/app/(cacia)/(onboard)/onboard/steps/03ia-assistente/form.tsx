@@ -6,7 +6,7 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import { Button } from "@/components/ui/custom-button"
 import { CustomTextarea } from "@/components/ui/custom-textarea"
@@ -15,27 +15,30 @@ import { Spinner } from "@/components/ui/sppiner"
 import { updateAgent } from "@/http/agent/update-agent"
 import { Toast } from "@/components/ui/toast"
 import { CustomSelect } from "@/components/ui/custom-select"
-import { AgentStyle } from "@/types/agent"
+import { AgentStyle, agentStyleLabels } from "@/types/agent"
 import { HeaderSteps } from "../components/header-steps"
 import { useOnboardingStore } from "@/stores/use-onboard-store"
 
 const agentStyle = [
-  { value: AgentStyle.LEGAL_FORMAL, label: AgentStyle.LEGAL_FORMAL },
+  {
+    value: AgentStyle.LEGAL_FORMAL,
+    label: agentStyleLabels[AgentStyle.LEGAL_FORMAL],
+  },
   {
     value: AgentStyle.CLEAR_AND_OBJECTIVE,
-    label: AgentStyle.CLEAR_AND_OBJECTIVE,
+    label: agentStyleLabels[AgentStyle.CLEAR_AND_OBJECTIVE],
   },
   {
     value: AgentStyle.ASSERTIVE_AND_PERSUASIVE,
-    label: AgentStyle.ASSERTIVE_AND_PERSUASIVE,
+    label: agentStyleLabels[AgentStyle.ASSERTIVE_AND_PERSUASIVE],
   },
   {
     value: AgentStyle.EMPATHETIC_AND_SUPPORTIVE,
-    label: AgentStyle.EMPATHETIC_AND_SUPPORTIVE,
+    label: agentStyleLabels[AgentStyle.EMPATHETIC_AND_SUPPORTIVE],
   },
   {
     value: AgentStyle.PROFESSIONAL_AND_CASUAL,
-    label: AgentStyle.PROFESSIONAL_AND_CASUAL,
+    label: agentStyleLabels[AgentStyle.PROFESSIONAL_AND_CASUAL],
   },
 ]
 

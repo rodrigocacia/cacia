@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 
 import { FaTrash } from "react-icons/fa"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import {
   Dialog,

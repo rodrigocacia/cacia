@@ -13,7 +13,7 @@ import {
 import { Toast } from "@/components/ui/toast"
 import { useCustomers } from "@/http/hooks/customer"
 import { deleteCustomer } from "@/http/customer/delete-customer"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export function DialogDeleteCustomer() {
   const [isOpen, setIsOpen] = useState(false)

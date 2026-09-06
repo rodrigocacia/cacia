@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/icone";
 
 interface ProfileMenuCardProps {
   title: string;

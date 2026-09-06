@@ -1,7 +1,7 @@
 import { CustomTab } from "@/components/ui/custom-tab"
 import { ProcessBadge } from "@/components/ui/badge/proccess.badge"
 import { ProgressDetail } from "./detail"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { getProcessById } from "@/http/process/get-process-by-id"
 import { navLinks } from "../navs"
 import { formatProcess, formatName } from "@/utils/formatters"

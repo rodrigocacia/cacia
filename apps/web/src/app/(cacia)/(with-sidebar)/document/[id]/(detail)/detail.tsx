@@ -1,6 +1,6 @@
 "use client"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { CardDocument } from "../components/card-document"
 import { Form } from "../new/form"
 import { EmptySearch } from "@/components/empty-search"

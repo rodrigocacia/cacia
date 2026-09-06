@@ -34,7 +34,7 @@ import { Spinner } from "@/components/ui/sppiner"
 
 import { HeaderSteps } from "../components/header-steps"
 import { useMe } from "@/http/hooks/user"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export function Form() {
   const [hasSuccess, setHasSuccess] = useState(false)

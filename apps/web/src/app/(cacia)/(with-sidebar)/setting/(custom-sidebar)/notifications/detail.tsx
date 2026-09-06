@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-import { Icon } from "@iconify/react"
+import { Icon } from "@/components/icone"
 import { Check } from "lucide-react"
 import { useForm, SubmitHandler } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"

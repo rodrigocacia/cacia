@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { navLinks } from "./navs"
 import { useSearchParams } from "next/navigation"
 

@@ -1,6 +1,6 @@
 import { CustomSelect } from "@/components/ui/custom-select";
 import { Button } from "@/components/ui/button";
-import { Icon } from "@iconify/react";
+import { Icon } from "@/components/icone";
 
 const periodOptions = [
   { value: "1", label: "Últimas 24 horas" },

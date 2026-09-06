@@ -1,8 +1,21 @@
+/**
+ * Os valores são os que a API devolve, não os rótulos em português.
+ *
+ * Eram os rótulos, e o efeito era pior do que uma tela quebrada: a API manda
+ * "ARCHIVED", a busca em processStatusConfig não achava nada, e o ProcessBadge
+ * caía no padrão — todo processo aparecia como "Ativo", inclusive os
+ * arquivados e os concluídos. Num sistema jurídico, status errado exibido com
+ * confiança é o pior tipo de defeito.
+ *
+ * O português vive em processStatusConfig.label. PENDING existe no banco e
+ * faltava aqui.
+ */
 export enum ProcessStatus {
-  ACTIVE = "Ativo",
-  ARCHIVED = "Arquivado",
-  CONCLUDED = "Concluído",
-  FINISHED = "Finalizado",
+  PENDING = "PENDING",
+  ACTIVE = "ACTIVE",
+  ARCHIVED = "ARCHIVED",
+  CONCLUDED = "CONCLUDED",
+  FINISHED = "FINISHED",
 }
 
 export enum ProcessType {
@@ -34,6 +47,12 @@ type ProcessTypeConfig = {
 }
 
 export const processStatusConfig: ProcessStatusConfig = {
+  [ProcessStatus.PENDING]: {
+    label: "Pendente",
+    color: "bg-[#FEFBEB]",
+    text: "text-[#F7CB08]",
+    icon: "mdi:clock-outline",
+  },
   [ProcessStatus.ACTIVE]: {
     label: "Ativo",
     color: "bg-[#F0FDF4]",

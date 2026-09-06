@@ -4,7 +4,7 @@ import { getAgents } from "@/http/agent/get-agent"
 
 import { CustomTab } from "@/components/ui/custom-tab"
 import { AssistantDetail } from "./detail"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { Header } from "@/components/header"
 import { NavLinks } from "../navs"
 

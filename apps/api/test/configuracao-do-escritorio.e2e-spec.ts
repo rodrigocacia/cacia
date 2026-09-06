@@ -97,6 +97,39 @@ describe('configuração do escritório (e2e)', () => {
       expect(documento?.deletedAt).toBeNull();
     });
 
+    it('ordena pelo critério que o seletor da tela oferece', async () => {
+      // A tela de documentos tem um "Ordenar por" com estas quatro opções. Ela
+      // mandava `sort_by`, que a API não conhecia — e a resposta 400 derrubava
+      // a tela inteira, não só a ordenação.
+      const criadas: string[] = [];
+
+      for (const title of ['Zebra', 'Alfa', 'Meio']) {
+        const criada = await a.api.post<{ id: string }>('/folders', { title });
+        criadas.push(criada.corpo.id);
+      }
+
+      const titulos = async (sortBy: string) => {
+        const lista = await a.api.get<Pagina<{ id: string; title: string }>>(
+          `/folders?sortBy=${sortBy}`,
+        );
+
+        return lista.corpo.data
+          .filter((pasta) => criadas.includes(pasta.id))
+          .map((pasta) => pasta.title);
+      };
+
+      expect(await titulos('name_asc')).toEqual(['Alfa', 'Meio', 'Zebra']);
+      expect(await titulos('name_desc')).toEqual(['Zebra', 'Meio', 'Alfa']);
+      expect(await titulos('newest')).toEqual(['Meio', 'Alfa', 'Zebra']);
+      expect(await titulos('oldest')).toEqual(['Zebra', 'Alfa', 'Meio']);
+    });
+
+    it('recusa um critério de ordenação inventado', async () => {
+      const resposta = await a.api.get('/folders?sortBy=alfabetica');
+
+      expect(resposta.status).toBe(400);
+    });
+
     it('pasta do sistema não pode ser removida nem renomeada', async () => {
       const doSistema = await aplicacao.prisma.folder.create({
         data: { officeId: a.officeId, title: 'Recebidos', system: true },

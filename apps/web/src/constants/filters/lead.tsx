@@ -1,11 +1,11 @@
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export const leadFilters = [
   { id: "0", name: "Todos", status: "", icon: null },
   {
     id: "1",
     name: "Novos",
-    status: "new",
+    status: "NEW",
     icon: (
       <Icon
         icon="mdi:folder-clock-outline"
@@ -16,13 +16,13 @@ export const leadFilters = [
   {
     id: "2",
     name: "Em contato",
-    status: "in_contact",
+    status: "IN_CONTACT",
     icon: <Icon icon="mdi:message-fast" className="text-[#BDBDBD] w-4 h-4" />,
   },
   {
     id: "3",
     name: "Convertidos",
-    status: "converted",
+    status: "CONVERTED",
     icon: (
       <Icon
         icon="mdi:account-check-outline"

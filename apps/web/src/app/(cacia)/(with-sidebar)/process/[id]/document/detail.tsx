@@ -1,6 +1,6 @@
 "use client"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { useState, useCallback, Suspense, useMemo } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 
@@ -57,7 +57,7 @@ function toDocumentViewer(
     extension: document.extension,
     content_url: document.content_url ?? "",
     updated_at: document.updated_at ?? "",
-    type: document.type ?? "attachment",
+    type: document.type ?? DocumentType.ATTACHMENT,
     lead: document.lead,
     customer: document.customer,
   }

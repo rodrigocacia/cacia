@@ -4,7 +4,7 @@ import clsx from "clsx"
 import { format } from "date-fns"
 import { useRouter, useSearchParams } from "next/navigation"
 import { EventStatus, EventType } from "@/types/event"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { Clock } from "lucide-react"
 import { formatName } from "@/utils/formatters"
 

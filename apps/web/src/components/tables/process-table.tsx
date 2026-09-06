@@ -21,7 +21,7 @@ import {
 
 import { CustomPagination } from "../ui/custom-pagination"
 import { Button } from "../ui/button"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import Link from "next/link"
 import { ProcessBadge } from "../ui/badge/proccess.badge"
 import { useProcess } from "@/http/hooks/process"

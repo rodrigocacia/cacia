@@ -1,7 +1,7 @@
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { Progress } from "@/types/progress"
 
 interface CardProgressProps {

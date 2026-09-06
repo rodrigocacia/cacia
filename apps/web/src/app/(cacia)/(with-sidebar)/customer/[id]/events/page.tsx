@@ -8,7 +8,7 @@ import { CustomAvatar } from "@/components/ui/custom-avatar"
 
 import { NextEventDetails } from "../../../event/components/next-event-details"
 import { Form } from "../../../event/new/form"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export default async function CustomerEventsPage({
   searchParams,

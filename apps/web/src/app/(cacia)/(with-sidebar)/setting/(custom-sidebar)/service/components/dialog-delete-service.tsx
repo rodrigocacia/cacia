@@ -8,7 +8,7 @@ import {
 import { Toast } from "@/components/ui/toast"
 import { useService, useServiceById } from "@/http/hooks/service"
 import { deleteService } from "@/http/service/delete-service"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 

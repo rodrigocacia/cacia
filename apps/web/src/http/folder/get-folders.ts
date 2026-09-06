@@ -23,12 +23,15 @@ export async function getFolders({ page, search, sortBy }: QueryParams) {
     page: page.toString(),
   })
 
+  // `search` e `sortBy`, não `title` e `sort_by`: a API rejeita o que não
+  // reconhece, e a tela inteira voltava 400 ao carregar. O adaptador traduz o
+  // corpo e a resposta, mas de propósito não mexe nos nomes da query.
   if (search) {
-    queryParams.set("title", search)
+    queryParams.set("search", search)
   }
 
   if (sortBy) {
-    queryParams.set("sort_by", sortBy)
+    queryParams.set("sortBy", sortBy)
   }
 
   const result = await api

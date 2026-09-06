@@ -2,7 +2,7 @@
 
 import { Suspense } from "react"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import { Form } from "./new/form"
 import { QuestionsTable } from "@/components/tables/questions-table"

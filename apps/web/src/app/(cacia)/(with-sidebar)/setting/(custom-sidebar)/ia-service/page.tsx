@@ -1,6 +1,6 @@
 import { SWRConfig } from "swr"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import { getAgents } from "@/http/agent/get-agent"
 

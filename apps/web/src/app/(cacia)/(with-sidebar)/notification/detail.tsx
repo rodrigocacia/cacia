@@ -1,6 +1,6 @@
 "use client"
 
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 import {
   DropdownMenu,
@@ -119,7 +119,7 @@ export function NotificationList({
     type_id: string
   ) => {
     try {
-      if (type !== "confirm_doc") {
+      if (type !== NotificationType.CONFIRM_DOC) {
         await updateStatusNotification({
           notification_id: notificationId,
         })

@@ -6,7 +6,7 @@ import Link from "next/link";
 
 import { usePathname, useRouter } from "next/navigation";
 
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@/components/icone";
 
 import {
   Sidebar,
@@ -90,7 +90,7 @@ export function AppSidebar() {
                       }`}
                       asChild
                     >
-                      <a className="" href={item.url}>
+                      <Link className="" href={item.url}>
                         <IconComponent
                           className={`${
                             isActive ? "text-[#348C98]" : "text-[#707070]"
@@ -104,7 +104,7 @@ export function AppSidebar() {
                         >
                           {item.title}
                         </span>
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

@@ -19,10 +19,20 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,json,md,yml,yaml}\"",
     "test:e2e": "pnpm --filter @cacia/api test:e2e",
     "db:migrate": "node packages/database/node_modules/prisma/build/index.js migrate deploy --schema packages/database/prisma/schema.prisma",
-    "db:studio": "node packages/database/node_modules/prisma/build/index.js studio --schema packages/database/prisma/schema.prisma"
+    "db:studio": "node packages/database/node_modules/prisma/build/index.js studio --schema packages/database/prisma/schema.prisma",
+    "icones": "node scripts/gerar-icones.mjs"
   },
   "devDependencies": {
     "@cacia/config": "workspace:*",
+    "@iconify-json/ic": "^1.2.4",
+    "@iconify-json/ion": "^1.2.7",
+    "@iconify-json/material-symbols": "^1.2.90",
+    "@iconify-json/mdi": "^1.2.3",
+    "@iconify-json/mingcute": "^1.2.8",
+    "@iconify-json/octicon": "^1.2.32",
+    "@iconify-json/ri": "^1.2.10",
+    "@iconify-json/uim": "^1.2.3",
+    "@iconify/utils": "^3.1.6",
     "prettier": "^3.4.2",
     "rimraf": "^6.0.1",
     "turbo": "^2.3.3",

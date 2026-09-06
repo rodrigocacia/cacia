@@ -1,6 +1,6 @@
 import { CustomTab } from "@/components/ui/custom-tab"
 import { ClientDetail } from "./detail"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 const tabs = [
   {

@@ -6,7 +6,7 @@ import { getOfficePerformance } from "@/http/office/get-office-performance";
 import { PerformanceFilters } from "../performance-dashboard/PerformanceFilters";
 import { PerformanceIndicators } from "../performance-dashboard/PerformanceIndicators";
 import { PerformanceProgress } from "../performance-dashboard/PerformanceProgress";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@/components/icone";
 import { Spinner } from "@/components/ui/sppiner";
 
 interface OfficeDetailProps {

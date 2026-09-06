@@ -1,4 +1,4 @@
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 import { BiCalendarCheck } from "react-icons/bi"
 
 export const NavLinks = [

@@ -1,11 +1,11 @@
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 export const customerFilters = [
   { id: "0", name: "Todos", status: "", icon: null },
   {
     id: "1",
     name: "Novos",
-    status: "new",
+    status: "NEW",
     icon: (
       <Icon
         icon="mdi:folder-clock-outline"

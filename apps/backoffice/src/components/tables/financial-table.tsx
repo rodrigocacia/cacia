@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { MoreVertical } from "lucide-react";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@/components/icone";
 import { formatDate } from "date-fns";
 import { mutate } from "swr";
 
@@ -33,18 +33,17 @@ import { EmptySearch } from "../empty-search";
 import { CustomAvatar } from "../ui/custom-avatar";
 import { Toast } from "../ui/toast";
 import { DialogActivateBetaFree } from "./dialog-activate-beta-free";
+import { RecurrenceStatus } from "@/types/recurrence";
 
 function StatusBadge({ status }: { status: string }) {
   const getStatusDisplay = (status: string) => {
     switch (status) {
-      case "active":
+      case RecurrenceStatus.ACTIVE:
         return { text: "Pago", color: "bg-[#DBFADC] text-[#16A31B]" };
-      case "pending":
+      case RecurrenceStatus.PENDING:
         return { text: "Pendente", color: "bg-[#FEF7D7] text-[#F7CB08]" };
-      case "cancelled":
+      case RecurrenceStatus.CANCELLED:
         return { text: "Cancelado", color: "bg-[#F9DCDC] text-[#DC2626]" };
-      case "expired":
-        return { text: "Expirado", color: "bg-[#F9DCDC] text-[#DC2626]" };
       default:
         return { text: status, color: "bg-gray-100 text-gray-800" };
     }
@@ -215,7 +214,7 @@ export function FinancialTable() {
                     </DropdownMenuTrigger>
 
                     <DropdownMenuContent align="end">
-                      {recurrence.status === "pending" && (
+                      {recurrence.status === RecurrenceStatus.PENDING && (
                         <DialogActivateBetaFree
                           officeId={recurrence.office?._id || ""}
                           officeName={formatName(

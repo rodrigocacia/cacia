@@ -1,5 +1,5 @@
 import { Crumb } from "@/components/ui/custom-breadcrumb";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { Icon } from "@/components/icone";
 
 export const officeCrumbs: Crumb[] = [
   {

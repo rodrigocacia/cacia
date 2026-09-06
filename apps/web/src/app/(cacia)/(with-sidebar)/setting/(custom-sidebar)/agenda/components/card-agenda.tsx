@@ -10,7 +10,7 @@ import { MoreVertical } from "lucide-react"
 import { BiCalendarCheck } from "react-icons/bi"
 import { Calendar } from "@/types/calendar"
 import Link from "next/link"
-import { Icon } from "@iconify/react/dist/iconify.js"
+import { Icon } from "@/components/icone"
 
 interface CardAgendaProps {
   agenda: Calendar
