@@ -8,7 +8,10 @@ interface LeadBadgeProps {
   variant?: LeadStatus
 }
 
-const badgeStyles: Record<LeadStatus, { bg: string; text: string; icon: string; label: string }> = {
+const badgeStyles: Record<
+  LeadStatus,
+  { bg: string; text: string; icon: string; label: string }
+> = {
   NEW: {
     bg: "bg-[#ECF7F8]",
     text: "text-[#348C98]",

@@ -76,7 +76,11 @@ const PARES: Array<{
     frontend: DocumentCategory,
     prisma: "DocumentCategory",
   },
-  { nome: "DocumentStatus", frontend: DocumentStatus, prisma: "DocumentStatus" },
+  {
+    nome: "DocumentStatus",
+    frontend: DocumentStatus,
+    prisma: "DocumentStatus",
+  },
   { nome: "DocumentType", frontend: DocumentType, prisma: "DocumentType" },
   { nome: "EventStatus", frontend: EventStatus, prisma: "EventStatus" },
   { nome: "EventType", frontend: EventType, prisma: "EventType" },

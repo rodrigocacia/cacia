@@ -78,8 +78,10 @@ export function FinancialFiltersModal({
   const getQuickFilterStatus = () => {
     // O atalho devolve o próprio valor do enum: era um token minúsculo à
     // parte, que deixou de bater com o enum e apagava o destaque do filtro.
-    if (filters.status === RecurrenceStatus.ACTIVE) return RecurrenceStatus.ACTIVE;
-    if (filters.status === RecurrenceStatus.PENDING) return RecurrenceStatus.PENDING;
+    if (filters.status === RecurrenceStatus.ACTIVE)
+      return RecurrenceStatus.ACTIVE;
+    if (filters.status === RecurrenceStatus.PENDING)
+      return RecurrenceStatus.PENDING;
     if (filters.status === RecurrenceStatus.CANCELLED)
       return RecurrenceStatus.CANCELLED;
     return "none";

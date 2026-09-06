@@ -2,7 +2,6 @@ import "./globals.css";
 
 import { Montserrat, Plus_Jakarta_Sans } from "next/font/google";
 
-
 const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
@@ -33,9 +32,7 @@ export default function RootLayout({
       lang="pt-br"
       className={`${montserrat.variable} ${plusJakarta.variable}`}
     >
-      <body className="bg-[#FCFCFD]">
-        {children}
-      </body>
+      <body className="bg-[#FCFCFD]">{children}</body>
     </html>
   );
 }

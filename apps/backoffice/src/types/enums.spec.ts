@@ -1,13 +1,13 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
-import { ProcessStatus, ProcessType } from "./process";
-import { EventStatus, EventType } from "./event";
-import { OfficeSignatureStatus, OfficeStatus } from "./office";
-import { RecurrenceStatus } from "./recurrence";
-import { ServiceArea } from "./service";
+import { ProcessStatus, ProcessType } from './process';
+import { EventStatus, EventType } from './event';
+import { OfficeSignatureStatus, OfficeStatus } from './office';
+import { RecurrenceStatus } from './recurrence';
+import { ServiceArea } from './service';
 
 /**
  * Os enums do painel têm de falar a mesma língua que a API.
@@ -26,11 +26,11 @@ import { ServiceArea } from "./service";
 
 const SCHEMA = resolve(
   import.meta.dirname,
-  "../../../../packages/database/prisma/schema.prisma"
+  '../../../../packages/database/prisma/schema.prisma',
 );
 
 function membrosNoPrisma(nome: string): string[] {
-  const schema = readFileSync(SCHEMA, "utf-8");
+  const schema = readFileSync(SCHEMA, 'utf-8');
   const bloco = new RegExp(`enum ${nome} \\{([^}]*)\\}`).exec(schema);
 
   if (!bloco?.[1]) {
@@ -38,7 +38,7 @@ function membrosNoPrisma(nome: string): string[] {
   }
 
   return bloco[1]
-    .split("\n")
+    .split('\n')
     .map((linha) => /^\s*([A-Z][A-Z0-9_]*)/.exec(linha)?.[1])
     .filter((membro): membro is string => Boolean(membro));
 }
@@ -55,67 +55,67 @@ const PARES: Array<{
   lacunas: string[];
 }> = [
   {
-    nome: "ProcessStatus",
+    nome: 'ProcessStatus',
     frontend: ProcessStatus,
-    prisma: "ProcessStatus",
+    prisma: 'ProcessStatus',
     lacunas: [],
   },
   {
-    nome: "ProcessType",
+    nome: 'ProcessType',
     frontend: ProcessType,
-    prisma: "ProcessType",
+    prisma: 'ProcessType',
     lacunas: [],
   },
   {
-    nome: "OfficeStatus",
+    nome: 'OfficeStatus',
     frontend: OfficeStatus,
-    prisma: "OfficeStatus",
+    prisma: 'OfficeStatus',
     lacunas: [],
   },
   {
-    nome: "OfficeSignatureStatus",
+    nome: 'OfficeSignatureStatus',
     frontend: OfficeSignatureStatus,
-    prisma: "SignatureStatus",
+    prisma: 'SignatureStatus',
     lacunas: [],
   },
   {
-    nome: "RecurrenceStatus",
+    nome: 'RecurrenceStatus',
     frontend: RecurrenceStatus,
-    prisma: "RecurrenceStatus",
+    prisma: 'RecurrenceStatus',
     lacunas: [],
   },
   {
-    nome: "ServiceArea",
+    nome: 'ServiceArea',
     frontend: ServiceArea,
-    prisma: "ServiceArea",
+    prisma: 'ServiceArea',
     lacunas: [],
   },
   // O painel só oferece parte dos tipos e status de evento nos seletores; o
   // que falta é escolha de produto, não descuido.
   {
-    nome: "EventType",
+    nome: 'EventType',
     frontend: EventType,
-    prisma: "EventType",
-    lacunas: ["COMMITMENT", "SERVICE"],
+    prisma: 'EventType',
+    lacunas: ['COMMITMENT', 'SERVICE'],
   },
   {
-    nome: "EventStatus",
+    nome: 'EventStatus',
     frontend: EventStatus,
-    prisma: "EventStatus",
-    lacunas: ["CANCEL", "DONE"],
+    prisma: 'EventStatus',
+    lacunas: ['CANCEL', 'DONE'],
   },
 ];
 
-describe("enums do painel contra o schema do banco", () => {
+describe('enums do painel contra o schema do banco', () => {
   for (const { nome, frontend, prisma, lacunas } of PARES) {
     describe(nome, () => {
-      it("guarda o nome do membro, não um rótulo nem o valor do banco", () => {
+      it('guarda o nome do membro, não um rótulo nem o valor do banco', () => {
         for (const [membro, valor] of Object.entries(frontend)) {
           expect(valor, `${nome}.${membro}`).toBe(membro);
         }
       });
 
-      it("não inventa membro que a API nunca vai mandar", () => {
+      it('não inventa membro que a API nunca vai mandar', () => {
         const doPrisma = membrosNoPrisma(prisma);
 
         for (const membro of Object.keys(frontend)) {
@@ -123,10 +123,10 @@ describe("enums do painel contra o schema do banco", () => {
         }
       });
 
-      it("as lacunas são as declaradas", () => {
+      it('as lacunas são as declaradas', () => {
         const naInterface = new Set(Object.keys(frontend));
         const faltando = membrosNoPrisma(prisma).filter(
-          (membro) => !naInterface.has(membro)
+          (membro) => !naInterface.has(membro),
         );
 
         expect(faltando.sort()).toEqual([...lacunas].sort());

@@ -21,7 +21,10 @@ import { HeaderSteps } from "../components/header-steps"
 import { useOnboardingStore } from "@/stores/use-onboard-store"
 
 const agentStyle = [
-  { value: AgentStyle.LEGAL_FORMAL, label: agentStyleLabels[AgentStyle.LEGAL_FORMAL] },
+  {
+    value: AgentStyle.LEGAL_FORMAL,
+    label: agentStyleLabels[AgentStyle.LEGAL_FORMAL],
+  },
   {
     value: AgentStyle.CLEAR_AND_OBJECTIVE,
     label: agentStyleLabels[AgentStyle.CLEAR_AND_OBJECTIVE],
