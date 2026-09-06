@@ -3,6 +3,8 @@ import "./globals.css"
 import Script from "next/script"
 import { Montserrat, Plus_Jakarta_Sans } from "next/font/google"
 
+import { IconesOffline } from "@/components/icones-offline"
+
 const montserrat = Montserrat({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
@@ -61,6 +63,8 @@ export default function RootLayout({
       className={`${montserrat.variable} ${plusJakarta.variable}`}
     >
       <body className="bg-[#FCFCFD]">
+        <IconesOffline />
+
         {/* Google Tag Manager */}
         <Script
           id="google-tag-manager"
