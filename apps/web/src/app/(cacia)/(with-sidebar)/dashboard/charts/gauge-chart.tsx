@@ -3,13 +3,15 @@
 import Image from "next/image"
 import { useState, useEffect } from "react"
 
-interface ProcessStatus {
-  _id: string
+import { ProcessStatus } from "@/types/process"
+
+interface TotalPorStatus {
+  status: ProcessStatus
   total: number
 }
 
 interface CustomGaugeChartProps {
-  data?: ProcessStatus[] | null
+  data?: TotalPorStatus[] | null
 }
 
 export function CustomGaugeChart({ data }: CustomGaugeChartProps) {
@@ -35,12 +37,14 @@ export function CustomGaugeChart({ data }: CustomGaugeChartProps) {
 
   const chartSize = getChartSize()
 
-  // Calculate total processes and completed percentage
+  // A fatia verde é a dos processos ativos. Comparava o status com "Ativo",
+  // o rótulo em português — a API manda "ACTIVE", e o arco verde ficava sempre
+  // em zero.
   const totalProcesses = data?.reduce((acc, curr) => acc + curr.total, 0) || 0
-  const completedProcesses =
-    data?.find((status) => status._id === "Ativo")?.total || 0
+  const activeProcesses =
+    data?.find((linha) => linha.status === ProcessStatus.ACTIVE)?.total || 0
   const completedPercentage =
-    totalProcesses > 0 ? (completedProcesses / totalProcesses) * 100 : 0
+    totalProcesses > 0 ? (activeProcesses / totalProcesses) * 100 : 0
 
   // SVG parameters - adjusted for better visibility
   const strokeWidth = 22 // Slightly thicker for better visibility

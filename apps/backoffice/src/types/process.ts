@@ -1,7 +1,14 @@
+/**
+ * Os valores são os que a API devolve. Eram os rótulos em português, e a busca
+ * em processStatusConfig não achava nada: todo processo aparecia como "Ativo",
+ * arquivados e concluídos inclusive.
+ */
 export enum ProcessStatus {
-  ACTIVE = 'Ativo',
-  ARCHIVED = 'Arquivado',
-  CONCLUDED = 'Concluído',
+  PENDING = 'PENDING',
+  ACTIVE = 'ACTIVE',
+  ARCHIVED = 'ARCHIVED',
+  CONCLUDED = 'CONCLUDED',
+  FINISHED = 'FINISHED',
 }
 
 export enum ProcessType {
@@ -33,6 +40,12 @@ type ProcessTypeConfig = {
 };
 
 export const processStatusConfig: ProcessStatusConfig = {
+  [ProcessStatus.PENDING]: {
+    label: 'Pendente',
+    color: 'bg-[#FEFBEB]',
+    text: 'text-[#F7CB08]',
+    icon: 'mdi:clock-outline',
+  },
   [ProcessStatus.ACTIVE]: {
     label: 'Ativo',
     color: 'bg-[#F0FDF4]',
@@ -47,6 +60,12 @@ export const processStatusConfig: ProcessStatusConfig = {
   },
   [ProcessStatus.CONCLUDED]: {
     label: 'Concluído',
+    color: 'bg-[#ECF7F8]',
+    text: 'text-[#348C98]',
+    icon: 'mdi:check-circle-outline',
+  },
+  [ProcessStatus.FINISHED]: {
+    label: 'Finalizado',
     color: 'bg-[#ECF7F8]',
     text: 'text-[#348C98]',
     icon: 'mdi:check-circle-outline',

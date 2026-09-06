@@ -2,19 +2,19 @@ import { Process } from "./process"
 import { UserReminder } from "@/schemas/event"
 
 export enum EventType {
-  MEETING = "meeting",
-  HEARING = "hearing",
-  INQUIRY = "inquiry",
-  DEADLINE = "deadline",
-  COMMITMENT = "commitment",
-  SERVICE = "service",
+  MEETING = "MEETING",
+  HEARING = "HEARING",
+  INQUIRY = "INQUIRY",
+  DEADLINE = "DEADLINE",
+  COMMITMENT = "COMMITMENT",
+  SERVICE = "SERVICE",
 }
 
 export enum EventStatus {
-  PENDING = "pending",
-  CONFIRM = "confirm",
-  CANCEL = "cancel",
-  DONE = "done",
+  PENDING = "PENDING",
+  CONFIRM = "CONFIRM",
+  CANCEL = "CANCEL",
+  DONE = "DONE",
 }
 
 export interface Event {

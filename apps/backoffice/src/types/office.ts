@@ -17,13 +17,13 @@ export interface Office {
 }
 
 export enum OfficeStatus {
-  PENDING = 'pending',
-  ACTIVE = 'active',
-  DEACTIVATE = 'deactivate',
+  PENDING = 'PENDING',
+  ACTIVE = 'ACTIVE',
+  DEACTIVATE = 'DEACTIVATE',
 }
 
 export enum OfficeSignatureStatus {
-  PENDING = 'pending',
-  ACTIVE = 'active',
-  CANCELLED = 'cancelled',
+  PENDING = 'PENDING',
+  ACTIVE = 'ACTIVE',
+  CANCELLED = 'CANCELLED',
 }

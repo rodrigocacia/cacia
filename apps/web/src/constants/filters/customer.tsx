@@ -5,7 +5,7 @@ export const customerFilters = [
   {
     id: "1",
     name: "Novos",
-    status: "new",
+    status: "NEW",
     icon: (
       <Icon
         icon="mdi:folder-clock-outline"

@@ -139,7 +139,7 @@ export function LeadsTable() {
                       </Link>
 
                       <Link
-                        href={`${lead.status === "converted" ? `/customer/${lead.customer}/personal-information` : `/lead?action=customer&leadId=${lead._id}`}`}
+                        href={`${lead.status === "CONVERTED" ? `/customer/${lead.customer}/personal-information` : `/lead?action=customer&leadId=${lead._id}`}`}
                       >
                         <DropdownMenuItem>
                           <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ export function LeadsTable() {
                             />
 
                             <p className="text-base text-[#3D3D3D]">
-                              {lead.status === "converted"
+                              {lead.status === "CONVERTED"
                                 ? "Mostrar cliente"
                                 : "Tornar cliente"}
                             </p>

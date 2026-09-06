@@ -1,4 +1,5 @@
 import { Icon } from "@/components/icone"
+import { DocumentType } from "@/types/document"
 
 interface ExtensionIconProps {
   type?: string
@@ -13,9 +14,9 @@ export function ExtensionIcon({
 }: ExtensionIconProps) {
   if (
     !type ||
-    type === "upload" ||
+    type === DocumentType.UPLOAD ||
     type === "create" ||
-    type === "attachment"
+    type === DocumentType.ATTACHMENT
   ) {
     switch (extension.toLowerCase()) {
       case "pdf":

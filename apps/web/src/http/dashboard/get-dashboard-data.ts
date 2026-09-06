@@ -1,20 +1,19 @@
 import { api } from "../api-client"
 
-interface Document {
-  _id: string
-  name: string
-  url: string
-  type: string
-  created_at: string
-}
+import { ProcessStatus, ProcessType } from "@/types/process"
 
-interface Event {
-  _id: string
-  type: string
-  description: string
-  created_at: string
-}
-
+/**
+ * Os números da tela inicial, no formato em que chegam DEPOIS do adaptador.
+ *
+ * O que estava declarado aqui era o contrato do sistema antigo — `processStatus`
+ * e `lastProcesses` em camelCase, processos com `documents`, `events`,
+ * `progress` e `__v`. Nada disso existe: o adaptador renomeia as chaves de topo
+ * para snake_case e a API não devolve esses campos. O resultado era
+ * `data.lastProcesses` indefinido e a tela inteira caindo em
+ * "Cannot read properties of undefined (reading 'length')".
+ *
+ * Este arquivo é a fronteira: quem lê o painel lê o que está aqui.
+ */
 export interface DashboardData {
   summary: {
     chats: number
@@ -22,39 +21,28 @@ export interface DashboardData {
     customers: number
     processes: number
   }
-  processStatus: Array<{
-    _id: string
+  process_status: Array<{
+    status: ProcessStatus
     total: number
   }>
-  processType: Array<{
-    _id: string
+  process_type: Array<{
+    type: ProcessType
     total: number
   }>
-  lastProcesses: Array<{
+  last_processes: Array<{
     _id: string
-    office: string
+    number: string
+    description: string | null
+    status: ProcessStatus
+    type: ProcessType | null
+    last_activity_at: string | null
+    created_at: string
+    /** Processo pode existir sem cliente vinculado. */
     customer: {
       _id: string
       name: string
       document: string
-    }
-    unit: string
-    number: string
-    description: string
-    status: string
-    documents: Document[]
-    events: Event[]
-    progress: {
-      _id: string
-      title: string
-      release_at: string
-    }[]
-    deleted_at: string | null
-    last_activity_at: string | null
-    created_at: string
-    updated_at: string
-    __v: number
-    type: string
+    } | null
   }>
 }
 

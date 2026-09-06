@@ -28,8 +28,7 @@ export interface Recurrence {
 }
 
 export enum RecurrenceStatus {
-  PENDING = 'pending',
-  ACTIVE = 'active',
-  CANCELLED = 'cancelled',
-  EXPIRED = 'expired',
+  PENDING = 'PENDING',
+  ACTIVE = 'ACTIVE',
+  CANCELLED = 'CANCELLED',
 }

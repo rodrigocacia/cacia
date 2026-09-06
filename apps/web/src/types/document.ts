@@ -1,21 +1,21 @@
 export enum DocumentCategory {
-  BUDGET = "budget",
-  CONTRACT = "contract",
-  POWER_OF_ATTORNEY = "power_of_attorney",
-  PETITION = "petition",
+  BUDGET = "BUDGET",
+  CONTRACT = "CONTRACT",
+  POWER_OF_ATTORNEY = "POWER_OF_ATTORNEY",
+  PETITION = "PETITION",
 }
 
 export enum DocumentStatus {
-  DRAFT = "draft",
-  PENDING_REVIEW = "pending_review",
-  APPROVED = "approved",
-  SENT = "sent",
+  DRAFT = "DRAFT",
+  PENDING_REVIEW = "PENDING_REVIEW",
+  APPROVED = "APPROVED",
+  SENT = "SENT",
 }
 
 export enum DocumentType {
-  ATTACHMENT = "attachment",
-  CREATE = "create",
-  UPLOAD = "upload",
+  ATTACHMENT = "ATTACHMENT",
+  CREATE = "CREATE",
+  UPLOAD = "UPLOAD",
 }
 
 export type TemplateVariables =

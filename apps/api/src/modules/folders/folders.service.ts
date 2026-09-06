@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@/infra/prisma/prisma.service';
 import { janela, montarPaginacao } from '@/common/dto/paginacao.dto';
+import { OrdemDasPastas } from './dto/folder.dto';
 import type {
   AtualizarPastaDto,
   CriarPastaDto,
@@ -38,8 +39,7 @@ export class FoldersService {
       this.prisma.folder.findMany({
         where,
         select: { ...CAMPOS, _count: { select: { documents: true } } },
-        // As do sistema primeiro: são as que o usuário espera encontrar no topo
-        orderBy: [{ system: 'desc' }, { title: 'asc' }],
+        orderBy: ordenacao(dto.sortBy),
         ...janela(dto),
       }),
       this.prisma.folder.count({ where }),
@@ -142,4 +142,22 @@ export class FoldersService {
 
     if (!cliente) throw new NotFoundException('Cliente não encontrado');
   }
+}
+
+/**
+ * A ordem escolhida no seletor "Ordenar por" da tela de documentos.
+ *
+ * As pastas do sistema vêm sempre primeiro, qualquer que seja o critério: são
+ * as que o usuário espera encontrar no topo, e empurrá-las para o meio da
+ * lista ao ordenar por nome esconderia justamente as mais usadas.
+ */
+function ordenacao(sortBy?: OrdemDasPastas) {
+  const criterio = {
+    [OrdemDasPastas.NOME_ASC]: { title: 'asc' as const },
+    [OrdemDasPastas.NOME_DESC]: { title: 'desc' as const },
+    [OrdemDasPastas.MAIS_NOVAS]: { createdAt: 'desc' as const },
+    [OrdemDasPastas.MAIS_ANTIGAS]: { createdAt: 'asc' as const },
+  }[sortBy ?? OrdemDasPastas.NOME_ASC];
+
+  return [{ system: 'desc' as const }, criterio];
 }

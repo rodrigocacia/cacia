@@ -1,12 +1,12 @@
 export enum ReminderType {
-  CUSTOM = "custom",
-  EVENT = "event",
+  CUSTOM = "CUSTOM",
+  EVENT = "EVENT",
 }
 
 export enum ReminderStatus {
-  PENDING = "pending",
-  SENT = "sent",
-  FAILED = "failed",
+  PENDING = "PENDING",
+  SENT = "SENT",
+  FAILED = "FAILED",
 }
 
 export interface Reminder {

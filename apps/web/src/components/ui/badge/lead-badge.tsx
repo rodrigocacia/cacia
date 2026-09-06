@@ -8,20 +8,20 @@ interface LeadBadgeProps {
   variant?: LeadStatus
 }
 
-const badgeStyles = {
-  new: {
+const badgeStyles: Record<LeadStatus, { bg: string; text: string; icon: string; label: string }> = {
+  NEW: {
     bg: "bg-[#ECF7F8]",
     text: "text-[#348C98]",
     icon: "mdi:record",
     label: "Novo",
   },
-  converted: {
+  CONVERTED: {
     bg: "bg-[#EDFDEE]",
     text: "text-[#16A31B]",
     icon: "mdi:account-check-outline",
     label: "Convertido",
   },
-  in_contact: {
+  IN_CONTACT: {
     bg: "bg-[#FEFBEB]",
     text: "text-[#F7CB08]",
     icon: "mdi:message-fast-outline",
@@ -29,8 +29,9 @@ const badgeStyles = {
   },
 }
 
-export function LeadBadge({ variant = "new" }: LeadBadgeProps) {
-  const style = badgeStyles[variant]
+export function LeadBadge({ variant = "NEW" }: LeadBadgeProps) {
+  // Status desconhecido não pode derrubar a tela inteira: cai no "Novo".
+  const style = badgeStyles[variant] ?? badgeStyles.NEW
 
   return (
     <div

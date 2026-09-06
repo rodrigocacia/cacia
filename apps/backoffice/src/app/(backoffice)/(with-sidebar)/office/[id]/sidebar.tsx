@@ -11,6 +11,7 @@ import { FaEdit } from "react-icons/fa";
 
 import { navLinks } from "./navs";
 import { formatName } from "@/utils/formatters";
+import { OfficeSignatureStatus } from "@/types/office";
 
 export function Sidebar({
   name,
@@ -38,12 +39,12 @@ export function Sidebar({
           <p className="text-sm text-[#707070]">Cadastrado desde {createdAt}</p>
           <div className="w-full flex items-center justify-center">
             <p
-              className={`font-medium px-4 py-2 ${signatureStatus === "active" ? "bg-[#EDFDEE]" : signatureStatus === "cancelled" ? "bg-[#FEF2F2]" : "bg-[#FEF7D7]"} rounded-full text-sm 
-                ${signatureStatus === "active" ? "text-[#16A31B]" : signatureStatus === "cancelled" ? "text-[#DC2626]" : "text-[#F7CB08]"}`}
+              className={`font-medium px-4 py-2 ${signatureStatus === OfficeSignatureStatus.ACTIVE ? "bg-[#EDFDEE]" : signatureStatus === OfficeSignatureStatus.CANCELLED ? "bg-[#FEF2F2]" : "bg-[#FEF7D7]"} rounded-full text-sm 
+                ${signatureStatus === OfficeSignatureStatus.ACTIVE ? "text-[#16A31B]" : signatureStatus === OfficeSignatureStatus.CANCELLED ? "text-[#DC2626]" : "text-[#F7CB08]"}`}
             >
-              {signatureStatus === "active"
+              {signatureStatus === OfficeSignatureStatus.ACTIVE
                 ? "Ativo"
-                : signatureStatus === "cancelled"
+                : signatureStatus === OfficeSignatureStatus.CANCELLED
                   ? "Cancelado"
                   : "Pendente"}
             </p>

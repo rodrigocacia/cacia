@@ -1,15 +1,15 @@
 import { Process } from './process';
 
 export enum EventType {
-  MEETING = 'meeting',
-  HEARING = 'hearing',
-  INQUIRY = 'inquiry',
-  DEADLINE = 'deadline',
+  MEETING = 'MEETING',
+  HEARING = 'HEARING',
+  INQUIRY = 'INQUIRY',
+  DEADLINE = 'DEADLINE',
 }
 
 export enum EventStatus {
-  PENDING = 'pending',
-  CONFIRM = 'confirm',
+  PENDING = 'PENDING',
+  CONFIRM = 'CONFIRM',
 }
 
 export interface Event {

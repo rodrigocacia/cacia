@@ -57,7 +57,7 @@ function toDocumentViewer(
     extension: document.extension,
     content_url: document.content_url ?? "",
     updated_at: document.updated_at ?? "",
-    type: document.type ?? "attachment",
+    type: document.type ?? DocumentType.ATTACHMENT,
     lead: document.lead,
     customer: document.customer,
   }
