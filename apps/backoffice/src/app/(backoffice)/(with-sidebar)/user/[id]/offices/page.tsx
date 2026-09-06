@@ -22,7 +22,11 @@ interface Address {
 interface Office {
   _id: string;
   name: string;
-  address: Address[];
+  /**
+   * A API chama de `addresses`, no plural, e pode vir vazio: escritório sem
+   * endereço cadastrado é situação normal, não erro.
+   */
+  addresses?: Address[];
 }
 
 export default async function ProccessDetail({
@@ -109,15 +113,19 @@ export default async function ProccessDetail({
                       </div>
                     </td>
                     <td className="px-4 py-3 text-[#348C98] bg-[#F9FBFC]">
-                      {office.address[0]?.street}, {office.address[0]?.number}
-                      {office.address[0]?.complement &&
-                        ` - ${office.address[0].complement}`}
+                      {office.addresses?.[0]
+                        ? `${office.addresses[0].street}, ${office.addresses[0].number}${
+                            office.addresses[0].complement
+                              ? ` - ${office.addresses[0].complement}`
+                              : ""
+                          }`
+                        : "—"}
                     </td>
                     <td className="px-4 py-3 text-[#348C98] bg-[#F9FBFC]">
-                      {office.address[0]?.city}
+                      {office.addresses?.[0]?.city ?? "—"}
                     </td>
                     <td className="px-4 py-3 text-[#348C98] bg-[#F9FBFC] rounded-r-xl">
-                      {office.address[0]?.state}
+                      {office.addresses?.[0]?.state ?? "—"}
                     </td>
                   </tr>
                 ))}
@@ -212,16 +220,19 @@ export default async function ProccessDetail({
                           </div>
                         </td>
                         <td className="px-2 py-2 text-[#348C98] bg-[#F9FBFC]">
-                          {office.address[0]?.street},{" "}
-                          {office.address[0]?.number}
-                          {office.address[0]?.complement &&
-                            ` - ${office.address[0].complement}`}
+                          {office.addresses?.[0]
+                            ? `${office.addresses[0].street}, ${office.addresses[0].number}${
+                                office.addresses[0].complement
+                                  ? ` - ${office.addresses[0].complement}`
+                                  : ""
+                              }`
+                            : "—"}
                         </td>
                         <td className="px-2 py-2 text-[#348C98] bg-[#F9FBFC]">
-                          {office.address[0]?.city}
+                          {office.addresses?.[0]?.city ?? "—"}
                         </td>
                         <td className="px-2 py-2 text-[#348C98] bg-[#F9FBFC] rounded-r-xl">
-                          {office.address[0]?.state}
+                          {office.addresses?.[0]?.state ?? "—"}
                         </td>
                       </tr>
                     ))}
