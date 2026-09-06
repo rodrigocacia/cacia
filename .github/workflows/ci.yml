@@ -1,10 +1,12 @@
 name: CI
 
+# `dev` é o branch de integração: todo trabalho entra por PR nele. O `main`
+# continua na lista porque é para lá que o `dev` vai quando houver produção.
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
 
 # Um push novo cancela a execução anterior do mesmo branch
 concurrency:
