@@ -2,9 +2,24 @@ name: Deploy
 
 # Só publica o que mudou. Cada job tem seu filtro de caminho, então uma
 # alteração no frontend não redeploya a API — e vice-versa.
+#
+# NÃO DISPARA SOZINHO — DE PROPÓSITO.
+#
+# Não existe ainda staging nem produção: o environment `producao` está vazio,
+# sem nenhum secret, e não há aplicação criada no Fly nem projeto no Cloudflare.
+# Enquanto for assim, um `push` em `main` só produziria uma falha vermelha a
+# cada merge.
+#
+# O risco de verdade é o dia seguinte ao cadastro do primeiro secret: com o
+# gatilho automático de volta, todo merge em `main` publicaria direto em
+# produção, sem nada no meio. Por isso a publicação é manual até que exista
+# staging para receber primeiro.
+#
+# PARA REATIVAR, quando houver staging e produção:
+#   1. criar os environments e os secrets de cada um;
+#   2. exigir revisor no environment de produção — esse é o freio de verdade;
+#   3. devolver o gatilho, apontando `dev` para staging e `main` para produção.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       alvo:
@@ -31,8 +46,14 @@ jobs:
       backoffice: ${{ steps.filtro.outputs.backoffice }}
     steps:
       - uses: actions/checkout@v4
+
+      # O filtro por caminho só faz sentido comparando com o commit anterior,
+      # o que exige um `push`. No disparo manual ele fica de fora e quem decide
+      # o que publicar é o campo `alvo` — as condições dos jobs já tratam o
+      # resultado vazio. Volta a valer sozinho quando o gatilho de push voltar.
       - uses: dorny/paths-filter@v3
         id: filtro
+        if: github.event_name == 'push'
         with:
           filters: |
             api:

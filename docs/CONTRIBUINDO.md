@@ -2,14 +2,37 @@
 
 ## Fluxo de trabalho
 
-`main` está sempre publicável. Nada é enviado diretamente para ela.
+**Todo trabalho entra por PR em `dev`.** É o branch de integração e o padrão do
+repositório: um `git clone` cai nele, e um PR aberto sem escolher a base aponta
+para ele.
 
 ```
-main ──┬── feat/nome-da-funcionalidade ──▶ PR ──▶ revisão ──▶ merge
-       ├── fix/descricao-do-problema
-       ├── chore/tarefa-de-manutencao
-       └── docs/o-que-foi-documentado
+dev ──┬── feat/nome-da-funcionalidade ──▶ PR ──▶ revisão ──▶ merge
+      ├── fix/descricao-do-problema
+      ├── chore/tarefa-de-manutencao
+      └── docs/o-que-foi-documentado
 ```
+
+`main` é a linha de produção. Hoje ela está parada, esperando: ainda não existe
+ambiente publicado, nem staging. Nada vai para `main` por enquanto — quando
+houver produção, `dev` sobe para lá passando antes por staging.
+
+```
+dev ──▶ staging ──▶ main
+        (a criar)   (produção, a criar)
+```
+
+### Publicação
+
+O workflow de deploy **não dispara sozinho**, de propósito. Sem staging, um
+gatilho automático em `main` significaria publicar direto em produção no dia em
+que o primeiro secret for cadastrado. Enquanto isso não estiver montado, a
+publicação é manual, pelo `workflow_dispatch` — ver o cabeçalho de
+`.github/workflows/deploy.yml`, que lista o que precisa existir para devolver o
+gatilho.
+
+A CI (lint, typecheck, build, testes) roda em todo PR para `dev` e em todo push
+nele.
 
 ### Prefixos de branch
 
