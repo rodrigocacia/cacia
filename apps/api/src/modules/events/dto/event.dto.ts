@@ -56,6 +56,10 @@ export class ListarEventosDto extends PaginacaoDto {
   @IsOptional() @IsEnum(EventStatus) status?: EventStatus;
   @IsOptional() @IsUUID() calendarId?: string;
   @IsOptional() @IsUUID() customerId?: string;
+
+  /** Compromissos de um processo — a aba de eventos dentro do processo. */
+  @IsOptional() @IsUUID() processId?: string;
+
   @IsOptional() @IsDateString() from?: string;
   @IsOptional() @IsDateString() to?: string;
 }

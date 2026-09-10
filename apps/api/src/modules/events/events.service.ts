@@ -40,6 +40,7 @@ export class EventsService {
       ...(dto.status && { status: dto.status }),
       ...(dto.calendarId && { calendarId: dto.calendarId }),
       ...(dto.customerId && { customerId: dto.customerId }),
+      ...(dto.processId && { processId: dto.processId }),
       ...((dto.from ?? dto.to) && {
         startTime: {
           ...(dto.from && { gte: new Date(dto.from) }),

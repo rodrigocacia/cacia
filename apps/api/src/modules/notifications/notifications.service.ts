@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { NotificationStatus } from '@cacia/database';
+import { NotificationStatus, NotificationType } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
 import { janela, montarPaginacao } from '@/common/dto/paginacao.dto';
 
@@ -20,11 +20,16 @@ export class NotificationsService {
   async listar(
     officeId: string,
     userId: string,
-    dto: { page: number; limit: number },
+    dto: { page: number; limit: number; type?: NotificationType },
   ) {
     // Filtra por escritório E por usuário: a notificação é de uma pessoa
     // dentro de um escritório, não do escritório inteiro.
-    const where = { officeId, userId, deletedAt: null };
+    const where = {
+      officeId,
+      userId,
+      deletedAt: null,
+      ...(dto.type && { type: dto.type }),
+    };
 
     const [data, total, naoLidas] = await Promise.all([
       this.prisma.notification.findMany({

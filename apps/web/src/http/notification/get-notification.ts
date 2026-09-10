@@ -24,7 +24,7 @@ export async function getNotification({ page, search, type }: QueryParams) {
   })
 
   if (search) {
-    queryParams.set("number", search)
+    queryParams.set("search", search)
   }
 
   if (type) {

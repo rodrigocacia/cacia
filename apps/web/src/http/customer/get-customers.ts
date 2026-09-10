@@ -12,19 +12,18 @@ export interface GetCustomersResponse {
   perPage: number
 }
 
+/**
+ * Cliente não tem status: o modelo tem nome, documento, contato e endereços,
+ * e nada mais. O `status` daqui vinha do sistema antigo, não existe no DTO da
+ * API e derrubava a listagem com 400 assim que alguém escolhia um filtro.
+ */
 interface QueryParams {
   page: number
   search?: string
   limit?: number
-  status?: string
 }
 
-export async function getCustomers({
-  page,
-  search,
-  limit,
-  status,
-}: QueryParams) {
+export async function getCustomers({ page, search, limit }: QueryParams) {
   const queryParams = new URLSearchParams({
     page: page.toString(),
   })
@@ -35,10 +34,6 @@ export async function getCustomers({
 
   if (limit) {
     queryParams.set("limit", limit.toString())
-  }
-
-  if (status) {
-    queryParams.set("status", status)
   }
 
   const result = await api

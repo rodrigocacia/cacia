@@ -27,7 +27,7 @@ export async function getService({ page, search, status }: QueryParams) {
   }
 
   if (search) {
-    queryParams.set("number", search)
+    queryParams.set("search", search)
   }
 
   const result = await api

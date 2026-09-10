@@ -29,26 +29,29 @@ export async function getEvent({
   process_id,
   customer_id,
 }: QueryParams) {
+  // Os nomes aqui são os do DTO da API (`calendarId`, `from`, `to`,
+  // `processId`, `customerId`), não os do sistema antigo em snake_case: a
+  // validação recusa parâmetro que não reconhece e a tela inteira voltava 400.
   const queryParams = new URLSearchParams({
     page: page.toString(),
-    calendar_id,
+    calendarId: calendar_id,
   })
 
   if (calendar_id === "all") {
-    queryParams.delete("calendar_id")
+    queryParams.delete("calendarId")
   }
 
   if (start_time && end_time) {
-    queryParams.set("start_time", start_time)
-    queryParams.set("end_time", end_time)
+    queryParams.set("from", start_time)
+    queryParams.set("to", end_time)
   }
 
   if (process_id) {
-    queryParams.set("process_id", process_id)
+    queryParams.set("processId", process_id)
   }
 
   if (customer_id) {
-    queryParams.set("customer_id", customer_id)
+    queryParams.set("customerId", customer_id)
   }
 
   queryParams.set("limit", "100")

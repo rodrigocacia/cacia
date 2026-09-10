@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { DialogFilters } from "@/components/filter-dialog"
+import { FiltersPanel } from "@/components/filters-panel"
 
 const periodOptions = [
   { value: "-", label: "Todos os períodos" },
@@ -96,7 +96,7 @@ export function FiltersDashboard() {
     "Todos os períodos"
 
   return (
-    <div className="w-full flex sm:flex-row items-start sm:items-center gap-4 justify-end mt-10">
+    <div className="w-full flex flex-wrap sm:flex-row items-start sm:items-center gap-4 justify-end mt-10">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="lg:min-w-[219px] w-fit max-md:w-full flex items-center justify-between sm:justify-start gap-3 px-4 py-2 max-md:h-9 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
@@ -122,7 +122,7 @@ export function FiltersDashboard() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <DialogFilters
+      <FiltersPanel
         filters={[]}
         showDateFilter={true}
         startDate={startDate}

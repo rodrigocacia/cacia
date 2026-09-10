@@ -21,62 +21,64 @@ export async function Header({ title, name }: HeaderProps) {
   const notificationunread = await getNotificationUnreadCount()
 
   return (
-    <div className="h-[80px] rounded-4xl shadow-md w-full min-h-12 px-4 max-md:px-0 max-md:rounded-none max-md:shadow-none max-md:bg-transparent bg-white flex items-center justify-between">
-      <div className="flex items-center gap-6">
-        <div className="w-[56px] h-[56px] flex items-center justify-center rounded-[14px] bg-white shadow-md lg:hidden">
-          <SidebarTrigger />
-        </div>
-
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl max-md:text-xl font-bold text-[#3D3D3D]">
-            {title ?? ""}
-          </h1>
-
-          {name ? (
-            <div className="flex items-center pl-4 border-l-2 py-1.5 border-[#F6F6F9]">
-              <p className="text-xl text-[#707070] font-bold">
-                {formatName(name)}
-              </p>
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="flex gap-6 items-center">
-        <SWRConfig
-          value={{
-            fallback: {
-              notificationunread: notificationunread,
-            },
-            revalidateOnFocus: false,
-            revalidateIfStale: false,
-            revalidateOnReconnect: false,
-            refreshInterval: 5000,
-          }}
-        >
-          <NotificationsCount />
-        </SWRConfig>
-
-        <Link href="/profile/my-data" className="flex items-center gap-4">
-          <CustomAvatar name={user?.name} size="md" />
-
-          <div className="flex max-md:hidden">
-            <div className="flex flex-col">
-              <h3 className="text-base text-[#707070] font-semibold">
-                {formatName(user?.name)}
-              </h3>
-
-              <p className="text-sm text-[#707070]">{user?.email}</p>
-            </div>
-
-            <div className="h-full flex items-start justify-start">
-              <Icon
-                icon="mdi:arrow-down-drop"
-                className="w-6 h-6 text-[#BDBDBD]"
-              />
-            </div>
+    <div className="w-full h-[80px] min-h-12">
+      <div className="h-full w-full min-h-12 px-4 rounded-4xl shadow-md bg-white flex items-center justify-between max-md:px-0 max-md:rounded-none max-md:shadow-none max-md:bg-transparent md:fixed md:top-0 md:left-(--sidebar-width) md:right-0 md:z-30 md:h-[80px] md:w-auto md:rounded-none md:px-8">
+        <div className="flex items-center gap-6">
+          <div className="w-[56px] h-[56px] flex items-center justify-center rounded-[14px] bg-white shadow-md lg:hidden">
+            <SidebarTrigger />
           </div>
-        </Link>
+
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl max-md:text-xl font-bold text-[#3D3D3D]">
+              {title ?? ""}
+            </h1>
+
+            {name ? (
+              <div className="flex items-center pl-4 border-l-2 py-1.5 border-[#F6F6F9]">
+                <p className="text-xl text-[#707070] font-bold">
+                  {formatName(name)}
+                </p>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="flex gap-6 items-center">
+          <SWRConfig
+            value={{
+              fallback: {
+                notificationunread: notificationunread,
+              },
+              revalidateOnFocus: false,
+              revalidateIfStale: false,
+              revalidateOnReconnect: false,
+              refreshInterval: 5000,
+            }}
+          >
+            <NotificationsCount />
+          </SWRConfig>
+
+          <Link href="/profile/my-data" className="flex items-center gap-4">
+            <CustomAvatar name={user?.name} size="md" />
+
+            <div className="flex max-md:hidden">
+              <div className="flex flex-col">
+                <h3 className="text-base text-[#707070] font-semibold">
+                  {formatName(user?.name)}
+                </h3>
+
+                <p className="text-sm text-[#707070]">{user?.email}</p>
+              </div>
+
+              <div className="h-full flex items-start justify-start">
+                <Icon
+                  icon="mdi:arrow-down-drop"
+                  className="w-6 h-6 text-[#BDBDBD]"
+                />
+              </div>
+            </div>
+          </Link>
+        </div>
       </div>
     </div>
   )

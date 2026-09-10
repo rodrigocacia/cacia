@@ -47,8 +47,24 @@ export interface DashboardData {
 }
 
 export async function getDashboardData(startDate?: string, endDate?: string) {
+  // Ausente é diferente de vazio: `@IsOptional()` só dispensa `undefined` e
+  // `null`, então `from=` chegava como string vazia, era validado por
+  // `@IsDateString()` e derrubava o painel com 400 — sem nenhum filtro de data
+  // escolhido, que é o caso normal.
+  const queryParams = new URLSearchParams()
+
+  if (startDate) {
+    queryParams.set("from", startDate)
+  }
+
+  if (endDate) {
+    queryParams.set("to", endDate)
+  }
+
+  const query = queryParams.toString()
+
   const response = await api
-    .get(`dashboard?from=${startDate ?? ""}&to=${endDate ?? ""}`, {
+    .get(`dashboard${query ? `?${query}` : ""}`, {
       next: {
         tags: ["dashboard"],
         revalidate: 60,

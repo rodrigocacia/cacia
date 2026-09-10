@@ -52,21 +52,23 @@ export function DocumentSortSelect() {
   }, [])
 
   return (
-    <div className="max-md:w-full flex max-md:flex-col max-md:items-start items-center gap-1.5">
-      <h3 className="text-[10px] text-[#BDBDBD] font-semibold">ORDENAR POR</h3>
-      <div className="relative w-[193px]" ref={dropdownRef}>
+    <div className="flex items-center gap-2 max-md:w-full max-md:flex-col max-md:items-start">
+      <h3 className="text-[10px] font-semibold tracking-wide text-[#BDBDBD] max-md:hidden">
+        ORDENAR POR
+      </h3>
+      <div className="relative w-[193px] max-md:w-full" ref={dropdownRef}>
         <div
-          className="h-[36px] bg-white rounded-[10px] px-3 flex items-center justify-between border border-[#F6F6F9] cursor-pointer"
+          className="flex h-11 cursor-pointer items-center justify-between rounded-full border border-[#E7E7EE] bg-white px-4 transition-colors hover:border-[#D5D5E0]"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <div className="h-full flex items-center gap-3">
-            <HiMiniBars3BottomLeft size={20} className="text-[#348C98]" />
-            <span className="text-sm text-[#707070] font-bold">
+          <div className="flex h-full items-center gap-2.5">
+            <HiMiniBars3BottomLeft size={18} className="text-[#348C98]" />
+            <span className="text-sm font-semibold text-[#707070]">
               {selectedOption?.name || "Mais recentes"}
             </span>
           </div>
           <BiSolidChevronDown
-            size={20}
+            size={18}
             className={`text-[#BDBDBD] transition-transform ${
               isOpen ? "rotate-180" : ""
             }`}
@@ -74,14 +76,14 @@ export function DocumentSortSelect() {
         </div>
 
         {isOpen && (
-          <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto text-sm z-10">
+          <div className="absolute left-0 right-0 z-10 mt-1.5 max-h-60 overflow-auto rounded-2xl border border-[#EDEDF2] bg-white p-1 text-sm shadow-lg">
             {documentSortOptions.map((option) => (
               <div
                 key={option.value}
-                className={`px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-3 ${
+                className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-[#F6F6F9] ${
                   currentSort === option.value
-                    ? "bg-gray-50 text-[#348C98]"
-                    : "text-gray-700"
+                    ? "bg-[#ECF7F8] font-semibold text-[#348C98]"
+                    : "text-[#707070]"
                 }`}
                 onClick={() => handleSortChange(option.value)}
               >

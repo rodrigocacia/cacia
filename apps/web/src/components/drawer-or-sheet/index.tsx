@@ -56,8 +56,8 @@ export function DrawerOrSheet({
               <Button
                 onClick={onTriggerClick}
                 type="button"
-                className="cursor-pointer"
-                iconLeft={<AiOutlinePlus size={20} />}
+                className="h-11! cursor-pointer px-5 text-sm shadow-sm"
+                iconLeft={<AiOutlinePlus size={18} />}
               >
                 {triggerLabel}
               </Button>

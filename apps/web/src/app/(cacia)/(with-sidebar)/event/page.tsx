@@ -5,9 +5,6 @@ import { getEvent, GetEventResponse } from "@/http/event/get-event"
 
 import { getDateRange } from "@/utils/get-date-range"
 
-import { eventCrumbs } from "@/constants/breadcrumbs"
-
-import { Breadcrumbs } from "@/components/ui/custom-breadcrumb"
 import { Header } from "@/components/header"
 import { CustomSearchFilter } from "@/components/ui/custom-search-filter"
 
@@ -80,11 +77,7 @@ export default async function EventPage({
         <Header title="Eventos" />
       </div>
 
-      <div className="flex items-start justify-between mt-7 max-lg:mt-2 max-lg:px-4">
-        <div className="max-md:hidden">
-          <Breadcrumbs crumbs={eventCrumbs} />
-        </div>
-
+      <div className="flex items-start justify-end mt-7 max-lg:mt-2 max-lg:px-4">
         <div className="flex items-center gap-5 max-md:gap-0 max-md:w-full">
           <SelectCalendar calendars={calendars.data} />
 

@@ -27,7 +27,7 @@ export function CustomSearchFilter(props: CustomSearchFilterProps) {
   }, [value, router])
 
   return (
-    <div className="bg-white rounded-[10px] px-3 flex items-center gap-3 border border-[#F6F6F9] min-w-[340px] max-md:min-w-[200px] max-md:w-full max-md:h-[52px] h-auto py-2">
+    <div className="flex h-11 w-full max-w-[360px] items-center gap-2.5 rounded-full border border-[#E7E7EE] bg-white px-4 transition-colors focus-within:border-[#348C98] focus-within:ring-2 focus-within:ring-[#348C98]/15 max-md:h-[52px] max-md:max-w-none">
       <IoMdSearch size={20} className="text-[#BDBDBD]" />
       <input
         {...props}

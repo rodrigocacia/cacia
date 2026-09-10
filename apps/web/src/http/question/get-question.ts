@@ -23,7 +23,7 @@ export async function getQuestion({ page, search }: QueryParams) {
   })
 
   if (search) {
-    queryParams.set("number", search)
+    queryParams.set("search", search)
   }
 
   const result = await api

@@ -11,9 +11,9 @@ import {
 } from '@nestjs/common';
 import { CurrentOffice } from '@/auth/decorators/current-office.decorator';
 import { CurrentUser } from '@/auth/decorators/current-user.decorator';
-import { PaginacaoDto } from '@/common/dto/paginacao.dto';
 import type { UsuarioAutenticado } from '@/auth/tipos';
 import { NotificationsService } from './notifications.service';
+import { ListarNotificacoesDto } from './dto/notification.dto';
 
 @Controller('notifications')
 export class NotificationsController {
@@ -23,7 +23,7 @@ export class NotificationsController {
   listar(
     @CurrentOffice() officeId: string,
     @CurrentUser() usuario: UsuarioAutenticado,
-    @Query() dto: PaginacaoDto,
+    @Query() dto: ListarNotificacoesDto,
   ) {
     return this.notifications.listar(officeId, usuario.userId, dto);
   }

@@ -14,7 +14,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -44,7 +44,7 @@ const items = [
   {
     title: "Documentos",
     url: "/document",
-    icon: (props: any) => <Icon icon="mdi:file-document" {...props} />,
+    icon: (props: any) => <Icon icon="mdi:file-document-outline" {...props} />,
   },
   {
     title: "Eventos",
@@ -52,6 +52,9 @@ const items = [
     icon: (props: any) => <Icon icon="mdi:calendar-month-outline" {...props} />,
   },
 ]
+
+const secondaryLinkClass =
+  "flex items-center gap-3 h-10 px-3 rounded-xl text-sm text-[#A3A3A3] transition-colors hover:bg-white/[0.06] hover:text-white"
 
 export function AppSidebar() {
   const pathname = usePathname()
@@ -66,22 +69,18 @@ export function AppSidebar() {
   }
 
   const currentSegment = pathname.split("/")[1]
+  const isSettingActive = currentSegment === "setting"
 
   return (
-    <Sidebar className="p-4">
-      <SidebarContent className="bg-[#24211E] rounded-tl-3xl rounded-tr-3xl max-md:rounded-none">
-        <SidebarGroup>
-          <SidebarGroupLabel className="mt-6 text-2xl font-bold text-blue-500">
-            <Image
-              src="/cacia-sidebar.png"
-              alt="mockup"
-              width={110}
-              height={32}
-            />
-          </SidebarGroupLabel>
+    <Sidebar className="border-none [&_[data-slot=sidebar-inner]]:bg-[#24211E]">
+      <SidebarHeader className="h-20 shrink-0 justify-center border-b border-white/[0.07] px-5">
+        <Image src="/cacia-sidebar.png" alt="CacIA" width={104} height={30} />
+      </SidebarHeader>
 
-          <SidebarGroupContent className="mt-8">
-            <SidebarMenu>
+      <SidebarContent className="px-3 py-5">
+        <SidebarGroup className="p-0">
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-1">
               {items.map((item) => {
                 const itemSegment = item.url.split("/")[1]
                 const isActive = currentSegment === itemSegment
@@ -91,26 +90,22 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      size="lg"
-                      className={`flex items-center gap-3 rounded-full px-3 py-3 hover:bg-[#3D3D3D] data-[state=active]:bg-transparent active:bg-transparent ${
-                        isActive ? "bg-[#3D3D3D]" : ""
+                      isActive={isActive}
+                      className={`relative h-10 gap-3 rounded-xl px-3 text-sm transition-colors [&>svg]:size-[18px] ${
+                        isActive
+                          ? "bg-white/[0.08] font-semibold text-white hover:bg-white/[0.08] hover:text-white active:bg-white/[0.08] active:text-white data-[active=true]:bg-white/[0.08] data-[active=true]:text-white before:absolute before:left-0 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 before:rounded-r-full before:bg-[#348C98]"
+                          : "font-medium text-[#A3A3A3] hover:bg-white/[0.06] hover:text-white active:bg-white/[0.06] active:text-white"
                       }`}
                       asChild
                     >
-                      <Link className="" href={item.url}>
+                      <Link href={item.url}>
                         <IconComponent
-                          className={`${
-                            isActive ? "text-[#348C98]" : "text-[#707070]"
-                          }`}
+                          className={
+                            isActive ? "text-[#4FB3C0]" : "text-[#7A7A7A]"
+                          }
                         />
 
-                        <span
-                          className={`${
-                            isActive ? "font-bold" : ""
-                          } text-[#EFEFEF]`}
-                        >
-                          {item.title}
-                        </span>
+                        <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -121,58 +116,46 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="bg-[#24211E] rounded-bl-3xl rounded-br-3xl max-md:rounded-none">
-        <div className="w-full flex flex-col gap-2 pb-8 px-2.5">
-          <Link
-            href="/setting/ia-service"
-            className={`flex items-center gap-3 rounded-full py-[7px] data-[state=active]:bg-transparent active:bg-transparent ${
-              currentSegment === "setting"
-                ? "bg-[#3D3D3D] px-3 -ml-2 hover:bg-[#3D3D3D]"
-                : ""
+      <SidebarFooter className="gap-1 border-t border-white/[0.07] px-3 py-3">
+        <Link
+          href="/setting/ia-service"
+          className={
+            isSettingActive
+              ? "flex h-10 items-center gap-3 rounded-xl bg-white/[0.08] px-3 text-sm font-semibold text-white"
+              : secondaryLinkClass
+          }
+        >
+          <Icon
+            icon="mdi:gear-outline"
+            className={`h-[18px] w-[18px] shrink-0 ${
+              isSettingActive ? "text-[#4FB3C0]" : "text-[#7A7A7A]"
             }`}
-          >
-            <Icon
-              icon="mdi:gear-outline"
-              className={`${
-                currentSegment === "setting"
-                  ? "text-[#348C98]"
-                  : "text-[#707070]"
-              } w-[22px] h-[22px]`}
-            />
+          />
 
-            <span
-              className={`${
-                currentSegment === "setting" ? "font-bold" : ""
-              } text-[#BDBDBD] text-sm`}
-            >
-              Configurações
-            </span>
-          </Link>
+          <span>Configurações</span>
+        </Link>
 
-          <Link
-            href="/support"
-            className="w-full py-[7px]  flex items-center justify-start gap-2 cursor-pointer"
-          >
-            <Icon
-              icon="mdi:help-circle-outline"
-              className="text-[#707070] w-[22px] h-[22px]"
-            />
+        <Link href="/support" className={secondaryLinkClass}>
+          <Icon
+            icon="mdi:help-circle-outline"
+            className="h-[18px] w-[18px] shrink-0 text-[#7A7A7A]"
+          />
 
-            <span className="text-[#BDBDBD] text-sm">Precisa de ajuda?</span>
-          </Link>
+          <span>Precisa de ajuda?</span>
+        </Link>
 
-          <div
-            onClick={handleLogout}
-            className="w-full py-[7px] flex items-center justify-start gap-2 cursor-pointer"
-          >
-            <Icon
-              icon="mdi:logout"
-              className="text-[#DC2626] w-[22px] h-[22px]"
-            />
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex h-10 cursor-pointer items-center gap-3 rounded-xl px-3 text-sm text-[#A3A3A3] transition-colors hover:bg-[#DC2626]/10 hover:text-[#F87171]"
+        >
+          <Icon
+            icon="mdi:logout"
+            className="h-[18px] w-[18px] shrink-0 text-[#DC2626]"
+          />
 
-            <span className="text-[#BDBDBD] text-sm">Sair</span>
-          </div>
-        </div>
+          <span>Sair</span>
+        </button>
       </SidebarFooter>
     </Sidebar>
   )

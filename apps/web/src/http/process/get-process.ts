@@ -30,7 +30,7 @@ export async function getProcess({
   })
 
   if (search) {
-    queryParams.set("number", search)
+    queryParams.set("search", search)
   }
 
   if (status) {
@@ -38,7 +38,7 @@ export async function getProcess({
   }
 
   if (customer_id) {
-    queryParams.set("customer_id", customer_id)
+    queryParams.set("customerId", customer_id)
   }
 
   const result = await api

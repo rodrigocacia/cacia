@@ -1,8 +1,6 @@
 import { Header } from "@/components/header"
-import { Breadcrumbs } from "@/components/ui/custom-breadcrumb"
 
 import { Sidebar } from "./sidebar"
-import { notificationCrumbs } from "@/constants/breadcrumbs"
 import { HeaderToGoBack } from "@/components/header-to-go-back"
 
 export default function ProfileLayout({
@@ -14,8 +12,6 @@ export default function ProfileLayout({
     <div className="w-full h-fit flex flex-col">
       <div className="max-md:hidden">
         <Header title="Notificações" />
-
-        <Breadcrumbs crumbs={notificationCrumbs} />
       </div>
 
       <div className="md:hidden">

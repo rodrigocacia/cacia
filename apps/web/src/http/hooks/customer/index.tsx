@@ -11,13 +11,12 @@ interface Params {
   page?: number
   search?: string
   limit?: number
-  status?: string
 }
 
-export function useCustomers({ page = 1, search, limit, status }: Params) {
+export function useCustomers({ page = 1, search, limit }: Params) {
   const { data, error, isLoading, mutate } = useSWR<GetCustomersResponse>(
     ["customers", page, search, limit],
-    () => getCustomers({ page, search, limit, status })
+    () => getCustomers({ page, search, limit })
   )
 
   return {
