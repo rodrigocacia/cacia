@@ -19,7 +19,10 @@ import { Heading } from "@/components/ui/heading"
 import { Input } from "@/components/ui/custom-input"
 import { Button } from "@/components/ui/custom-button"
 import { forgot } from "@/http/auth/forgot"
-import { changePasswordWithCode } from "@/http/auth/change-password-with-code"
+import {
+  changePasswordWithCode,
+  validateRecoveryCode,
+} from "@/http/auth/change-password-with-code"
 
 import { Toast } from "@/components/ui/toast"
 import { useRouter } from "next/navigation"
@@ -37,6 +40,8 @@ export type CreateForgotPasswordDataFormData = z.infer<
 
 export function Form() {
   const [error, setError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+  const [isValidatingCode, setIsValidatingCode] = useState(false)
   const [step, setStep] = useState(1)
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(""))
   const [newPassword, setNewPassword] = useState("")
@@ -66,8 +71,31 @@ export function Form() {
     setError(false)
   }
 
-  const onError = () => {
+  const onError = (mensagem: string) => {
+    setErrorMessage(mensagem)
     setError(true)
+  }
+
+  const handleCodeSubmit = async () => {
+    setIsValidatingCode(true)
+
+    try {
+      const result = await validateRecoveryCode({ email, code: otp.join("") })
+
+      if (!result.success) {
+        onError(result.error)
+        return
+      }
+
+      if (!result.valid) {
+        onError("Código inválido ou expirado. Confira o código ou peça outro.")
+        return
+      }
+
+      nextStep()
+    } finally {
+      setIsValidatingCode(false)
+    }
   }
 
   const passwordRules = {
@@ -99,16 +127,14 @@ export function Form() {
     setPasswordError("")
 
     try {
-      const otpCode = otp.join("").toLowerCase()
       const result = await changePasswordWithCode({
         email,
-        code: otpCode,
+        code: otp.join(""),
         password: newPassword,
-        confirmPassword,
       })
 
       if (!result.success) {
-        setError(true)
+        onError(result.error)
         return
       }
 
@@ -121,7 +147,7 @@ export function Form() {
         router.push("/signin")
       }, 2000)
     } catch {
-      setError(true)
+      onError("Não foi possível salvar a nova senha. Tente novamente.")
     } finally {
       setIsSubmittingPassword(false)
     }
@@ -132,10 +158,11 @@ export function Form() {
     index: number
   ) => {
     const value = e.target.value.slice(-1)
-    if (value && !/^[a-zA-Z0-9]$/.test(value)) return
+    // O código gerado pela API é só de dígitos
+    if (value && !/^\d$/.test(value)) return
 
     const newOtp = [...otp]
-    newOtp[index] = value.toUpperCase()
+    newOtp[index] = value
     setOtp(newOtp)
 
     if (value && index < 5) {
@@ -164,8 +191,8 @@ export function Form() {
     const newOtp = [...otp]
 
     pastedData.split("").forEach((value, index) => {
-      if (index < 6 && /^[a-zA-Z0-9]$/.test(value)) {
-        newOtp[index] = value.toUpperCase()
+      if (index < 6 && /^\d$/.test(value)) {
+        newOtp[index] = value
       }
     })
 
@@ -187,7 +214,7 @@ export function Form() {
       setEmailSent(true)
       nextStep()
     } catch {
-      onError()
+      onError("Não foi possível solicitar o código. Tente novamente.")
     }
   }
 
@@ -201,7 +228,7 @@ export function Form() {
         <div className="w-full">
           <Heading
             title="Recuperar senha"
-            subtitle="Insira o seu e-mail cadastrado abaixo e enviaremos um link de redefinição de senha"
+            subtitle="Insira o seu e-mail cadastrado abaixo e enviaremos um código de redefinição de senha"
           />
 
           <form
@@ -233,15 +260,24 @@ export function Form() {
         <>
           <Heading
             title="Recuperar senha"
-            subtitle="Insira o código de 6 dígitos que você recebeu  em seu e-mail"
+            subtitle="Se o e-mail estiver cadastrado, você receberá um código de 6 dígitos. Insira-o abaixo."
           />
 
-          <form className="w-full flex flex-col items-center justify-center gap-11">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (otp.join("").length === 6) handleCodeSubmit()
+            }}
+            className="w-full flex flex-col items-center justify-center gap-11"
+          >
             <div className="flex justify-center gap-2 max-md:gap-1">
               {otp.map((digit, index) => (
                 <input
                   key={index}
                   type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  aria-label={`Dígito ${index + 1} do código`}
                   maxLength={1}
                   ref={(el) => {
                     inputRefs.current[index] = el
@@ -258,11 +294,12 @@ export function Form() {
 
             <Button
               type="button"
-              onClick={nextStep}
+              onClick={handleCodeSubmit}
               className="w-[251px] max-md:w-full cursor-pointer"
               variant="primary"
               iconLeft={<Send />}
-              disabled={otp.join("").length !== 6}
+              isLoading={isValidatingCode}
+              disabled={otp.join("").length !== 6 || isValidatingCode}
             >
               Enviar
             </Button>
@@ -277,7 +314,15 @@ export function Form() {
             subtitle="Preencha os campos abaixo para definir a sua nova senha "
           />
 
-          <form className="w-full flex flex-col items-center justify-center gap-11">
+          {/* Enter num campo de senha enviava o formulário nativo e recarregava
+              a página, perdendo o código já validado. */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handlePasswordSubmit()
+            }}
+            className="w-full flex flex-col items-center justify-center gap-11"
+          >
             <div className="w-full flex flex-col gap-5">
               <Input
                 type="password"
@@ -377,8 +422,10 @@ export function Form() {
         <Toast
           onClose={onClose}
           variant="errorSolid"
-          title="Erro ao salvar senha!"
-          description="Ocorreu um erro inesperado ao tentar salvar a sua nova senha. Tente novamente mais tarde."
+          title={
+            step === 3 ? "Erro ao salvar senha!" : "Não foi possível continuar"
+          }
+          description={errorMessage}
         />
       ) : null}
 
@@ -395,8 +442,8 @@ export function Form() {
         <Toast
           onClose={() => setEmailSent(false)}
           variant="successSolid"
-          title="Email enviado com sucesso!"
-          description="Verifique sua caixa de entrada para o código de recuperação."
+          title="Solicitação recebida"
+          description="Se o e-mail estiver cadastrado, você receberá um código de recuperação."
         />
       ) : null}
     </main>

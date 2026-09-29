@@ -1,26 +1,10 @@
 import { Icon } from "@/components/icone";
 
-interface PerformanceData {
-  data: {
-    services: number;
-    servicesVariation: number;
-    customers: number;
-    customersVariation: number;
-    feedbackAverage: number;
-    feedbackQuantity: number;
-    proccesses: number;
-    proccessesVariation: number;
-    completedProcesses: number;
-    ongoingProcesses: number;
-    processesByType: {
-      type: string;
-      quantity: number;
-    }[];
-  };
-}
+import type { GetOfficePerformanceResponse } from "@/http/office/get-office-performance";
+import { processTypeConfig, type ProcessType } from "@/types/process";
 
 interface PerformanceProgressProps {
-  data: PerformanceData;
+  data: GetOfficePerformanceResponse;
 }
 
 function polarToCartesian(cx: number, cy: number, r: number, angle: number) {
@@ -57,17 +41,20 @@ function describeGaugeArc(
 }
 
 export function PerformanceProgress({ data }: PerformanceProgressProps) {
-  const total = data.data.completedProcesses + data.data.ongoingProcesses;
+  const total = data.completed_processes + data.ongoing_processes;
 
-  const hasCompleted = data.data.completedProcesses > 0;
-  const hasOngoing = data.data.ongoingProcesses > 0;
+  const hasCompleted = data.completed_processes > 0;
+  const hasOngoing = data.ongoing_processes > 0;
+
+  // A API devolve um objeto tipo → quantidade, não uma lista
+  const porTipo = Object.entries(data.processes_by_type ?? {});
 
   let andamentoPercent = 0;
   let concluidoPercent = 0;
 
   if (total > 0) {
-    andamentoPercent = data.data.ongoingProcesses / total;
-    concluidoPercent = data.data.completedProcesses / total;
+    andamentoPercent = data.ongoing_processes / total;
+    concluidoPercent = data.completed_processes / total;
   }
 
   const cx = 90;
@@ -132,7 +119,7 @@ export function PerformanceProgress({ data }: PerformanceProgressProps) {
                       width={20}
                       height={20}
                     />
-                    {data.data.proccesses}
+                    {data.total_processes}
                   </span>
                   <div className="text-xs text-[#BDBDBD] font-semibold">
                     Processos
@@ -149,7 +136,7 @@ export function PerformanceProgress({ data }: PerformanceProgressProps) {
                   <span className="text-sm text-[#707070] font-medium">
                     Concluídos{" "}
                     <b className="text-[#BDBDBD] font-medium">
-                      {data.data.completedProcesses}
+                      {data.completed_processes}
                     </b>
                   </span>
                 </div>
@@ -158,7 +145,7 @@ export function PerformanceProgress({ data }: PerformanceProgressProps) {
                   <span className="text-sm text-[#707070] font-medium">
                     Em andamento{" "}
                     <b className="text-[#BDBDBD] font-medium">
-                      {data.data.ongoingProcesses}
+                      {data.ongoing_processes}
                     </b>
                   </span>
                 </div>
@@ -172,15 +159,19 @@ export function PerformanceProgress({ data }: PerformanceProgressProps) {
             TIPO DE PROCESSO
           </span>
           <div className="flex flex-wrap gap-2">
-            {data.data.processesByType.map((processType) => (
+            {porTipo.length === 0 && (
+              <span className="text-sm text-[#BDBDBD]">
+                Nenhum processo com tipo informado
+              </span>
+            )}
+
+            {porTipo.map(([tipo, quantidade]) => (
               <span
-                key={processType.type}
+                key={tipo}
                 className="bg-[#ECF7F8] text-[#707070] rounded-sm px-3 sm:px-4 py-1 text-sm font-semibold flex items-center gap-1"
               >
-                {processType.type}
-                <span className="text-[#348C98] font-medium">
-                  {processType.quantity}
-                </span>
+                {processTypeConfig[tipo as ProcessType] ?? tipo}
+                <span className="text-[#348C98] font-medium">{quantidade}</span>
               </span>
             ))}
           </div>

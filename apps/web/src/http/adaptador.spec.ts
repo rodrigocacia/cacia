@@ -30,6 +30,15 @@ describe("paraLegado", () => {
     })
   })
 
+  it("espelha `addresses` em `address`, que é o que as telas leem", () => {
+    const cliente = paraLegado<{ address: unknown; addresses: unknown }>({
+      id: "c1",
+      addresses: [{ id: "e1", city: "Recife" }],
+    })
+
+    expect(cliente.address).toEqual(cliente.addresses)
+  })
+
   it("desce por objetos aninhados e listas", () => {
     const entrada = {
       lastProcesses: [

@@ -11,6 +11,7 @@ import { deleteService } from "@/http/service/delete-service"
 import { Icon } from "@/components/icone"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 export function DialogDeleteService() {
   const [isOpen, setIsOpen] = useState(false)
@@ -25,7 +26,7 @@ export function DialogDeleteService() {
   const [isLoading, setIsLoading] = useState(false)
 
   const page = Number(searchParams.get("page")) || 1
-  const search = searchParams.get("page") || ""
+  const search = searchParams.get("search") || ""
 
   const deleteServiceId = searchParams.get("deleteServiceId")
 
@@ -55,7 +56,7 @@ export function DialogDeleteService() {
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
 
         return
       }
@@ -88,9 +89,7 @@ export function DialogDeleteService() {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="px-[30px]">
         <DialogHeader>
-          <DialogTitle className="sr-only">
-            Are you absolutely sure?
-          </DialogTitle>
+          <DialogTitle className="sr-only">Excluir serviço</DialogTitle>
         </DialogHeader>
 
         <form
@@ -106,17 +105,19 @@ export function DialogDeleteService() {
 
           <div className="flex flex-col items-center justify-center gap-3.5 mt-[30px]">
             <h4 className="text-xl text-center text-[#33454C] font-semibold">
-              Deseja mesmo excluir a dúvida “{service?.title}”?
+              Deseja mesmo excluir o serviço “{service?.title}”?
             </h4>
 
             <p className="text-[18px] leading-[24px] text-[#4D5D63] text-center">
-              Caso prossiga com esta solicitação, todos os dados da dúvida serão
-              perdidos, e essa ação não poderá ser desfeita.
+              Caso prossiga com esta solicitação, todos os dados do serviço
+              serão perdidos, e essa ação não poderá ser desfeita.
             </p>
           </div>
 
           <div className="w-full flex items-center justify-center gap-3.5 mt-[34px]">
-            <Button variant="outline" onClick={onClose}>
+            {/* type="button": sem ele o "Cancelar" enviava o formulário e
+                excluía do mesmo jeito. */}
+            <Button variant="outline" type="button" onClick={onClose}>
               Cancelar
             </Button>
 

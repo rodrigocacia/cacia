@@ -34,10 +34,7 @@ interface ProfessionalDataProps {
   nextStep(): void
 }
 
-export function ProfessionalData({
-  lastStep,
-  nextStep,
-}: ProfessionalDataProps) {
+export function ProfessionalData({ lastStep }: ProfessionalDataProps) {
   const [openSuccess, setOpenSuccess] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
@@ -181,13 +178,16 @@ export function ProfessionalData({
         setErrorMessage(friendlyErrorMessage)
 
         // Tratamento específico para erros conhecidos
-        if (result.error.message === "Documento do escritório já existe") {
-          setError("document", {
+        if (
+          result.error.message ===
+          "Já existe um escritório com este documento e número de OAB"
+        ) {
+          setError("oab_number", {
             type: "manual",
-            message: "Documento do escritório já existe",
+            message: "Já existe um escritório com este documento e OAB",
           })
 
-          setFocus("document")
+          setFocus("oab_number")
         }
 
         if (result.error.message === "Telefone do escritório já existe") {
@@ -203,7 +203,7 @@ export function ProfessionalData({
           }, 100)
         }
 
-        if (result.error.message === "Já existe um usuário com este e-mail") {
+        if (result.error.message === "Já existe uma conta com este e-mail") {
           setError("user_email", {
             type: "manual",
             message: "Já existe um usuário com este e-mail",
@@ -231,10 +231,13 @@ export function ProfessionalData({
         return
       }
 
-      setCookie("office_id", result.data?._id, {
-        maxAge: 60 * 60 * 23,
-        path: "/",
-      })
+      // A mesma sessão que o login grava — ver signin/actions.tsx. Sem o
+      // token, a pessoa terminaria o cadastro e cairia na tela de login.
+      const sessao = { maxAge: 60 * 60 * 23, path: "/" }
+
+      setCookie("token", result.data.token, sessao)
+      setCookie("office_id", result.data._id, sessao)
+      setCookie("userData", JSON.stringify(result.data.user), sessao)
 
       trackCompleteRegistration()
 
@@ -244,11 +247,20 @@ export function ProfessionalData({
 
   function handleSuccessToastClose() {
     setOpenSuccess(false)
-    nextStep()
+
+    // A etapa de plano leva ao pagamento, que ainda não foi reimplementado —
+    // ver docs/ESTADO.md, "Cobrança". Até lá, o cadastro segue direto para a
+    // configuração inicial. Navegação completa, e não router.push, para que
+    // o servidor já leia os cookies da sessão recém-criada.
+    window.location.href = "/onboard"
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="w-full h-full pb-4">
+    <form
+      method="post"
+      onSubmit={handleSubmit(onSubmit)}
+      className="w-full h-full pb-4"
+    >
       <div className="flex flex-col gap-5">
         <h3 className="text-xl font-semibold text-[#3D3D3D]">
           Dados do advogado

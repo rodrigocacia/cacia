@@ -59,11 +59,10 @@ const PADROES: Record<string, string> = {
   OPENAI_API_KEY: 'sk-teste',
   QDRANT_URL: 'http://localhost:9',
 
-  DO_ENDPOINT: 'teste.local',
-  DO_BUCKET: 'cacia-teste',
-  DO_KEY: 'chave',
-  DO_SECRET: 'segredo',
-  DO_PUBLIC_URL: 'http://localhost:9',
+  STORAGE_ENDPOINT: 'http://localhost:9',
+  STORAGE_BUCKET: 'cacia-teste',
+  STORAGE_ACCESS_KEY_ID: 'chave',
+  STORAGE_SECRET_ACCESS_KEY: 'segredo',
 
   // Alto de propósito: a suíte faz centenas de requisições do mesmo IP, e o
   // limite existe contra abuso, não contra teste. O comportamento do limite

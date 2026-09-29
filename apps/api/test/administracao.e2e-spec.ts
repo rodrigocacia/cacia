@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { OfficeStatus, Role } from '@cacia/database';
 import { criarAplicacao, type AplicacaoDeTeste } from './apoio/aplicacao';
 import { Cliente } from './apoio/cliente';
+import { randomUUID } from 'node:crypto';
 import { criarConta, criarDuasContas, type Conta } from './apoio/contas';
 
 /**
@@ -176,6 +177,84 @@ describe('administração da plataforma (e2e)', () => {
       expect(resposta.corpo._count.members).toBeGreaterThanOrEqual(1);
     });
 
+    it('busca por nome', async () => {
+      // O termo sem dígitos já derrubou a busca com 500: a condição por
+      // documento usava um byte NUL, que o Postgres recusa.
+      const nome = `Busca ${randomUUID().slice(0, 8)}`;
+      const conta = await criarConta(aplicacao.url, nome);
+
+      const resposta = await operador.get<{ data: { id: string }[] }>(
+        `/admin/offices?search=${encodeURIComponent(nome.toLowerCase())}`,
+      );
+
+      expect(resposta.status).toBe(200);
+      expect(resposta.corpo.data.map((o) => o.id)).toEqual([conta.officeId]);
+    });
+
+    it('busca por documento, com ou sem máscara', async () => {
+      const detalhe = await operador.get<{ document: string }>(
+        `/admin/offices/${a.officeId}`,
+      );
+      const documento = detalhe.corpo.document;
+      const mascarado = `${documento.slice(0, 2)}.${documento.slice(2, 5)}.${documento.slice(5)}`;
+
+      const resposta = await operador.get<{ data: { id: string }[] }>(
+        `/admin/offices?search=${encodeURIComponent(mascarado)}`,
+      );
+
+      expect(resposta.status).toBe(200);
+      expect(resposta.corpo.data.map((o) => o.id)).toContain(a.officeId);
+    });
+
+    it('edita o escritório, substituindo os endereços', async () => {
+      const conta = await criarConta(aplicacao.url, 'Escritório a editar');
+
+      await operador.patch(`/admin/offices/${conta.officeId}`, {
+        addresses: [{ street: 'Rua Antiga', city: 'Campinas', state: 'SP' }],
+      });
+
+      const resposta = await operador.patch<{
+        name: string;
+        description: string;
+        oabNumber: string;
+        oabUf: string;
+        addresses: { street: string; city: string }[];
+      }>(`/admin/offices/${conta.officeId}`, {
+        name: 'Escritório editado',
+        description: 'Direito de família',
+        oabNumber: '445566',
+        oabUf: 'mg',
+        addresses: [
+          { street: 'Rua Nova', city: 'Belo Horizonte', state: 'MG' },
+        ],
+      });
+
+      expect(resposta.status).toBe(200);
+      expect(resposta.corpo.name).toBe('Escritório editado');
+      expect(resposta.corpo.description).toBe('Direito de família');
+      expect(resposta.corpo.oabNumber).toBe('445566');
+      expect(resposta.corpo.oabUf).toBe('MG');
+      expect(resposta.corpo.addresses).toHaveLength(1);
+      expect(resposta.corpo.addresses[0]?.street).toBe('Rua Nova');
+    });
+
+    it('a edição não troca o documento nem o dono', async () => {
+      const resposta = await operador.patch(`/admin/offices/${a.officeId}`, {
+        document: '11222333000181',
+      });
+
+      // O ValidationPipe recusa propriedade fora do DTO
+      expect(resposta.status).toBe(400);
+    });
+
+    it('usuário comum não edita escritório', async () => {
+      const resposta = await a.api
+        .semEscritorio()
+        .patch(`/admin/offices/${a.officeId}`, { name: 'Invasão' });
+
+      expect(resposta.status).toBe(403);
+    });
+
     it('filtra por situação', async () => {
       const resposta = await operador.get<{ data: { status: string }[] }>(
         `/admin/offices?status=${OfficeStatus.PENDING}`,
@@ -273,6 +352,33 @@ describe('administração da plataforma (e2e)', () => {
       const emails = resposta.corpo.data.map((u) => u.email);
       expect(emails).toContain(a.email);
       expect(emails).toContain(b.email);
+    });
+
+    it('busca por nome e por e-mail', async () => {
+      const nome = `Pessoa ${randomUUID().slice(0, 8)}`;
+      const criado = await operador.post<{ id: string; document: string }>(
+        '/admin/users',
+        {
+          name: nome,
+          email: `${randomUUID().slice(0, 8)}@cacia.test`,
+          password: 'senha-de-teste-123',
+          document: '123.456.789-09',
+        },
+      );
+      expect(criado.status).toBe(201);
+      // O CPF é gravado só com dígitos, como no escritório
+      expect(criado.corpo.document).toBe('12345678909');
+
+      const porNome = await operador.get<{ data: { id: string }[] }>(
+        `/admin/users?search=${encodeURIComponent(nome.toUpperCase())}`,
+      );
+      expect(porNome.status).toBe(200);
+      expect(porNome.corpo.data.map((u) => u.id)).toEqual([criado.corpo.id]);
+
+      const porEmail = await operador.get<{ data: { email: string }[] }>(
+        `/admin/users?search=${encodeURIComponent(a.email)}`,
+      );
+      expect(porEmail.corpo.data.map((u) => u.email)).toEqual([a.email]);
     });
 
     it('nunca devolve a senha', async () => {

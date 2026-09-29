@@ -11,16 +11,18 @@ import { FaEdit } from "react-icons/fa";
 
 import { navLinks } from "./navs";
 import { formatName } from "@/utils/formatters";
-import { OfficeSignatureStatus } from "@/types/office";
+import { OfficeStatus } from "@/types/office";
+import { SITUACOES_DO_ESCRITORIO } from "@/constants/office-status";
+import { AlternarSituacao } from "./components/alternar-situacao";
 
 export function Sidebar({
   name,
   createdAt,
-  signatureStatus,
+  status,
 }: {
   name: string;
   createdAt: string;
-  signatureStatus: string;
+  status: OfficeStatus;
 }) {
   const pathname = usePathname();
   const params = useParams();
@@ -39,14 +41,9 @@ export function Sidebar({
           <p className="text-sm text-[#707070]">Cadastrado desde {createdAt}</p>
           <div className="w-full flex items-center justify-center">
             <p
-              className={`font-medium px-4 py-2 ${signatureStatus === OfficeSignatureStatus.ACTIVE ? "bg-[#EDFDEE]" : signatureStatus === OfficeSignatureStatus.CANCELLED ? "bg-[#FEF2F2]" : "bg-[#FEF7D7]"} rounded-full text-sm 
-                ${signatureStatus === OfficeSignatureStatus.ACTIVE ? "text-[#16A31B]" : signatureStatus === OfficeSignatureStatus.CANCELLED ? "text-[#DC2626]" : "text-[#F7CB08]"}`}
+              className={`font-medium px-4 py-2 rounded-full text-sm ${SITUACOES_DO_ESCRITORIO[status].cor}`}
             >
-              {signatureStatus === OfficeSignatureStatus.ACTIVE
-                ? "Ativo"
-                : signatureStatus === OfficeSignatureStatus.CANCELLED
-                  ? "Cancelado"
-                  : "Pendente"}
+              {SITUACOES_DO_ESCRITORIO[status].rotulo}
             </p>
           </div>
         </div>
@@ -94,6 +91,10 @@ export function Sidebar({
         </Link>
 
         <DialogDeleteOffice officeId={String(officeId)} officeName={name} />
+      </div>
+
+      <div className="flex justify-center w-full mt-4">
+        <AlternarSituacao officeId={String(officeId)} status={status} />
       </div>
     </aside>
   );

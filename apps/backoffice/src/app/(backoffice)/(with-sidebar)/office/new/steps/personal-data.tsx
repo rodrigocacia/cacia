@@ -16,6 +16,7 @@ import { InputPhone } from "@/components/ui/custom-input-phone";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { ufs } from "@/constants/ufs";
 import { getCepInformations } from "@/http/get-cep-informations";
+import { mensagemDeErro } from "@/http/mensagem-de-erro";
 
 export function PersonalData({
   editId,
@@ -30,7 +31,6 @@ export function PersonalData({
     register,
     handleSubmit,
     formState: { errors },
-    trigger,
     control,
     setValue,
   } = useFormContext<OfficeFormData>();
@@ -49,121 +49,74 @@ export function PersonalData({
   const isEditing = !!editId;
 
   const onSubmit = async (data: OfficeFormData) => {
-    const isValid = await trigger([
-      "name",
-      "document",
-      "legal_name",
-      "trade_name",
-      "remotejid",
-      "description",
-      "street",
-      "number",
-      "neighborhood",
-      "city",
-      "state",
-      "cep",
-    ]);
+    // Endereço vai como lista (`addresses`), no formato da API
+    const enderecos = data.street
+      ? [
+          {
+            street: data.street,
+            number: data.number || "",
+            neighborhood: data.neighborhood || "",
+            city: data.city || "",
+            state: data.state || "",
+            cep: data.cep || "",
+          },
+        ]
+      : [];
 
-    if (isValid) {
-      try {
-        let result;
-
-        if (isEditing) {
-          result = await updateOfficeAction({
+    try {
+      const result = isEditing
+        ? await updateOfficeAction({
             id: editId,
             name: data.name,
-            document: data.document,
-            legal_name: data.legal_name,
-            trade_name: data.trade_name,
+            legal_name: data.legal_name ?? "",
+            trade_name: data.trade_name ?? "",
             remotejid: data.remotejid,
-            description: data.description,
-            address: data.street
-              ? {
-                  street: data.street,
-                  number: data.number || "",
-                  neighborhood: data.neighborhood || "",
-                  city: data.city || "",
-                  state: data.state || "",
-                  cep: data.cep || "",
-                }
-              : undefined,
-          });
-
-          if (result.success) {
-            setToastConfig({
-              title: "Sucesso!",
-              description: "Escritório atualizado com sucesso!",
-              variant: "successSolid",
-            });
-            await mutate((key) => Array.isArray(key) && key[0] === "office");
-            handleOpenSuccess();
-            onClose();
-          } else {
-            setToastConfig({
-              title: "Erro!",
-              description:
-                "error" in result
-                  ? result.error?.message
-                  : "Erro ao atualizar escritório",
-              variant: "errorSolid",
-            });
-          }
-        } else {
-          result = await createOfficeAction({
-            name: data.name,
-            document: data.document,
-            legal_name: data.legal_name,
-            trade_name: data.trade_name,
-            remotejid: data.remotejid,
-            description: data.description,
+            description: data.description ?? "",
             oab_number: data.oab_number,
             oab_uf: data.oab_uf,
-            owner_name: data.owner_name,
-            owner_email: data.owner_email,
-            owner_password: data.owner_password,
-            address: data.street
-              ? {
-                  street: data.street,
-                  number: data.number || "",
-                  neighborhood: data.neighborhood || "",
-                  city: data.city || "",
-                  state: data.state || "",
-                  cep: data.cep || "",
-                }
-              : undefined,
+            addresses: enderecos,
+          })
+        : await createOfficeAction({
+            name: data.name,
+            document: data.document,
+            legal_name: data.legal_name ?? "",
+            trade_name: data.trade_name ?? "",
+            remotejid: data.remotejid,
+            description: data.description ?? "",
+            oab_number: data.oab_number,
+            oab_uf: data.oab_uf,
+            owner_name: data.owner_name ?? "",
+            owner_email: data.owner_email ?? "",
+            owner_password: data.owner_password ?? "",
+            addresses: enderecos,
           });
 
-          if (result.success) {
-            setToastConfig({
-              title: "Sucesso!",
-              description: "Escritório criado com sucesso!",
-              variant: "successSolid",
-            });
-            await mutate((key) => Array.isArray(key) && key[0] === "office");
-            handleOpenSuccess();
-            onClose();
-          } else {
-            setToastConfig({
-              title: "Erro!",
-              description:
-                "error" in result
-                  ? result.error?.message
-                  : "Erro ao criar escritório",
-              variant: "errorSolid",
-            });
-          }
-        }
-
-        setShowToast(true);
-      } catch (error) {
-        console.error("Erro inesperado ao processar escritório:", error);
-        setToastConfig({
-          title: "Erro!",
-          description: "Erro inesperado ao processar escritório",
-          variant: "errorSolid",
-        });
-        setShowToast(true);
+      if (result.success) {
+        await mutate((key) => Array.isArray(key) && key[0] === "office");
+        handleOpenSuccess();
+        onClose();
+        return;
       }
+
+      setToastConfig({
+        title: "Erro!",
+        description: mensagemDeErro(
+          "error" in result ? result.error : null,
+          isEditing
+            ? "Erro ao atualizar escritório"
+            : "Erro ao criar escritório",
+        ),
+        variant: "errorSolid",
+      });
+      setShowToast(true);
+    } catch (error) {
+      console.error("Erro inesperado ao processar escritório:", error);
+      setToastConfig({
+        title: "Erro!",
+        description: "Erro inesperado ao processar escritório",
+        variant: "errorSolid",
+      });
+      setShowToast(true);
     }
   };
 
@@ -194,12 +147,17 @@ export function PersonalData({
           error={errors?.name}
         />
 
+        {/*
+          O documento é a identidade do escritório: a edição pelo painel não o
+          altera (a API recusa o campo), então aparece só para leitura.
+        */}
         <Input
           {...register("document")}
           label="CPF / CNPJ"
           mask="cpfCnpj"
           placeholder="000.000.000-00 ou 00.000.000/0000-00"
           iconName="person"
+          readOnly={isEditing}
           error={errors?.document}
         />
 
@@ -243,32 +201,37 @@ export function PersonalData({
         {/*
           O responsável nasce junto com o escritório: um escritório sem membro
           é inacessível, porque o acesso passa por office_members — nem quem o
-          cadastrou conseguiria entrar.
+          cadastrou conseguiria entrar. Na edição não aparece: o dono muda
+          pelos membros, não por este formulário.
         */}
-        <Input
-          {...register("owner_name")}
-          label="Nome do responsável"
-          iconName="person"
-          placeholder="Quem vai administrar o escritório..."
-          error={errors?.owner_name}
-        />
+        {!isEditing && (
+          <>
+            <Input
+              {...register("owner_name")}
+              label="Nome do responsável"
+              iconName="person"
+              placeholder="Quem vai administrar o escritório..."
+              error={errors?.owner_name}
+            />
 
-        <Input
-          {...register("owner_email")}
-          label="E-mail do responsável"
-          iconName="mail"
-          placeholder="Ele entra no sistema com este e-mail..."
-          error={errors?.owner_email}
-        />
+            <Input
+              {...register("owner_email")}
+              label="E-mail do responsável"
+              iconName="mail"
+              placeholder="Ele entra no sistema com este e-mail..."
+              error={errors?.owner_email}
+            />
 
-        <Input
-          {...register("owner_password")}
-          label="Senha provisória"
-          type="password"
-          iconName="lock"
-          placeholder="Ao menos 8 caracteres..."
-          error={errors?.owner_password}
-        />
+            <Input
+              {...register("owner_password")}
+              label="Senha provisória"
+              type="password"
+              iconName="lock"
+              placeholder="Ao menos 8 caracteres..."
+              error={errors?.owner_password}
+            />
+          </>
+        )}
 
         <InputPhone
           control={control}

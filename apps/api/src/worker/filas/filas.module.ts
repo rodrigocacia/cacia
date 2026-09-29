@@ -41,6 +41,7 @@ import { FILA } from './filas';
       { name: FILA.LEMBRETES },
       { name: FILA.INDEXACAO_DOCUMENTO },
       { name: FILA.ACOMPANHAMENTO_PROCESSO },
+      { name: FILA.IMPORTACAO_LEADS },
     ),
   ],
   exports: [BullModule],

@@ -29,18 +29,14 @@ interface UpdateProcessResponse {
 
 export async function updateProcess({
   process_id,
-  customer_id,
-  number,
   description,
 }: UpdateProcessRequest) {
   try {
     const result = await api
       .patch(`processes/${process_id}`, {
-        json: {
-          customer_id,
-          number,
-          description,
-        },
+        // Número e cliente não vão: identificam o processo (e o acompanhamento
+        // na Judit), e a API recusa a edição inteira (400) se vierem no corpo.
+        json: { description },
       })
       .json<UpdateProcessResponse>()
 

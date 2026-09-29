@@ -9,19 +9,21 @@ export interface GetOfficeByIdRequest {
   id: string;
 }
 
+/** `GET /admin/offices/:id`, já traduzido pelo adaptador (snake_case). */
 interface GetOfficeByIdResponse {
   _id: string;
   name: string;
   document: string;
-  legal_name: string;
-  trade_name: string;
-  remotejid: string;
-  description: string;
-  plan: string;
+  legal_name: string | null;
+  trade_name: string | null;
+  remotejid: string | null;
+  description: string | null;
+  oab_number: string;
+  oab_uf: string;
   created_at: string;
   status: string;
-  signature_status: string;
-  address: Address[];
+  addresses: Address[];
+  owner: { _id: string; name: string; email: string } | null;
 }
 
 export async function getOfficeById({ id }: GetOfficeByIdRequest) {

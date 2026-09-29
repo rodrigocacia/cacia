@@ -14,6 +14,8 @@ const CAMPOS = {
   notifyLawyerNewEvent: true,
   notifyLawyerUpdateProcess: true,
   notifyLawyerUpdateSystem: true,
+  aiCanMoveLeadStage: true,
+  aiCanTagLead: true,
   updatedAt: true,
 } as const;
 

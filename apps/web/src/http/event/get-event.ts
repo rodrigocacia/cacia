@@ -58,7 +58,9 @@ export async function getEvent({
 
   const result = await api
     .get(`events?${queryParams.toString()}`, {
-      next: { tags: [`event/${calendar_id}`] },
+      // "events" é a tag que criar, editar, cancelar e excluir invalidam; só
+      // com a da agenda o card excluído continuava na tela até recarregar.
+      next: { tags: ["events", `event/${calendar_id}`] },
     })
     .json<GetEventResponse>()
 

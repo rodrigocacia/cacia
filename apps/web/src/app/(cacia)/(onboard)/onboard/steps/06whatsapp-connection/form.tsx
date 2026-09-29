@@ -23,7 +23,7 @@ export function Form({ qrCode }: FormProps) {
 
   const { connection, isLoading } = useConnection()
   const typeConnection =
-    connection?.whatsapp_connection?.toUpperCase() || "EVOLUTION"
+    connection?.whatsapp_connection?.toUpperCase() || "WAHA"
 
   if (isLoading) return <Spinner />
 

@@ -17,13 +17,14 @@ import { Input } from "@/components/ui/custom-input"
 import { updateLegalConsultation } from "@/http/legal-consultation/update-legal-consultation"
 import { useLegalConsultation } from "@/http/hooks/legal-consultation"
 import {
-  convertCurrencyToCents,
+  convertCurrencyToReais,
   formatNumberToCurrency,
 } from "@/utils/formatters"
 import {
   LegalConsultationFormData,
   legalConsultationFormSchema,
 } from "@/schemas/legal-consultation"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 export function Form() {
   const { nextStep, prevStep } = useOnboardingStore()
@@ -55,7 +56,7 @@ export function Form() {
         is_charged: !!legalConsultation?.data?.is_charged ? "yes" : "no",
         consultation_value: legalConsultation?.data?.consultation_value
           ? formatNumberToCurrency(
-              Number(legalConsultation.data?.consultation_value) / 100
+              Number(legalConsultation.data?.consultation_value)
             )
           : "",
         requires_payment_to_schedule: !!legalConsultation?.data
@@ -79,7 +80,7 @@ export function Form() {
       const credentials = {
         is_charged: is_charged === "yes" ? true : false,
         consultation_value: consultation_value
-          ? convertCurrencyToCents(consultation_value)
+          ? convertCurrencyToReais(consultation_value)
           : 0,
         requires_payment_to_schedule:
           requires_payment_to_schedule === "yes" ? true : false,
@@ -90,7 +91,7 @@ export function Form() {
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
         return
       }
 

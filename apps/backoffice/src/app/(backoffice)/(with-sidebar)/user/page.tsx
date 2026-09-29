@@ -1,5 +1,8 @@
 import { Suspense } from "react";
 
+import Link from "next/link";
+import { FaPlus } from "react-icons/fa";
+
 import { SWRConfig } from "swr";
 
 import { Icon } from "@/components/icone";
@@ -12,6 +15,7 @@ import { Breadcrumbs } from "@/components/ui/custom-breadcrumb";
 import { CustomSearchFilter } from "@/components/ui/custom-search-filter";
 import { UsersFiltersButton } from "@/components/tables/users-filters-button";
 import { LoadingText } from "@/components/ui/sppiner";
+import { Button } from "@/components/ui/custom-button";
 
 import { Form } from "./new/steps";
 import { userCrumbs } from "@/constants/breadcrumbs";
@@ -51,12 +55,20 @@ export default async function User({
           </div>
         </div>
 
-        <Form />
+        <Link href="?novo=1" scroll={false}>
+          <Button
+            className="cursor-pointer"
+            variant="primary"
+            iconLeft={<FaPlus size={14} />}
+          >
+            Novo usuário
+          </Button>
+        </Link>
       </div>
 
       <div className="w-full flex items-center gap-3 max-md:mt-3.5">
         <Suspense fallback={<LoadingText />}>
-          <CustomSearchFilter placeholder="Buscar por nome ou telefone..." />
+          <CustomSearchFilter placeholder="Buscar por nome ou e-mail..." />
         </Suspense>
 
         <UsersFiltersButton />
@@ -76,9 +88,23 @@ export default async function User({
         <UsersTable />
       </SWRConfig>
 
-      <div className="md:hidden">
-        <Form />
+      <div className="md:hidden mt-4">
+        <Link href="?novo=1" scroll={false}>
+          <Button
+            className="cursor-pointer"
+            variant="primary"
+            iconLeft={<FaPlus size={14} />}
+          >
+            Novo usuário
+          </Button>
+        </Link>
       </div>
+
+      {/*
+        Uma instância só: o formulário decide entre Sheet e Drawer pela
+        largura da tela. Duas instâncias abriam dois painéis sobrepostos.
+      */}
+      <Form />
     </div>
   );
 }

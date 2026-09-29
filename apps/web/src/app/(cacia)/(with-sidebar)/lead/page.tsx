@@ -16,6 +16,8 @@ import { getLeads } from "@/http/lead/get-leads"
 import { getLeadById } from "@/http/lead/get-lead-by-id"
 import { leadFilters } from "@/constants/filters/lead"
 import { FiltersTabResponsive } from "@/components/filters-tab-responsive"
+import { AlternadorDeVisao } from "@/components/crm/alternador-de-visao"
+import { PainelDoFunil } from "@/components/crm/painel-do-funil"
 import { PageHeader } from "@/components/ui/page-header"
 import { ListToolbar } from "@/components/ui/list-toolbar"
 
@@ -28,9 +30,52 @@ export default async function Lead({
     status?: string
     editLeadId?: string
     leadId?: string
+    view?: string
   }>
 }) {
-  const { page, search, status, editLeadId, leadId } = await searchParams
+  const { page, search, status, editLeadId, leadId, view } = await searchParams
+
+  // O quadro busca os próprios dados no cliente: as colunas são as etapas do
+  // funil, que a tabela não conhece. Sair cedo evita carregar a listagem
+  // paginada que a visão de funil não usaria.
+  const emFunil = view === "kanban"
+
+  if (emFunil) {
+    return (
+      <div className="w-full max-lg:px-4">
+        <Header />
+
+        <div className="mt-2 max-md:hidden">
+          <PageHeader
+            icon={
+              <Icon
+                icon="mdi:leads-outline"
+                className="h-5 w-5 text-[#348C98]"
+              />
+            }
+            title="Leads"
+            action={<Form lead={null} />}
+          />
+        </div>
+
+        <div className="mt-5">
+          <ListToolbar>
+            <Suspense fallback="Carregando...">
+              <CustomSearchFilter placeholder="Buscar por nome ou telefone..." />
+            </Suspense>
+
+            <Suspense fallback={null}>
+              <AlternadorDeVisao />
+            </Suspense>
+          </ListToolbar>
+        </div>
+
+        <Suspense fallback="Carregando...">
+          <PainelDoFunil />
+        </Suspense>
+      </div>
+    )
+  }
 
   let leads = null
   let hasError = false
@@ -90,6 +135,10 @@ export default async function Lead({
           </Suspense>
 
           <FiltersPanel filters={leadFilters} />
+
+          <Suspense fallback={null}>
+            <AlternadorDeVisao />
+          </Suspense>
         </ListToolbar>
       </div>
 

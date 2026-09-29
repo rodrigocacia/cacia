@@ -57,12 +57,16 @@ export const envSchema = z.object({
     .string()
     .min(24, 'CACIA_TOOL_API_KEY precisa de ao menos 24 caracteres'),
 
-  // Inteligência artificial
+  // Inteligência artificial — texto: DeepSeek principal, OpenAI de reserva
+  // (ver LlmService). Sem a chave da DeepSeek, todo o texto vai para a OpenAI.
+  DEEPSEEK_API_KEY: z.string().optional(),
+  DEEPSEEK_BASE_URL: z.string().url().default('https://api.deepseek.com'),
+  DEEPSEEK_MODEL: z.string().default('deepseek-chat'),
+  // Resumo e extração de fatos; sem valor, usa o mesmo do atendimento
+  DEEPSEEK_SUMMARY_MODEL: z.string().optional(),
+  // A OpenAI continua obrigatória: embeddings (a DeepSeek não tem) e reserva
   OPENAI_API_KEY: z.string().startsWith('sk-'),
-  OPENAI_MODEL: z.string().default('gpt-4o'),
-  // Sumarização e extração de fatos são tarefas simples e frequentes —
-  // usam o modelo barato, não o mesmo do atendimento.
-  OPENAI_SUMMARY_MODEL: z.string().default('gpt-4o-mini'),
+  OPENAI_FALLBACK_MODEL: z.string().default('gpt-5-mini'),
   OPENAI_EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
   OPENAI_EMBEDDING_DIMENSIONS: z.coerce.number().int().default(1536),
 
@@ -83,13 +87,14 @@ export const envSchema = z.object({
   JUDIT_API_URL: z.string().url().default('https://requests.prod.judit.io'),
   JUDIT_API_KEY: z.string().optional(),
 
-  // Armazenamento de arquivos (DigitalOcean Spaces, compatível com S3).
-  // Substitui a prática anterior de guardar base64 na linha da tabela.
-  DO_ENDPOINT: z.string(),
-  DO_BUCKET: z.string(),
-  DO_KEY: z.string(),
-  DO_SECRET: z.string(),
-  DO_PUBLIC_URL: z.string().url(),
+  // Armazenamento de arquivos, compatível com S3 — Cloudflare R2 em
+  // produção, S3 local no docker compose. Substitui a prática anterior de guardar base64 na
+  // linha da tabela.
+  STORAGE_ENDPOINT: z.string().url(),
+  STORAGE_BUCKET: z.string(),
+  STORAGE_ACCESS_KEY_ID: z.string(),
+  STORAGE_SECRET_ACCESS_KEY: z.string(),
+  STORAGE_REGION: z.string().default('auto'),
 });
 
 export type Env = z.infer<typeof envSchema>;

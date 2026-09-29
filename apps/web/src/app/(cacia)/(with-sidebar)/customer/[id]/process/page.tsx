@@ -7,6 +7,7 @@ import { CustomTab } from "@/components/ui/custom-tab"
 
 import { Processes } from "./detail"
 import { CustomAvatar } from "@/components/ui/custom-avatar"
+import { getProcess } from "@/http/process/get-process"
 
 export default async function ProccessDetail({
   params,
@@ -15,7 +16,12 @@ export default async function ProccessDetail({
 }) {
   const { id: customerId } = await params
 
-  const customer = await getCustomerById(customerId)
+  // O detalhe do cliente não embute os processos (só a contagem): a lista vem
+  // da própria listagem de processos, filtrada pelo cliente.
+  const [customer, processos] = await Promise.all([
+    getCustomerById(customerId),
+    getProcess({ page: 1, customer_id: customerId }),
+  ])
 
   let formattedCreatedAtDate = null
 
@@ -43,7 +49,7 @@ export default async function ProccessDetail({
   return (
     <div className="w-full h-full">
       <div className="h-full max-md:hidden">
-        <Processes processes={customer?.process} customerId={customerId} />
+        <Processes processes={processos?.data ?? []} customerId={customerId} />
       </div>
 
       <main className="w-full h-fit max-lg:h-full pb-6 max-lg:pb-0  grid grid-cols-[2fr_3fr] max-lg:flex max-lg max-lg:flex-col max-lg:justify-between md:hidden">
@@ -70,7 +76,10 @@ export default async function ProccessDetail({
 
             <CustomTab tabs={tabs} />
 
-            <Processes processes={customer?.process} customerId={customerId} />
+            <Processes
+              processes={processos?.data ?? []}
+              customerId={customerId}
+            />
           </div>
         </div>
       </main>

@@ -1,60 +1,49 @@
 import { Icon } from "@/components/icone";
 
-interface PerformanceData {
-  data: {
-    services: number;
-    servicesVariation: number;
-    customers: number;
-    customersVariation: number;
-    documents: number;
-    documentsVariation: number;
-    leads: number;
-    leadsVariation: number;
-    feedbackAverage: number;
-    feedbackQuantity: number;
-    proccesses: number;
-    proccessesVariation: number;
-    processesByType: Record<string, number>;
+import type { GetOfficePerformanceResponse } from "@/http/office/get-office-performance";
+
+interface PerformanceIndicatorsProps {
+  data: GetOfficePerformanceResponse;
+}
+
+function destaque(variacao: number) {
+  return {
+    highlight: `${variacao > 0 ? "+" : ""}${variacao}% vs. período anterior`,
+    highlightColor: variacao >= 0 ? "text-green-500" : "text-red-500",
   };
 }
 
-interface PerformanceIndicatorsProps {
-  data: PerformanceData;
-}
-
+/**
+ * Os indicadores que a API fornece. "Serviços", "avaliação média" e a
+ * variação de processos existiam na tela sem existir na resposta, e a tela
+ * quebrava ao lê-los.
+ */
 export function PerformanceIndicators({ data }: PerformanceIndicatorsProps) {
   const indicators = [
     {
       label: "Documentos",
-      value: data.data.documents,
+      value: data.documents,
       icon: "mdi:file-document-outline",
-      highlight: `${data.data.documentsVariation > 0 ? "+" : ""}${data.data.documentsVariation}% este mês`,
-      highlightColor:
-        data.data.documentsVariation >= 0 ? "text-green-500" : "text-red-500",
+      ...destaque(data.documents_variation),
     },
     {
       label: "Leads",
-      value: data.data.leads,
+      value: data.leads,
       icon: "mdi:wallet-outline",
-      highlight: `${data.data.leadsVariation > 0 ? "+" : ""}${data.data.leadsVariation}% este mês`,
-      highlightColor:
-        data.data.leadsVariation >= 0 ? "text-green-500" : "text-red-500",
+      ...destaque(data.leads_variation),
     },
     {
       label: "Clientes",
-      value: data.data.customers,
+      value: data.customers,
       icon: "mdi:account-group-outline",
-      highlight: `${data.data.customersVariation > 0 ? "+" : ""}${data.data.customersVariation}% este mês`,
-      highlightColor:
-        data.data.customersVariation >= 0 ? "text-green-500" : "text-red-500",
+      ...destaque(data.customers_variation),
     },
     {
       label: "Processos",
-      value: data.data.proccesses,
+      value: data.total_processes,
       icon: "mdi:briefcase-outline",
-      highlight: `${data.data.proccessesVariation > 0 ? "+" : ""}${data.data.proccessesVariation}% este mês`,
-      highlightColor:
-        data.data.proccessesVariation >= 0 ? "text-green-500" : "text-red-500",
+      highlight: "",
+      highlightColor: "",
     },
   ];
 

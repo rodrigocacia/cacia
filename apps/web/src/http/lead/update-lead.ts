@@ -27,19 +27,15 @@ interface UpdateLeadResponse {
   __v: 0
 }
 
-export async function updateLead({
-  leadId,
-  name,
-  email,
-  remotejid,
-}: UpdateLeadRequest) {
+export async function updateLead({ leadId, name, email }: UpdateLeadRequest) {
   try {
     const result = await api
       .patch(`leads/${leadId}`, {
+        // O telefone não vai: é a identidade do contato no WhatsApp, e a API
+        // recusa a edição inteira (400) se ele vier no corpo.
         json: {
           name,
           ...(email && { email }),
-          remotejid,
         },
       })
       .json<UpdateLeadResponse>()

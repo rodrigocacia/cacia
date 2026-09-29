@@ -13,7 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CustomSelect } from "@/components/ui/custom-select";
-import { OfficeSignatureStatus } from "@/types/office";
+import { OfficeStatus } from "@/types/office";
+import {
+  SITUACOES_DO_ESCRITORIO,
+  situacaoValida,
+} from "@/constants/office-status";
 
 interface OfficesFiltersModalProps {
   open: boolean;
@@ -21,7 +25,7 @@ interface OfficesFiltersModalProps {
 }
 
 interface FilterState {
-  signature_status: string;
+  status: string;
 }
 
 export function OfficesFiltersModal({
@@ -32,14 +36,15 @@ export function OfficesFiltersModal({
   const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState<FilterState>({
-    signature_status: searchParams.get("signature_status") || "-",
+    status: situacaoValida(searchParams.get("status")) ?? "-",
   });
 
-  const signatureStatusOptions = [
-    { value: "-", label: "Todos os status" },
-    { value: OfficeSignatureStatus.PENDING, label: "Pendente" },
-    { value: OfficeSignatureStatus.ACTIVE, label: "Ativo" },
-    { value: OfficeSignatureStatus.CANCELLED, label: "Cancelado" },
+  const statusOptions = [
+    { value: "-", label: "Todas as situações" },
+    ...Object.values(OfficeStatus).map((situacao) => ({
+      value: situacao,
+      label: SITUACOES_DO_ESCRITORIO[situacao].rotulo,
+    })),
   ];
 
   const handleFilterChange = (key: keyof FilterState, value: string) => {
@@ -64,30 +69,22 @@ export function OfficesFiltersModal({
 
   const handleClear = () => {
     setFilters({
-      signature_status: "-",
+      status: "-",
     });
 
     const params = new URLSearchParams(searchParams.toString());
-    params.delete("signature_status");
+    params.delete("status");
     params.set("page", "1");
 
     router.push(`?${params.toString()}`);
     onOpenChange(false);
   };
 
-  const getQuickFilterStatus = () => {
-    if (filters.signature_status === OfficeSignatureStatus.ACTIVE)
-      return "active";
-    if (filters.signature_status === OfficeSignatureStatus.PENDING)
-      return "pending";
-    if (filters.signature_status === OfficeSignatureStatus.CANCELLED)
-      return "cancelled";
-    return "none";
-  };
-
-  const handleQuickFilter = (status: string) => {
-    const newStatus = status === "none" ? "-" : status;
-    setFilters((prev) => ({ ...prev, signature_status: newStatus }));
+  const handleQuickFilter = (status: OfficeStatus) => {
+    setFilters((prev) => ({
+      ...prev,
+      status: prev.status === status ? "-" : status,
+    }));
   };
 
   return (
@@ -114,52 +111,32 @@ export function OfficesFiltersModal({
               </h4>
 
               <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => handleQuickFilter("active")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    getQuickFilterStatus() === "active"
-                      ? "bg-[#348C98] text-white"
-                      : "bg-gray-100 text-[#707070] hover:bg-gray-200"
-                  }`}
-                >
-                  <Icon icon="mdi:check-circle" className="w-4 h-4" />
-                  Ativo
-                </button>
-
-                <button
-                  onClick={() => handleQuickFilter("pending")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    getQuickFilterStatus() === "pending"
-                      ? "bg-[#348C98] text-white"
-                      : "bg-gray-100 text-[#707070] hover:bg-gray-200"
-                  }`}
-                >
-                  <Icon icon="mdi:file-document-check" className="w-4 h-4" />
-                  Pendente
-                </button>
-
-                <button
-                  onClick={() => handleQuickFilter("cancelled")}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    getQuickFilterStatus() === "cancelled"
-                      ? "bg-[#348C98] text-white"
-                      : "bg-gray-100 text-[#707070] hover:bg-gray-200"
-                  }`}
-                >
-                  <Icon icon="mdi:archive" className="w-4 h-4" />
-                  Cancelado
-                </button>
+                {Object.values(OfficeStatus).map((situacao) => (
+                  <button
+                    key={situacao}
+                    onClick={() => handleQuickFilter(situacao)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      filters.status === situacao
+                        ? "bg-[#348C98] text-white"
+                        : "bg-gray-100 text-[#707070] hover:bg-gray-200"
+                    }`}
+                  >
+                    <Icon
+                      icon={SITUACOES_DO_ESCRITORIO[situacao].icon}
+                      className="w-4 h-4"
+                    />
+                    {SITUACOES_DO_ESCRITORIO[situacao].rotulo}
+                  </button>
+                ))}
               </div>
             </div>
 
             <div className="space-y-4">
               <CustomSelect
-                label="Status da assinatura"
-                options={signatureStatusOptions}
-                value={filters.signature_status}
-                onChange={(value) =>
-                  handleFilterChange("signature_status", value)
-                }
+                label="Situação do escritório"
+                options={statusOptions}
+                value={filters.status}
+                onChange={(value) => handleFilterChange("status", value)}
                 iconName="lens"
               />
             </div>

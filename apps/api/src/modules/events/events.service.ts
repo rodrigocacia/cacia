@@ -1,11 +1,14 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EventStatus, ReminderType } from '@cacia/database';
+import { EventStatus, EventType, ReminderType } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
 import { janela, montarPaginacao } from '@/common/dto/paginacao.dto';
+import { DisponibilidadeService } from '../calendars/disponibilidade.service';
+import { dentroDoExpediente, TIPOS_DE_ATENDIMENTO } from './expediente';
 import type {
   AtualizarEventoDto,
   CriarEventoDto,
@@ -31,7 +34,130 @@ const CAMPOS = {
 
 @Injectable()
 export class EventsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly disponibilidade: DisponibilidadeService,
+  ) {}
+
+  /**
+   * Recusa marcar por cima de um compromisso que já existe.
+   *
+   * A agenda tinha dias e turnos configurados desde o começo e ninguém os
+   * consultava: dava para marcar dois atendimentos no mesmo horário, e os dois
+   * eram aceitos. Quem descobria era o cliente, na porta.
+   *
+   * `permitirConflito` existe porque nem toda sobreposição é erro — um prazo
+   * processual e uma reunião podem coincidir de propósito. O que não pode é
+   * acontecer sem ninguém ter dito que tudo bem.
+   */
+  private async recusarConflito(
+    officeId: string,
+    calendarId: string,
+    inicio: Date,
+    fim: Date,
+    permitirConflito?: boolean,
+    ignorarEventoId?: string,
+  ): Promise<void> {
+    if (permitirConflito) return;
+
+    const existente = await this.disponibilidade.conflito(
+      officeId,
+      calendarId,
+      inicio,
+      fim,
+      ignorarEventoId,
+    );
+
+    if (!existente) return;
+
+    const quando = existente.startTime.toLocaleString('pt-BR', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+      timeZone: 'America/Sao_Paulo',
+    });
+
+    throw new ConflictException({
+      message: `Já existe "${existente.title}" nesta agenda em ${quando}`,
+      eventId: existente.id,
+    });
+  }
+
+  /**
+   * Recusa atendimento marcado fora dos turnos configurados na agenda.
+   *
+   * Só checar conflito deixava passar uma reunião às três da manhã de domingo
+   * — a agenda livre, afinal. `permitirConflito` também libera aqui pelo mesmo
+   * motivo: o advogado que decide atender fora do horário precisa conseguir
+   * registrar isso, só não pode acontecer sem ele ter dito.
+   *
+   * Agenda sem nenhum dia configurado não restringe: ninguém disse qual é o
+   * expediente, e recusar tudo tornaria a agenda inútil até alguém configurar.
+   */
+  private async recusarForaDoExpediente(
+    calendarId: string,
+    tipo: EventType | undefined,
+    inicio: Date,
+    fim: Date,
+    permitirConflito?: boolean,
+  ): Promise<void> {
+    if (permitirConflito || !tipo || !TIPOS_DE_ATENDIMENTO.has(tipo)) return;
+
+    const dias = await this.prisma.calendarAvailableDay.findMany({
+      where: { calendarId },
+      select: {
+        day: true,
+        available: true,
+        startTime: true,
+        endTime: true,
+        shift2Available: true,
+        shift2StartTime: true,
+        shift2EndTime: true,
+      },
+    });
+
+    if (dias.length === 0 || dentroDoExpediente(inicio, fim, dias)) return;
+
+    throw new ConflictException({
+      message: 'Fora do horário de atendimento da agenda',
+      foraDoExpediente: true,
+    });
+  }
+
+  /**
+   * Cliente, lead e processo precisam ser deste escritório.
+   *
+   * O banco já recusa pela chave composta, mas como erro 500 — a tela mostrava
+   * "erro interno" para o que é só um id que não existe aqui.
+   */
+  private async garantirVinculos(
+    officeId: string,
+    vinculos: { customerId?: string; leadId?: string; processId?: string },
+  ): Promise<void> {
+    const [cliente, lead, processo] = await Promise.all([
+      vinculos.customerId
+        ? this.prisma.customer.findFirst({
+            where: { id: vinculos.customerId, officeId, deletedAt: null },
+            select: { id: true },
+          })
+        : true,
+      vinculos.leadId
+        ? this.prisma.lead.findFirst({
+            where: { id: vinculos.leadId, officeId, deletedAt: null },
+            select: { id: true },
+          })
+        : true,
+      vinculos.processId
+        ? this.prisma.process.findFirst({
+            where: { id: vinculos.processId, officeId, deletedAt: null },
+            select: { id: true },
+          })
+        : true,
+    ]);
+
+    if (!cliente) throw new NotFoundException('Cliente não encontrado');
+    if (!lead) throw new NotFoundException('Lead não encontrado');
+    if (!processo) throw new NotFoundException('Processo não encontrado');
+  }
 
   async listar(officeId: string, dto: ListarEventosDto) {
     const where = {
@@ -40,6 +166,7 @@ export class EventsService {
       ...(dto.status && { status: dto.status }),
       ...(dto.calendarId && { calendarId: dto.calendarId }),
       ...(dto.customerId && { customerId: dto.customerId }),
+      ...(dto.leadId && { leadId: dto.leadId }),
       ...(dto.processId && { processId: dto.processId }),
       ...((dto.from ?? dto.to) && {
         startTime: {
@@ -108,6 +235,23 @@ export class EventsService {
     }
 
     await this.garantirAgenda(officeId, dto.calendarId);
+    await this.garantirVinculos(officeId, dto);
+
+    await this.recusarForaDoExpediente(
+      dto.calendarId,
+      dto.type,
+      inicio,
+      fim,
+      dto.permitirConflito,
+    );
+
+    await this.recusarConflito(
+      officeId,
+      dto.calendarId,
+      inicio,
+      fim,
+      dto.permitirConflito,
+    );
 
     const offsets = dto.reminderOffsets ?? [];
 
@@ -161,7 +305,14 @@ export class EventsService {
   async atualizar(officeId: string, id: string, dto: AtualizarEventoDto) {
     const atual = await this.prisma.event.findFirst({
       where: { id, officeId, deletedAt: null },
-      select: { id: true, startTime: true, reminderOffsets: true },
+      select: {
+        id: true,
+        calendarId: true,
+        type: true,
+        startTime: true,
+        endTime: true,
+        reminderOffsets: true,
+      },
     });
 
     if (!atual) throw new NotFoundException('Compromisso não encontrado');
@@ -169,15 +320,49 @@ export class EventsService {
     const novoInicio = dto.startTime ? new Date(dto.startTime) : null;
     const novoFim = dto.endTime ? new Date(dto.endTime) : null;
 
-    if (novoInicio && novoFim && novoFim <= novoInicio) {
+    // Cada ponta cai no valor atual quando só a outra mudou: comparar o novo
+    // início com o fim ANTIGO é o que precisa ser validado, e não só o par
+    // quando os dois vêm juntos.
+    const inicioFinal = novoInicio ?? atual.startTime;
+    const fimFinal = novoFim ?? atual.endTime;
+
+    if (fimFinal <= inicioFinal) {
       throw new BadRequestException('O término precisa ser depois do início');
     }
+
+    // Mudar só o tipo também conta: uma anotação no domingo que vira reunião
+    // passa a ocupar um horário em que a agenda não atende.
+    if (novoInicio || novoFim || (dto.type && dto.type !== atual.type)) {
+      await this.recusarForaDoExpediente(
+        atual.calendarId,
+        dto.type ?? atual.type,
+        inicioFinal,
+        fimFinal,
+        dto.permitirConflito,
+      );
+    }
+
+    if (novoInicio || novoFim) {
+      await this.recusarConflito(
+        officeId,
+        atual.calendarId,
+        inicioFinal,
+        fimFinal,
+        dto.permitirConflito,
+        // Ignora a si mesmo: sem isto, remarcar um compromisso para o mesmo
+        // horário colidiria com ele próprio.
+        id,
+      );
+    }
+
+    // `permitirConflito` não é coluna: fica de fora do que vai para o Prisma.
+    const { permitirConflito: _permitirConflito, ...campos } = dto;
 
     return this.prisma.$transaction(async (tx) => {
       const evento = await tx.event.update({
         where: { id },
         data: {
-          ...dto,
+          ...campos,
           ...(novoInicio && { startTime: novoInicio }),
           ...(novoFim && { endTime: novoFim }),
         },

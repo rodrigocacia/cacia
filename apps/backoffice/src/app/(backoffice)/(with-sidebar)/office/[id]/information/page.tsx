@@ -14,6 +14,9 @@ import { CustomAvatar } from "@/components/ui/custom-avatar";
 import { FaEdit } from "react-icons/fa";
 import { formatName } from "@/utils/formatters";
 import { DialogDeleteOffice } from "../components/dialog-delete-office";
+import { AlternarSituacao } from "../components/alternar-situacao";
+import { situacaoValida } from "@/constants/office-status";
+import { OfficeStatus } from "@/types/office";
 
 export default async function ProccessDetail({
   params,
@@ -47,7 +50,7 @@ export default async function ProccessDetail({
             remotejid={data?.remotejid ?? ""}
             legal_name={data?.legal_name ?? ""}
             description={data?.description ?? ""}
-            address={data?.address ?? []}
+            address={data?.addresses ?? []}
           />
         </div>
 
@@ -91,6 +94,11 @@ export default async function ProccessDetail({
                     officeName={formatName(data?.name ?? "")}
                   />
                 </div>
+
+                <AlternarSituacao
+                  officeId={officeId}
+                  status={situacaoValida(data?.status) ?? OfficeStatus.PENDING}
+                />
               </div>
 
               <CustomTab tabs={tabs(officeId)} />
@@ -100,7 +108,7 @@ export default async function ProccessDetail({
                 remotejid={data?.remotejid ?? ""}
                 legal_name={data?.legal_name ?? ""}
                 description={data?.description ?? ""}
-                address={data?.address ?? []}
+                address={data?.addresses ?? []}
               />
             </div>
           </div>

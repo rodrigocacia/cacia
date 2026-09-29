@@ -19,34 +19,37 @@ export interface ArquivoEnviado {
 const VALIDADE_LINK_SEGUNDOS = 15 * 60;
 
 /**
- * Armazenamento de arquivos no DigitalOcean Spaces (compatível com S3).
+ * Armazenamento de arquivos em qualquer serviço compatível com S3 — Cloudflare
+ * R2 em produção, S3 local (docker compose).
  *
  * Substitui a prática do sistema anterior de guardar o arquivo em base64
  * dentro da linha da tabela. Aquilo inflava o banco e degradava toda consulta
  * às tabelas de mensagem e documento — cada `SELECT` carregava megabytes de
  * conteúdo que ninguém tinha pedido.
+ *
+ * Todo arquivo é privado e sai só por link temporário. Não há ACL por objeto:
+ * o R2 não a implementa (visibilidade é por bucket), e documento jurídico
+ * acessível por URL adivinhável seria vazamento.
  */
 @Injectable()
 export class StorageService {
   private readonly logger = new Logger(StorageService.name);
   private readonly cliente: S3Client;
   private readonly bucket: string;
-  private readonly urlPublica: string;
 
   constructor(config: ConfigService) {
-    const endpoint = config.getOrThrow<string>('DO_ENDPOINT');
-
-    this.bucket = config.getOrThrow<string>('DO_BUCKET');
-    this.urlPublica = config.getOrThrow<string>('DO_PUBLIC_URL');
+    this.bucket = config.getOrThrow<string>('STORAGE_BUCKET');
 
     this.cliente = new S3Client({
-      endpoint: `https://${endpoint}`,
-      region: 'us-east-1', // exigido pelo SDK; o Spaces ignora
+      endpoint: config.getOrThrow<string>('STORAGE_ENDPOINT'),
+      // O R2 exige "auto"; os demais aceitam a região configurada
+      region: config.get<string>('STORAGE_REGION') ?? 'auto',
       credentials: {
-        accessKeyId: config.getOrThrow<string>('DO_KEY'),
-        secretAccessKey: config.getOrThrow<string>('DO_SECRET'),
+        accessKeyId: config.getOrThrow<string>('STORAGE_ACCESS_KEY_ID'),
+        secretAccessKey: config.getOrThrow<string>('STORAGE_SECRET_ACCESS_KEY'),
       },
-      forcePathStyle: false,
+      // Caminho no lugar de subdomínio: funciona no R2 e no S3 local
+      forcePathStyle: true,
     });
   }
 
@@ -61,7 +64,6 @@ export class StorageService {
     conteudo: Buffer;
     nomeOriginal: string;
     mimetype: string;
-    publico?: boolean;
   }): Promise<ArquivoEnviado> {
     const extensao = params.nomeOriginal.split('.').pop() ?? 'bin';
     const chave = `${params.officeId}/${randomUUID()}.${extensao}`;
@@ -72,16 +74,12 @@ export class StorageService {
         Key: chave,
         Body: params.conteudo,
         ContentType: params.mimetype,
-        // Documentos jurídicos são privados por padrão. Público só quando
-        // explicitamente pedido — um contrato acessível por URL adivinhável
-        // seria vazamento.
-        ACL: params.publico ? 'public-read' : 'private',
       }),
     );
 
     return {
       chave,
-      url: params.publico ? `${this.urlPublica}/${chave}` : chave,
+      url: chave,
       tamanhoBytes: params.conteudo.byteLength,
     };
   }

@@ -76,16 +76,15 @@ export const MonthCalendar = ({ events }: { events: Event[] }) => {
     router.push(`?${params.toString()}`)
   }
 
+  // O título é o mês exibido. Usar o fim da semana de `currentMonth` (que é
+  // o dia de hoje ao abrir) mostrava o mês seguinte nos últimos dias do mês.
   const renderDayHeader = () => {
-    const weekStart = startOfWeek(currentMonth, { weekStartsOn: 1 })
-    const weekEnd = addDays(weekStart, 6)
-
     return (
       <div className="grid grid-cols-[60px_1fr] border-gray-200">
         <div className="bg-[#FCFCFD]" />
         <div className="px-4 py-3 text-sm font-medium">
           <div className="text-2xl text-[#707070] font-semibold">
-            {format(weekEnd, "MMMM 'de' yyyy", { locale: ptBR })}
+            {format(currentMonth, "MMMM 'de' yyyy", { locale: ptBR })}
           </div>
         </div>
       </div>

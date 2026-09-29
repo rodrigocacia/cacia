@@ -13,7 +13,7 @@ import { NavLinks } from "../navs"
 export default async function ProccessDetail() {
   const agents = await getAgents()
 
-  const serviceAgent = agents?.data?.find((agent) => agent.type === "support")
+  const serviceAgent = agents?.data?.find((agent) => agent.type === "SUPPORT")
 
   if (!serviceAgent) return <div>Nenhum assistente encontrado</div>
 

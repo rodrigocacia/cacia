@@ -27,7 +27,7 @@ export interface CreateOfficeRequest {
    * no tipo, opcional, para não quebrar quem já passa o campo.
    */
   plan?: string;
-  address: Address[];
+  addresses: Address[];
 
   /** Registro na OAB — a API recusa o cadastro sem ele. */
   oab_number: string;
@@ -62,7 +62,7 @@ export async function createOffice({
   trade_name,
   remotejid,
   description,
-  address,
+  addresses,
   oab_number,
   oab_uf,
   owner_name,
@@ -89,7 +89,7 @@ export async function createOffice({
           owner_email,
           owner_password,
           owner_phone,
-          addresses: address,
+          addresses,
         },
       })
       .json<CreateOfficeResponse>();

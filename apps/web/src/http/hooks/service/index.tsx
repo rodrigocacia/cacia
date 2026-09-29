@@ -24,7 +24,7 @@ export function useService(page: number, search?: string) {
 
 export function useServiceById(serviceId: string) {
   const { data, error, isLoading, mutate } = useSWR<Service>(
-    ["service", serviceId],
+    serviceId ? ["service", serviceId] : null,
     () => getServiceById(serviceId)
   )
 

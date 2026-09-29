@@ -5,7 +5,9 @@ import type { PrismaService } from '@/infra/prisma/prisma.service';
 import type { JuditService } from '@/integrations/judit/judit.service';
 import { CustomersService } from './customers/customers.service';
 import { LeadsService } from './leads/leads.service';
+import { PipelinesService } from './pipelines/pipelines.service';
 import { ProcessesService } from './processes/processes.service';
+import { TagsService } from './tags/tags.service';
 
 /**
  * O invariante destes módulos: NENHUMA consulta pode buscar só pelo id.
@@ -31,9 +33,38 @@ function prismaEspiao(retorno: unknown = null) {
     lead: modelo,
     process: modelo,
     progress: modelo,
+    pipeline: modelo,
+    pipelineStage: modelo,
+    tag: modelo,
   } as unknown as PrismaService;
 
   return { prisma, findFirst, findMany, update };
+}
+
+/**
+ * O serviço de leads passou a depender do funil e das etiquetas.
+ *
+ * Nenhum dos dois participa das consultas verificadas aqui — mas o construtor
+ * os exige, e passar só o Prisma esconderia de vez um deles começar a aparecer
+ * na leitura sem o officeId.
+ */
+function servicoDeLeads(prisma: PrismaService): LeadsService {
+  return new LeadsService(
+    prisma,
+    new PipelinesService(prisma),
+    new TagsService(prisma),
+  );
+}
+
+/**
+ * Um lead como o Prisma o devolveria: com a junção de etiquetas presente.
+ *
+ * O serviço achata `tags` antes de responder, e um dublê sem esse campo
+ * quebraria por um motivo que não tem nada a ver com isolamento — escondendo
+ * o que o teste realmente verifica.
+ */
+function leadDublado(): Record<string, unknown> {
+  return { id: REGISTRO, tags: [], stageHistory: [] };
 }
 
 /**
@@ -68,7 +99,23 @@ describe('escopo de tenant nos módulos de domínio', () => {
 
     it('leads', async () => {
       const { prisma, findMany } = prismaEspiao();
-      await new LeadsService(prisma).listar(ESCRITORIO, paginacao);
+      await servicoDeLeads(prisma).listar(ESCRITORIO, paginacao);
+      expect(whereDe(findMany).officeId).toBe(ESCRITORIO);
+    });
+
+    it('etiquetas', async () => {
+      const { prisma, findMany } = prismaEspiao();
+      await new TagsService(prisma).listar(ESCRITORIO, paginacao);
+      expect(whereDe(findMany).officeId).toBe(ESCRITORIO);
+    });
+
+    it('funis', async () => {
+      const { prisma, findMany } = prismaEspiao();
+      // count > 0 evita o caminho que CRIA o funil padrão — aqui o que
+      // interessa é o where da leitura, não a semeadura.
+      (prisma.pipeline.count as ReturnType<typeof vi.fn>).mockResolvedValue(1);
+
+      await new PipelinesService(prisma).listar(ESCRITORIO);
       expect(whereDe(findMany).officeId).toBe(ESCRITORIO);
     });
 
@@ -90,8 +137,17 @@ describe('escopo de tenant nos módulos de domínio', () => {
     });
 
     it('lead', async () => {
-      const { prisma, findFirst } = prismaEspiao({ id: REGISTRO });
-      await new LeadsService(prisma).detalhar(ESCRITORIO, REGISTRO);
+      const { prisma, findFirst } = prismaEspiao(leadDublado());
+      await servicoDeLeads(prisma).detalhar(ESCRITORIO, REGISTRO);
+
+      const where = whereDe(findFirst);
+      expect(where.id).toBe(REGISTRO);
+      expect(where.officeId).toBe(ESCRITORIO);
+    });
+
+    it('funil', async () => {
+      const { prisma, findFirst } = prismaEspiao({ id: REGISTRO, stages: [] });
+      await new PipelinesService(prisma).detalhar(ESCRITORIO, REGISTRO);
 
       const where = whereDe(findFirst);
       expect(where.id).toBe(REGISTRO);
@@ -122,7 +178,23 @@ describe('escopo de tenant nos módulos de domínio', () => {
     it('lead', async () => {
       const { prisma } = prismaEspiao(null);
       await expect(
-        new LeadsService(prisma).detalhar(ESCRITORIO, REGISTRO),
+        servicoDeLeads(prisma).detalhar(ESCRITORIO, REGISTRO),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('funil', async () => {
+      const { prisma } = prismaEspiao(null);
+      await expect(
+        new PipelinesService(prisma).detalhar(ESCRITORIO, REGISTRO),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('etiqueta', async () => {
+      const { prisma } = prismaEspiao(null);
+      await expect(
+        new TagsService(prisma).atualizar(ESCRITORIO, REGISTRO, {
+          name: 'nova',
+        }),
       ).rejects.toThrow(NotFoundException);
     });
 

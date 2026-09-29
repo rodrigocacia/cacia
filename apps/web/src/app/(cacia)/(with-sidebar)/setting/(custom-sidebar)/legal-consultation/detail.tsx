@@ -18,11 +18,12 @@ import {
 import { updateLegalConsultation } from "@/http/legal-consultation/update-legal-consultation"
 import { useLegalConsultation } from "@/http/hooks/legal-consultation"
 import {
-  convertCurrencyToCents,
+  convertCurrencyToReais,
   formatNumberToCurrency,
 } from "@/utils/formatters"
 import { Input } from "@/components/ui/custom-input"
 import { CustomRadioButton } from "@/components/ui/custom-radio-button"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 export function LegalConsultationDetail() {
   const [hasError, setHasError] = useState(false)
@@ -42,7 +43,7 @@ export function LegalConsultationDetail() {
     defaultValues: {
       is_charged: data?.is_charged ? "yes" : "no",
       consultation_value: data?.consultation_value
-        ? formatNumberToCurrency(Number(data?.consultation_value) / 100)
+        ? formatNumberToCurrency(Number(data?.consultation_value))
         : "",
       requires_payment_to_schedule: data?.requires_payment_to_schedule
         ? "yes"
@@ -67,7 +68,7 @@ export function LegalConsultationDetail() {
       const credentials = {
         is_charged: is_charged === "yes" ? true : false,
         consultation_value: consultation_value
-          ? convertCurrencyToCents(consultation_value)
+          ? convertCurrencyToReais(consultation_value)
           : 0,
         requires_payment_to_schedule:
           requires_payment_to_schedule === "yes" ? true : false,
@@ -78,7 +79,7 @@ export function LegalConsultationDetail() {
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
 
         return
       }
@@ -240,7 +241,7 @@ export function LegalConsultationDetail() {
         <Toast
           onClose={() => setHasError(false)}
           variant="errorSolid"
-          title="Erro ao atualizar o assistente!"
+          title="Erro ao atualizar a consulta jurídica!"
           description={errorMessage}
         />
       )}
@@ -249,8 +250,8 @@ export function LegalConsultationDetail() {
         <Toast
           onClose={() => setSuccess(false)}
           variant="successSolid"
-          title="Assistente atualizado com sucesso!"
-          description="O assistente foi atualizado com sucesso!"
+          title="Consulta jurídica atualizada com sucesso!"
+          description="As configurações da consulta jurídica foram salvas."
         />
       )}
     </div>

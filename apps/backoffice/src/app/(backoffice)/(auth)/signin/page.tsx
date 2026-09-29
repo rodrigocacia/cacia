@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 import { SignInForm } from "./sign-in-form";
 import TextSlider from "@/components/text-slider";
 
@@ -19,11 +17,7 @@ export default function SignIn() {
 
         <SignInForm />
 
-        <div className="relative flex flex-col items-center bg-[url('/bg-login.png')] bg-cover bg-center h-full w-full rounded-r-4xl max-lg:hidden -ml-6 z-0">
-          <div className="w-full flex items-start justify-center">
-            <Image src="/mockup.png" alt="mockup" width={549} height={556} />
-          </div>
-
+        <div className="relative flex flex-col items-center justify-center bg-[url('/bg-login.png')] bg-cover bg-center h-full w-full rounded-r-4xl max-lg:hidden -ml-6 z-0">
           <TextSlider />
         </div>
       </main>

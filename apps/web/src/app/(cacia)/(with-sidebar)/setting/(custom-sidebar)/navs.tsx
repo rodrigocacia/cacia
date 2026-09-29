@@ -52,8 +52,32 @@ export const NavLinks = [
   },
   {
     id: 9,
+    name: "Funil de vendas",
+    icon: <Icon icon="mdi:view-column-outline" />,
+    path: "/setting/funil",
+  },
+  {
+    id: 10,
+    name: "Etiquetas",
+    icon: <Icon icon="mdi:tag-multiple-outline" />,
+    path: "/setting/etiquetas",
+  },
+  {
+    id: 11,
+    name: "I.A. no funil",
+    icon: <Icon icon="mdi:robot-outline" />,
+    path: "/setting/ia-funil",
+  },
+  {
+    id: 12,
     name: "Notificações",
     icon: <Icon icon="mdi:message-notification" />,
     path: "/setting/notifications",
+  },
+  {
+    id: 13,
+    name: "Consumo de IA",
+    icon: <Icon icon="mdi:chart-bar" />,
+    path: "/setting/ai-usage",
   },
 ]

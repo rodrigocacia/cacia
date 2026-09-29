@@ -55,6 +55,7 @@ import { format } from "date-fns"
 import { updateEvent } from "@/http/event/update-event"
 import { CustomRadioButton } from "@/components/ui/custom-radio-button"
 import { useLeads } from "@/http/hooks/lead"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 interface FormComponentProps {
   setOpen(value: boolean): void
@@ -127,21 +128,27 @@ function FormComponent({
         setTypeUser("lead")
       }
 
+      // A API devolve os vínculos como ids soltos (`calendar_id`,
+      // `customer_id`...) e os lembretes como `reminder_offsets`; ler os
+      // objetos aninhados do formato antigo deixava o formulário vazio.
       reset({
-        calendar_id: event?.calendar?._id,
+        calendar_id: event?.calendar_id ?? event?.calendar?._id ?? "",
         type: event?.type,
         title: event?.title,
-        description: event?.description,
-        customer_id: event?.customer?._id ?? null,
-        lead_id: event?.lead?._id ?? null,
-        process_id: event?.process?._id,
+        description: event?.description ?? "",
+        customer_id: event?.customer_id ?? event?.customer?._id ?? null,
+        lead_id: event?.lead_id ?? event?.lead?._id ?? null,
+        process_id: event?.process_id ?? event?.process?._id ?? null,
         status: event?.status,
         start_date: start_date ?? "",
         end_date: end_date ?? "",
         start_time: event?.custom_start_time ?? "",
         end_time: event?.custom_end_time ?? "",
-        user_reminder: event?.user_reminder || [],
-        consultation_mode: event?.consultation_mode as "online" | "in_person",
+        user_reminder: (event?.reminder_offsets ?? []).map((minutos) => ({
+          time_trigger: minutos,
+        })),
+        consultation_mode:
+          event?.consultation_mode === "ONLINE" ? "ONLINE" : "IN_PERSON",
       })
     } else if (processId || customerId) {
       reset((prev) => ({
@@ -212,6 +219,7 @@ function FormComponent({
     try {
       const {
         customer_id,
+        lead_id,
         process_id,
         type,
         title,
@@ -229,18 +237,13 @@ function FormComponent({
       const startDateTime = new Date(`${start_date}T${start_time}`)
       const endDateTime = new Date(`${end_date}T${end_time}`)
 
-      const credentials = {
-        calendar_id,
-        process_id: process_id ?? null,
-        customer_id: customer_id ?? null,
+      const comuns = {
         consultation_mode,
         type,
         title,
         description,
         start_time: startDateTime.toISOString(),
         end_time: endDateTime.toISOString(),
-        status,
-        user_reminder: user_reminder || [],
       }
 
       let result: any
@@ -248,15 +251,24 @@ function FormComponent({
       if (editEventId) {
         result = await updateEvent({
           eventId: editEventId,
-          ...credentials,
+          ...comuns,
+          status,
         })
       } else {
-        result = await createEvent(credentials)
+        result = await createEvent({
+          ...comuns,
+          calendar_id,
+          process_id: process_id ?? null,
+          // Um vínculo só: o seletor mostra cliente OU lead
+          customer_id: typeUser === "customer" ? (customer_id ?? null) : null,
+          lead_id: typeUser === "lead" ? (lead_id ?? null) : null,
+          user_reminder: user_reminder || [],
+        })
       }
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
 
         return
       }
@@ -373,6 +385,9 @@ function FormComponent({
                   onChange(e)
                 }}
                 iconName="calendarCheck"
+                // Agenda, cliente e processo não mudam depois de criado: a
+                // edição da API não aceita esses campos.
+                disabled={!!editEventId}
               />
             )}
           />
@@ -459,7 +474,7 @@ function FormComponent({
                         }
                   }
                   iconName="person"
-                  disabled={!!customerId || !!processId}
+                  disabled={!!customerId || !!processId || !!editEventId}
                   onNewAction={handleNewCustomer}
                   newActionLabel="Novo Cliente"
                 />
@@ -495,7 +510,7 @@ function FormComponent({
                         }
                   }
                   iconName="person"
-                  disabled={!!customerId || !!processId}
+                  disabled={!!customerId || !!processId || !!editEventId}
                   onNewAction={handleNewLead}
                   newActionLabel="Novo Lead"
                 />
@@ -528,7 +543,11 @@ function FormComponent({
                       }
                 }
                 iconName="folder"
-                disabled={!!processId || (!selectedCustomerId && !customerId)}
+                disabled={
+                  !!processId ||
+                  !!editEventId ||
+                  (!selectedCustomerId && !customerId)
+                }
                 placeholder={
                   !selectedCustomerId && !customerId
                     ? "Selecione um cliente primeiro"
@@ -551,30 +570,40 @@ function FormComponent({
           )}
         </div>
 
-        <div className="flex flex-col gap-2">
-          <Controller
-            name="status"
-            control={control}
-            defaultValue={EventStatus.PENDING}
-            render={({ field: { onChange, value } }) => (
-              <CustomSelect
-                label="Status"
-                options={statusOptions}
-                value={value}
-                onChange={(e: any) => {
-                  onChange(e)
-                }}
-                iconName="person"
-              />
-            )}
-          />
+        {/* Status só na edição: o compromisso novo nasce pendente. Cancelar
+            fica no botão próprio, que também cancela os lembretes — trocar o
+            status aqui deixaria os avisos saindo para um compromisso que não
+            vai acontecer. */}
+        {editEventId && (
+          <div className="flex flex-col gap-2">
+            <Controller
+              name="status"
+              control={control}
+              defaultValue={EventStatus.PENDING}
+              render={({ field: { onChange, value } }) => (
+                <CustomSelect
+                  label="Status"
+                  options={statusOptions.filter(
+                    (opcao) =>
+                      opcao.value !== EventStatus.CANCEL ||
+                      event?.status === EventStatus.CANCEL
+                  )}
+                  value={value ?? ""}
+                  onChange={(e: any) => {
+                    onChange(e)
+                  }}
+                  iconName="person"
+                />
+              )}
+            />
 
-          {errors?.status && (
-            <p className="text-xs font-medium text-red-500 dark:text-red-400">
-              {errors?.status?.message}
-            </p>
-          )}
-        </div>
+            {errors?.status && (
+              <p className="text-xs font-medium text-red-500 dark:text-red-400">
+                {errors?.status?.message}
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="flex flex-col gap-2">
           <Controller
@@ -606,21 +635,21 @@ function FormComponent({
             <Controller
               name="consultation_mode"
               control={control}
-              defaultValue="in_person"
+              defaultValue="IN_PERSON"
               render={({ field }) => (
                 <>
                   <CustomRadioButton
                     {...field}
                     label="Presencial"
-                    value="in_person"
-                    checked={field.value === "in_person"}
+                    value="IN_PERSON"
+                    checked={field.value === "IN_PERSON"}
                     onChange={(e) => field.onChange(e)}
                   />
                   <CustomRadioButton
                     {...field}
                     label="Online"
-                    value="online"
-                    checked={field.value === "online"}
+                    value="ONLINE"
+                    checked={field.value === "ONLINE"}
                     onChange={(e) => field.onChange(e)}
                   />
                 </>

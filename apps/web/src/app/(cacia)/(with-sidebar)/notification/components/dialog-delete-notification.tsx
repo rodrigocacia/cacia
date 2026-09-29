@@ -10,6 +10,7 @@ import { deleteNotification } from "@/http/notification/delete-notification"
 import { useState } from "react"
 import { useNotification } from "@/http/hooks/notification"
 import { useSearchParams } from "next/navigation"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 interface DialogDeleteNotificationProps {
   id: string
@@ -47,7 +48,7 @@ export function DialogDeleteNotification({
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
 
         setIsLoading(false)
 
@@ -71,9 +72,7 @@ export function DialogDeleteNotification({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="px-[30px]">
         <DialogHeader>
-          <DialogTitle className="sr-only">
-            Are you absolutely sure?
-          </DialogTitle>
+          <DialogTitle className="sr-only">Excluir notificação</DialogTitle>
         </DialogHeader>
 
         <form

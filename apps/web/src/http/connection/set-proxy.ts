@@ -13,7 +13,7 @@ export async function setConnectionProxy({
   city,
 }: SetConnectionProxyParams) {
   return api
-    .post(`connections/${connectionId}/proxy`, {
+    .put(`connections/${connectionId}/proxy`, {
       json: { state, city },
     })
     .json<Connection>()

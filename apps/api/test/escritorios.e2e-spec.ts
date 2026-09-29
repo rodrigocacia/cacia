@@ -58,6 +58,40 @@ describe('escritórios e papéis (e2e)', () => {
       expect(setting).not.toBeNull();
     });
 
+    it('nasce com os agentes de atendimento e assistente', async () => {
+      // Sem o de atendimento, a primeira mensagem do WhatsApp não abria
+      // conversa — ChatsService recusa sem agente SUPPORT.
+      const agentes = await aplicacao.prisma.agent.findMany({
+        where: { officeId: dono.officeId, deletedAt: null },
+        select: { type: true },
+      });
+
+      expect(agentes.map((a) => a.type).sort()).toEqual([
+        'PERSONAL',
+        'SUPPORT',
+      ]);
+    });
+
+    it('aceita CPF, para o advogado autônomo', async () => {
+      const resposta = await dono.api
+        .semEscritorio()
+        .post<{ id: string; document: string }>('/offices', {
+          name: 'Dra. Autônoma',
+          document: '529.982.247-25',
+          oabNumber: '777001',
+          oabUf: 'SP',
+          addresses: [{ cep: '01310-100', city: 'São Paulo', state: 'SP' }],
+        });
+
+      expect(resposta.status).toBe(201);
+      expect(resposta.corpo.document).toBe('52998224725');
+
+      const enderecos = await aplicacao.prisma.officeAddress.count({
+        where: { officeId: resposta.corpo.id },
+      });
+      expect(enderecos).toBe(1);
+    });
+
     it('recusa CNPJ fora de 14 dígitos', async () => {
       const resposta = await dono.api.semEscritorio().post('/offices', {
         name: 'Curto',

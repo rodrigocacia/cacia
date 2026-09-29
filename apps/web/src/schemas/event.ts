@@ -22,20 +22,38 @@ const userReminderSchema = z.object({
   deleted_at: z.string().optional(),
 })
 
+/**
+ * Campo obrigatório com a mesma mensagem para vazio e para ausente.
+ *
+ * Sem o `required_error`, um campo que nunca foi tocado chega como `undefined`
+ * e o zod responde com o "Required" padrão, em inglês.
+ */
+function obrigatorio(mensagem: string) {
+  return z
+    .string({ required_error: mensagem, invalid_type_error: mensagem })
+    .min(1, { message: mensagem })
+}
+
 export const createEventFormSchema = z.object({
-  calendar_id: z.string().min(1, { message: "Insira um calendário válido" }),
+  calendar_id: obrigatorio("Insira um calendário válido"),
   customer_id: z.string().nullable().optional(),
   process_id: z.string().nullable().optional(),
-  type: z.string().min(1, { message: "Insira um tipo de evento válido" }),
-  title: z.string().min(1, { message: "Insira um título válido" }),
-  status: z.string().min(1, { message: "Insira um status válido" }),
-  description: z.string().min(1, { message: "Insira uma descrição" }),
-  start_date: z.string().min(1, { message: "Insira uma data válida" }),
-  start_time: z.string().min(1, { message: "Insira um horário válido" }),
-  end_date: z.string().min(1, { message: "Insira uma data válida" }),
-  end_time: z.string().min(1, { message: "Insira um horário válido" }),
+  type: obrigatorio("Insira um tipo de evento válido"),
+  title: obrigatorio("Insira um título válido"),
+  // Só existe na edição: o compromisso novo sempre nasce pendente e a API
+  // recusa `status` na criação.
+  status: z.string().optional(),
+  description: obrigatorio("Insira uma descrição"),
+  start_date: obrigatorio("Insira uma data válida"),
+  start_time: obrigatorio("Insira um horário válido"),
+  end_date: obrigatorio("Insira uma data válida"),
+  end_time: obrigatorio("Insira um horário válido"),
   user_reminder: z.array(userReminderSchema).optional(),
-  consultation_mode: z.enum(["online", "in_person"]),
+  // Os valores são os do enum da API, que é maiúsculo
+  consultation_mode: z.enum(["ONLINE", "IN_PERSON"], {
+    required_error: "Escolha a modalidade do evento",
+    invalid_type_error: "Escolha a modalidade do evento",
+  }),
   lead_id: z.string().nullable().optional(),
 })
 

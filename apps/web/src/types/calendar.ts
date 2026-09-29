@@ -21,7 +21,9 @@ export interface AvailableDay {
 
 export interface Calendar {
   _id: string
-  user: string
+  /** A API devolve o responsável como objeto; o id está em `user_id` */
+  user: string | { _id: string; name: string }
+  user_id?: string
   office: string
   title: string
   general_available: string

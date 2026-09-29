@@ -53,6 +53,28 @@ describe('isolamento entre escritórios (e2e)', () => {
       greeting: 'Olá, como posso ajudar?',
     });
     recursos.agent = agente.corpo.id;
+
+    const etiqueta = await a.api.post<{ id: string }>('/tags', {
+      name: 'Etiqueta do A',
+    });
+    recursos.tag = etiqueta.corpo.id;
+
+    const funis =
+      await a.api.get<Array<{ id: string; stages: Array<{ id: string }> }>>(
+        '/pipelines',
+      );
+    recursos.pipeline = funis.corpo[0]!.id;
+    recursos.stage = funis.corpo[0]!.stages[0]!.id;
+
+    const importacao = await a.api.postArquivo<{ id: string }>(
+      '/lead-imports',
+      {
+        nome: 'leads.csv',
+        conteudo: 'nome;telefone\nAna;11933333333\n',
+        tipo: 'text/csv',
+      },
+    );
+    recursos.leadImport = importacao.corpo.id;
   });
 
   afterAll(async () => {
@@ -97,6 +119,8 @@ describe('isolamento entre escritórios (e2e)', () => {
       ['andamentos', () => `/processes/${recursos.process}/progresses`],
       ['agendas', () => `/calendars/${recursos.calendar}`],
       ['agentes', () => `/agents/${recursos.agent}`],
+      ['funis', () => `/pipelines/${recursos.pipeline}`],
+      ['importações', () => `/lead-imports/${recursos.leadImport}`],
     ];
 
     for (const [nome, caminho] of rotas) {
@@ -106,6 +130,62 @@ describe('isolamento entre escritórios (e2e)', () => {
         expect(resposta.status).toBe(404);
       });
     }
+  });
+
+  /**
+   * As rotas de CRM não estão na tabela acima porque não são leitura por id —
+   * mas são justamente as que ESCREVEM, e uma delas aceitando id alheio move
+   * o lead de outro escritório de etapa.
+   */
+  describe('escrita nas rotas de funil e etiqueta do escritório alheio', () => {
+    it('mover o lead do A para uma etapa é 404 para o B', async () => {
+      const tentativa = await b.api.patch(`/leads/${recursos.lead}/stage`, {
+        stageId: recursos.stage,
+      });
+
+      expect(tentativa.status).toBe(404);
+    });
+
+    it('etiquetar o lead do A é 404 para o B', async () => {
+      const tentativa = await b.api.put(`/leads/${recursos.lead}/tags`, {
+        tagIds: [recursos.tag],
+      });
+
+      expect(tentativa.status).toBe(404);
+    });
+
+    it('a etiqueta do A não aparece na listagem do B', async () => {
+      const resposta = await b.api.get<{ data: Array<{ id: string }> }>(
+        '/tags',
+      );
+
+      expect(resposta.corpo.data.map((t) => t.id)).not.toContain(recursos.tag);
+    });
+
+    it('o funil do A não aparece na listagem do B', async () => {
+      // B tem o próprio funil padrão — o que não pode é ver o do A.
+      const resposta = await b.api.get<Array<{ id: string }>>('/pipelines');
+
+      expect(resposta.corpo.map((f) => f.id)).not.toContain(recursos.pipeline);
+    });
+
+    it('criar etapa no funil do A é 404 para o B', async () => {
+      const tentativa = await b.api.post(
+        `/pipelines/${recursos.pipeline}/stages`,
+        { name: 'Etapa intrusa' },
+      );
+
+      expect(tentativa.status).toBe(404);
+    });
+
+    it('confirmar a importação do A é 404 para o B', async () => {
+      const tentativa = await b.api.post(
+        `/lead-imports/${recursos.leadImport}/confirm`,
+        { mapping: { '1': 'remotejid' } },
+      );
+
+      expect(tentativa.status).toBe(404);
+    });
   });
 
   describe('escrita no recurso alheio', () => {

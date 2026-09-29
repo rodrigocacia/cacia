@@ -1,5 +1,6 @@
 import { Header } from "@/components/header";
 import { FinancialCard } from "./cards/financial";
+import { COBRANCA_INDISPONIVEL } from "@/constants/cobranca";
 import { RecentSubscriptions } from "./tables/recent-subscriptions";
 import { CustomPieChart } from "./charts/pie-chart";
 import { CustomLineChart } from "./charts/line-chart";
@@ -80,10 +81,10 @@ export default async function Dashboard({
     // docs/ESTADO.md.
     revenue: apiData.faturamentoDisponivel
       ? formatCurrency(apiData.revenue)
-      : "Indisponível",
+      : COBRANCA_INDISPONIVEL,
     averageTicket: apiData.faturamentoDisponivel
       ? formatCurrency(apiData.averageTicket)
-      : "Indisponível",
+      : COBRANCA_INDISPONIVEL,
     plans: apiData.plans,
     subscriptionsByMonth: apiData.subscriptionsByMonth,
     recentSubscriptions: apiData.recentSubscriptions.map((sub) => ({

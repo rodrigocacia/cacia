@@ -5,7 +5,7 @@ import { Event } from "@/types/event"
 
 export function useEventById(eventId: string) {
   const { data, error, isLoading, mutate } = useSWR<Event>(
-    ["event", eventId],
+    eventId ? ["event", eventId] : null,
     () => getEventById(eventId)
   )
 

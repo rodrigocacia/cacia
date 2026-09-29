@@ -107,7 +107,16 @@ export class ProcessesService {
         subjects: true,
         parties: true,
         juditStatus: true,
-        customer: { select: { id: true, name: true, document: true } },
+        // E-mail e telefone: a aba de informações do processo os exibe
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            document: true,
+            email: true,
+            remotejid: true,
+          },
+        },
       },
     });
 

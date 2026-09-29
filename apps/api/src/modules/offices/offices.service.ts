@@ -7,6 +7,7 @@ import {
 import { Role } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
 import { PromptService } from '@/ai/agente/prompt.service';
+import { prepararEscritorio } from './preparar-escritorio';
 import type { CriarEscritorioDto } from './dto/criar-escritorio.dto';
 import type { AtualizarEscritorioDto } from './dto/atualizar-escritorio.dto';
 import type { AdicionarMembroDto } from './dto/adicionar-membro.dto';
@@ -75,7 +76,7 @@ export class OfficesService {
 
     if (duplicado) {
       throw new ConflictException(
-        'Já existe um escritório com este CNPJ e número de OAB',
+        'Já existe um escritório com este documento e número de OAB',
       );
     }
 
@@ -90,6 +91,10 @@ export class OfficesService {
           tradeName: dto.tradeName,
           oabNumber: dto.oabNumber,
           oabUf: dto.oabUf,
+          remotejid: dto.remotejid,
+          ...(dto.addresses?.length && {
+            addresses: { create: dto.addresses },
+          }),
         },
         select: CAMPOS_PUBLICOS,
       });
@@ -98,10 +103,7 @@ export class OfficesService {
         data: { userId, officeId: escritorio.id, role: Role.ADMIN },
       });
 
-      // Um registro por escritório — criados junto para não haver escritório
-      // sem configuração, o que exigiria tratar o caso nulo em todo lugar.
-      await tx.setting.create({ data: { officeId: escritorio.id } });
-      await tx.consultation.create({ data: { officeId: escritorio.id } });
+      await prepararEscritorio(tx, escritorio.id);
 
       return { ...escritorio, role: Role.ADMIN };
     });

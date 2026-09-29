@@ -8,6 +8,7 @@ import { ProcessBadge } from "@/components/ui/badge/proccess.badge"
 import { DocumentDetail } from "./detail"
 import { navLinks } from "../navs"
 import { formatProcess, formatName } from "@/utils/formatters"
+import { getDocuments } from "@/http/document/get-documents"
 
 export default async function DocumentInformation({
   params,
@@ -16,12 +17,15 @@ export default async function DocumentInformation({
 }) {
   const { id: processId } = await params
 
-  const process = await getProcessById(processId)
+  const [process, documentos] = await Promise.all([
+    getProcessById(processId),
+    getDocuments({ processId }),
+  ])
 
   return (
     <div className="w-full h-full">
       <div className="h-full max-md:hidden">
-        <DocumentDetail process={process} documents={process?.documents} />
+        <DocumentDetail process={process} documents={documentos} />
       </div>
 
       <main className="w-full h-fit max-lg:h-full pb-6 max-lg:pb-0  grid grid-cols-[2fr_3fr] max-lg:flex max-lg max-lg:flex-col max-lg:justify-between md:hidden">
@@ -57,7 +61,7 @@ export default async function DocumentInformation({
 
             <CustomTab tabs={navLinks(processId)} />
 
-            <DocumentDetail process={process} documents={process?.documents} />
+            <DocumentDetail process={process} documents={documentos} />
           </div>
         </div>
       </main>

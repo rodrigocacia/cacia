@@ -69,6 +69,16 @@ describe('paraLegado', () => {
     expect(saida.subjects[0]?.code).toBe('10459');
   });
 
+  it('mantém os tipos de processo como chaves do desempenho', () => {
+    // Convertidas, `CIVIL` virava `_c_i_v_i_l` e a tela de desempenho não
+    // achava tipo nenhum.
+    const saida = paraLegado<{ processes_by_type: Record<string, number> }>({
+      processesByType: { CIVIL: 2, TRABALHISTA: 1 },
+    });
+
+    expect(saida.processes_by_type).toEqual({ CIVIL: 2, TRABALHISTA: 1 });
+  });
+
   it('não estraga valores que não são objeto', () => {
     expect(paraLegado({ total: 3, ativo: true, quando: null })).toEqual({
       total: 3,

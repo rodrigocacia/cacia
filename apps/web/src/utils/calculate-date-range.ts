@@ -5,13 +5,18 @@ export function calculateDateRange(periodDays: string): {
   const endDate = new Date()
   const startDate = new Date()
 
-  if (periodDays === "-") {
-    startDate.setFullYear(2024, 0, 1)
-    endDate.setFullYear(2026, 0, 31)
-  } else if (periodDays === ".1") {
+  // "Todos os períodos" é sem filtro de data. Havia aqui um fim fixo em
+  // 31/01/2026: a partir de fevereiro, tudo o que entrou depois sumia do
+  // painel, que mostrava zero leads e zero clientes.
+  const days = parseInt(periodDays)
+
+  if (periodDays === "-" || (periodDays !== ".1" && Number.isNaN(days))) {
+    return { startDate: "", endDate: "" }
+  }
+
+  if (periodDays === ".1") {
     startDate.setHours(startDate.getHours() - 1)
   } else {
-    const days = parseInt(periodDays)
     startDate.setDate(startDate.getDate() - days)
   }
 

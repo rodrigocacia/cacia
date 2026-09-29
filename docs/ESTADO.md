@@ -1,6 +1,6 @@
 # Estado da reconstrução
 
-> Atualizado em 04/09/2026, após ligar os frontends à API.
+> Atualizado em 10/09/2026, após o CRM.
 
 Documento de acompanhamento: o que foi feito, o que mudou em relação ao
 [plano original](ARQUITETURA.md) e o que continua pendente.
@@ -12,9 +12,8 @@ Documento de acompanhamento: o que foi feito, o que mudou em relação ao
 |                                |                                                                    |
 | ------------------------------ | ------------------------------------------------------------------ |
 | Pull requests integrados       | 23                                                                 |
-| Entidades no banco             | 28                                                                 |
-| Arquivos TypeScript na API     | 168                                                                |
-| Testes automatizados           | 438 — 186 unitários, 206 de ponta a ponta e 46 nos frontends       |
+| Entidades no banco             | 35                                                                 |
+| Testes automatizados           | 644 — 246 unitários na API, 292 de ponta a ponta e 106 nos fronts  |
 | Cobertura de verificação no CI | formatação, lint, tipos, build, testes, E2E, migrations, auditoria |
 
 Ponto de partida: **0,6% de cobertura de testes e zero pipelines de CI**.
@@ -202,6 +201,147 @@ teste.
 
 ---
 
+## CRM: funil, etiquetas, importação e agendamento
+
+Acrescentado em 10/09/2026. O que existia era uma tabela de leads com três
+situações fixas (`NEW`, `IN_CONTACT`, `CONVERTED`) e nenhuma tela de conversa —
+o produto assumia que a IA resolvia tudo no WhatsApp e o escritório só via o
+resultado. O que entrou:
+
+### Funil configurável, com o `status` como projeção
+
+`Pipeline` e `PipelineStage` por escritório; o enum `LeadStatus` **sobrevive**,
+agora derivado da etapa por `projetarStatus`, num lugar só. A alternativa era
+reescrever as telas antigas, os filtros e as ferramentas do agente que já liam
+esse campo — uma refatoração de interface inteira por uma informação que elas
+usam de forma grosseira.
+
+`LeadStageHistory` grava cada passagem com o tempo na etapa anterior. Sem ela o
+quadro mostraria onde o lead **está** e nada mais: não haveria tempo médio por
+etapa nem taxa de conversão — que é o que distingue um funil de uma lista com
+colunas.
+
+### Sem lead duplicado
+
+Entrou `@@unique([office_id, remotejid])`. Duas consequências que exigiram
+trabalho além do índice:
+
+- **A migration deduplica antes de criar o índice.** Não bastava excluir
+  logicamente os repetidos — a unicidade ignora `deleted_at` (mesma decisão de
+  `Customer`), então a linha perdedora precisa sair da tabela. Conversas,
+  mensagens, eventos e documentos são repontados para o sobrevivente, e o que
+  só o perdedor sabia (cliente vinculado, e-mail, briefing) é copiado antes.
+- **O telefone passou a ser normalizado.** A tela gravava `(11) 98888-7777` e o
+  webhook gravava `5511988887777@c.us`: o banco veria dois contatos onde há uma
+  pessoa, que é exatamente o que a restrição foi criada para impedir.
+- **O webhook restaura em vez de recriar.** Um número excluído que volta a
+  escrever tem o lead reativado — criar outro estouraria a unicidade.
+
+### Etiquetas, e por que não é `Mark`
+
+`Mark` é memória do agente e vai para o Qdrant; usá-la como etiqueta poluiria o
+RAG. Entraram `Tag` mais duas tabelas de junção — `LeadTag` e `CustomerTag` —
+em vez de um alvo polimórfico `(tipo, id)`: alvo polimórfico não aceita chave
+estrangeira, e é a chave composta com `office_id` que impede um filho de
+apontar para pai de outro escritório. Duas tabelas custam menos que abrir mão
+dessa garantia.
+
+### Importação de CSV, em duas etapas
+
+Prévia primeiro: o servidor lê o arquivo, detecta o separador e a codificação,
+devolve as colunas com amostra e um palpite de mapeamento. Nada é gravado antes
+de a pessoa confirmar. A escrita sai da requisição por uma fila nova
+(`importacao-leads`) — cinco mil linhas não cabem no tempo de resposta de quem
+clicou em confirmar, e um `timeout` no meio deixaria a base com metade da
+planilha sem ninguém saber qual metade.
+
+Duas armadilhas de planilha brasileira que o leitor resolve, e que nenhuma
+biblioteca genérica acerta sozinha:
+
+- **Separador.** O Excel em português exporta com `;`, porque a vírgula é o
+  separador decimal. Adivinhar errado devolve uma planilha de uma coluna só.
+- **Codificação.** O mesmo Excel exporta em Windows-1252. Decodificar tudo como
+  UTF-8 transformaria "José" em texto corrompido — e entraria assim na base, em
+  silêncio, porque não é erro de parse.
+
+Linha repetida, dentro da planilha ou já existente na base, é **ignorada e
+contada** — nunca duplicada. Reenviar a mesma planilha é seguro.
+
+### Agendamento: a configuração que ninguém consultava
+
+`CalendarAvailableDay` existia desde o início, com dois turnos por dia, e
+nenhuma consulta a lia. Dava para marcar às três da manhã de um domingo, ou
+dois atendimentos no mesmo horário, e o sistema aceitava os dois — quem
+descobria era o cliente, na porta.
+
+Entrou `GET /calendars/:id/availability`, que monta os horários livres a partir
+dos turnos e desconta os compromissos existentes, e a recusa de conflito na
+criação e na edição de compromisso. `permitirConflito` é a válvula de escape:
+um prazo processual e uma reunião podem coincidir de propósito — o que não pode
+é acontecer sem ninguém ter dito que tudo bem.
+
+O fuso é calculado pelo `Intl`, não fixado em `-03:00`: o horário de atendimento
+está gravado como texto (`"09:00"`), sem fuso, e uma constante erraria uma hora
+em todos os agendamentos se o horário de verão voltasse.
+
+### A IA no funil é decisão do escritório
+
+`Setting.aiCanMoveLeadStage` e `Setting.aiCanTagLead`, **desligados por
+padrão**. Um cartão que anda sozinho surpreende quem olha o quadro, e quando um
+lead avançou é julgamento comercial.
+
+Quando ligados, as ferramentas `mover_etapa` e `etiquetar` entram na lista
+oferecida ao modelo, com os nomes reais das etapas e etiquetas na descrição — o
+modelo não precisa adivinhar como a coluna se chama. A permissão é conferida
+**duas vezes**: ao montar a lista e ao executar. Só na lista seria confiar que o
+modelo não inventa um nome de ferramenta, e o nome dela viaja no texto que ele
+produz.
+
+O movimento feito pela IA grava `userId` nulo no histórico — é o que permite
+reconhecer, na linha do tempo, um cartão que andou sozinho. A escrita passa pelo
+`LeadsService`, nunca pelo Prisma direto: é lá que a projeção do status e o
+registro no histórico acontecem.
+
+### Frontend: uma fronteira nova em vez de mais dívida
+
+As telas novas usam `api-crm`, um segundo cliente HTTP que **não** passa pelo
+adaptador de vocabulário legado. O `api-client` traduz toda resposta para `_id`
+e snake_case porque ~160 componentes leem os campos naquele formato; as telas de
+funil, etiquetas e importação não têm componente antigo para preservar, e
+fazê-las falar o dialeto do Mongo espalharia a dívida em vez de contê-la.
+
+A regra passa a ser: código velho usa `api`, código novo usa `apiCrm`. A
+autenticação é compartilhada (`http/autenticacao.ts`) — duas cópias dela seria
+como um dos dois deixaria de mandar o cabeçalho do escritório.
+
+Telas: quadro arrastável em `/lead?view=kanban`, ficha do lead em `/lead/[id]`,
+assistente de importação em `/lead/import`, e três telas de configuração —
+etapas do funil, etiquetas e os portões da IA.
+
+### Defeitos que os testes novos encontraram
+
+**A validação do telefone nunca reprovava nada.** O código normalizava e depois
+validava; a normalização acrescenta `@c.us`, e a validação aceita qualquer coisa
+com arroba por assumir que veio do WhatsApp. `9999` passava. Corrigido nos dois
+pontos — cadastro e importação — e há um teste que prende justamente a ordem.
+
+**`/leads/import` era engolido por `/leads/:id`.** O `@Get(':id')` casava com
+"import" e a requisição morria no `ParseUUIDPipe` com 400. Registrar o módulo
+antes no `app.module` não resolve: o `IaModule` importa o `LeadsModule`, e é o
+grafo que determina a ordem real de registro das rotas. A rota virou
+`/lead-imports` — depender de ordem de registro é uma amarra que se rompe
+sozinha quando alguém acrescenta um import em outro módulo.
+
+### O que continua pendente
+
+A **tela de conversas** segue não existindo: a API tem `GET /chats`,
+`/chats/:id/messages`, `audio-reply` e `close`, e nenhuma tela consome. É o
+próximo passo combinado. Falta também um endpoint de **enviar** mensagem — hoje
+só há ler e encerrar —, e a API não tem push, então a caixa de entrada precisará
+de websocket ou polling.
+
+---
+
 ## Peças construídas e nunca ligadas
 
 Quatro, encontradas ao procurar quem chamava cada serviço. Todas passavam nos
@@ -324,5 +464,8 @@ O provisionamento do WAHA e do Qdrant está em [`../infra/README.md`](../infra/R
 
 Antes de publicar em produção, configure os secrets do GitHub que o
 [workflow de deploy](../.github/workflows/deploy.yml) espera: `FLY_API_TOKEN`,
-`DATABASE_URL`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` e
-`NEXT_PUBLIC_API_URL`.
+`DATABASE_URL`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`,
+`NEXT_PUBLIC_API_URL` e `NEXT_PUBLIC_APP_URL`.
+
+O roteiro para colocar a homologação no ar e o que só dá para testar lá, com
+as integrações reais: [`HOMOLOGACAO.md`](HOMOLOGACAO.md).

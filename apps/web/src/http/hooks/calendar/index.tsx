@@ -30,7 +30,7 @@ export function useCalendar({ page = 1 }: Params) {
 
 export function useCalendarById(calendarId: string) {
   const { data, error, isLoading, mutate } = useSWR<Calendar>(
-    ["calendar", calendarId],
+    calendarId ? ["calendar", calendarId] : null,
     () => getCalendarById(calendarId)
   )
 

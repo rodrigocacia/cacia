@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogClose,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
@@ -12,6 +13,7 @@ import { Icon } from "@/components/icone"
 import { useRouter } from "next/navigation"
 import { deleteFolder } from "@/http/folder/delete-folder"
 import { useState } from "react"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 interface DialogDeleteFolderProps {
   id: string
@@ -44,7 +46,7 @@ export function DialogDeleteFolder({
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
 
         setIsLoading(false)
 
@@ -76,9 +78,7 @@ export function DialogDeleteFolder({
 
       <DialogContent className="px-[30px]">
         <DialogHeader>
-          <DialogTitle className="sr-only">
-            Are you absolutely sure?
-          </DialogTitle>
+          <DialogTitle className="sr-only">Excluir pasta</DialogTitle>
         </DialogHeader>
 
         <form
@@ -104,7 +104,13 @@ export function DialogDeleteFolder({
           </div>
 
           <div className="w-full flex items-center justify-center gap-3.5 mt-[34px]">
-            <Button variant="outline">Cancelar</Button>
+            {/* type="button": sem ele o "Cancelar" enviava o formulário e
+                excluía do mesmo jeito. */}
+            <DialogClose asChild>
+              <Button variant="outline" type="button">
+                Cancelar
+              </Button>
+            </DialogClose>
 
             <Button
               type="submit"

@@ -18,7 +18,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 
 export const metadata = {
   title: "Backoffice CacIA",
-  description: "Backoffice CacIA - by AdvAI, powered by ∆ ∟ Q ⋈",
+  description: "Backoffice CacIA",
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 

@@ -17,12 +17,14 @@ import { SignupFormData } from "@/schemas/signup"
 import { InputPhone } from "@/components/ui/custom-input-phone"
 import { AUTOCOMPLETE_VALUES } from "@/constants/autocomplete"
 import { validateCpf } from "@/utils/validate-cpf"
+import { useHidratado } from "@/hooks/use-hidratado"
 
 interface PersonalDataProps {
   nextStep(): void
 }
 
 export function PersonalData({ nextStep }: PersonalDataProps) {
+  const hidratado = useHidratado()
   const {
     register,
     watch,
@@ -117,7 +119,9 @@ export function PersonalData({ nextStep }: PersonalDataProps) {
   }
 
   return (
-    <form onSubmit={handleNext} className="w-full h-full pb-4">
+    // `method="post"`: enviado antes da hidratação, o GET nativo levaria a
+    // senha para a URL
+    <form method="post" onSubmit={handleNext} className="w-full h-full pb-4">
       <div className="flex flex-col gap-5">
         <h3 className="text-xl font-semibold text-[#3D3D3D]">
           Dados do usuário
@@ -284,6 +288,7 @@ export function PersonalData({ nextStep }: PersonalDataProps) {
           type="submit"
           className="w-[251px] cursor-pointer"
           variant="primary"
+          disabled={!hidratado}
           iconRight={
             <Image src="/icons/arrow-right.svg" alt="" width={24} height={24} />
           }

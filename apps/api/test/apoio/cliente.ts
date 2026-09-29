@@ -42,6 +42,10 @@ export class Cliente {
     return this.requisitar<T>('POST', caminho, corpo);
   }
 
+  put<T = unknown>(caminho: string, corpo?: unknown): Promise<Resposta<T>> {
+    return this.requisitar<T>('PUT', caminho, corpo);
+  }
+
   patch<T = unknown>(caminho: string, corpo?: unknown): Promise<Resposta<T>> {
     return this.requisitar<T>('PATCH', caminho, corpo);
   }

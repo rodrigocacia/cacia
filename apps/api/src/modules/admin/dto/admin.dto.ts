@@ -6,12 +6,21 @@ import {
   IsString,
   IsUUID,
   Length,
+  Matches,
   MinLength,
   ValidateNested,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { OfficeStatus, Role } from '@cacia/database';
 import { PaginacaoDto } from '@/common/dto/paginacao.dto';
+
+/**
+ * CPF gravado só com dígitos, como no cadastro do escritório: com máscara em
+ * uns e sem em outros, a busca por documento deixaria de achar metade.
+ */
+function apenasDigitos(valor: unknown) {
+  return typeof valor === 'string' ? valor.replace(/\D/g, '') : valor;
+}
 
 export class ListarEscritoriosDto extends PaginacaoDto {
   @IsOptional() @IsEnum(OfficeStatus) status?: OfficeStatus;
@@ -29,7 +38,10 @@ export class AtualizarUsuarioDto {
   @Transform(({ value }: { value: string }) => value?.trim().toLowerCase())
   email?: string;
 
-  @IsOptional() @IsString() document?: string;
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }: { value: string }) => apenasDigitos(value))
+  document?: string;
   @IsOptional() @IsString() phone?: string;
   @IsOptional() @IsString() birthday?: string;
 
@@ -67,8 +79,11 @@ export class EnderecoDto {
 export class CriarEscritorioComDonoDto {
   @IsString() @MinLength(2) name!: string;
 
+  /** CPF ou CNPJ, apenas dígitos — ver CriarEscritorioDto */
   @IsString()
-  @Length(14, 14, { message: 'CNPJ deve ter 14 dígitos' })
+  @Matches(/^(\d{11}|\d{14})$/, {
+    message: 'Documento deve ser CPF (11 dígitos) ou CNPJ (14 dígitos)',
+  })
   @Transform(({ value }: { value: string }) => value?.replace(/\D/g, ''))
   document!: string;
 
@@ -114,8 +129,47 @@ export class CriarUsuarioDto {
   @MinLength(8, { message: 'Senha precisa de ao menos 8 caracteres' })
   password!: string;
 
-  @IsOptional() @IsString() document?: string;
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }: { value: string }) => apenasDigitos(value))
+  document?: string;
   @IsOptional() @IsString() phone?: string;
   @IsOptional() @IsString() birthday?: string;
   @IsOptional() @IsEnum(Role) role?: Role;
+}
+
+/**
+ * Edição de um escritório pelo painel.
+ *
+ * Diferente do autoatendimento (`AtualizarEscritorioDto`), aqui OAB e UF são
+ * editáveis: corrigir o registro é justamente operação de suporte. O
+ * documento continua de fora — é a identidade do escritório, e trocar CPF por
+ * CNPJ é outro cadastro, não uma correção. O dono também: muda por membros.
+ */
+export class AtualizarEscritorioPeloPainelDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  @Transform(({ value }: { value: string }) => value?.trim())
+  name?: string;
+
+  @IsOptional() @IsString() description?: string;
+  @IsOptional() @IsString() legalName?: string;
+  @IsOptional() @IsString() tradeName?: string;
+  @IsOptional() @IsString() remotejid?: string;
+
+  @IsOptional() @IsString() @MinLength(1) oabNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(2, 2)
+  @Transform(({ value }: { value: string }) => value?.trim().toUpperCase())
+  oabUf?: string;
+
+  /** Substitui todos os endereços — ver OfficesService.atualizar. */
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => EnderecoDto)
+  addresses?: EnderecoDto[];
 }

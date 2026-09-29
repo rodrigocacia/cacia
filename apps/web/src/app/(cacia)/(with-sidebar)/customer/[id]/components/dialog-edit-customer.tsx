@@ -70,7 +70,7 @@ function EditCustomerForm({
   }
 
   const steps = [
-    <PersonalData key="personal" nextStep={nextStep} close={close} />,
+    <PersonalData key="personal" nextStep={nextStep} close={close} editando />,
     <Address
       key="address"
       lastStep={lastStep}

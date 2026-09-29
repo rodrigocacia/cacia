@@ -61,9 +61,10 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 
 ## Configuração
 
-| Variável              | Descrição             |
-| --------------------- | --------------------- |
-| `NEXT_PUBLIC_API_URL` | URL da cacia-api-main |
+| Variável                    | Descrição                                                              |
+| --------------------------- | ---------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_URL`       | URL da cacia-api-main                                                  |
+| `NEXT_PUBLIC_SUPPORT_EMAIL` | E-mail de suporte exibido em /support; sem ela, a tela avisa que falta |
 
 Autenticação: JWT em cookie/session via rotas `/api/auth/*` do Next.js.
 

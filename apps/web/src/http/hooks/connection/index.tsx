@@ -4,7 +4,7 @@ import { getConnection } from "@/http/connection/get-connection"
 import { Connection } from "@/types/connection"
 
 export function useConnection() {
-  const { data, error, isLoading, mutate } = useSWR<Connection>(
+  const { data, error, isLoading, mutate } = useSWR<Connection | null>(
     "connection",
     () => getConnection(),
     {

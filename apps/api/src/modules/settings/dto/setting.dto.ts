@@ -18,4 +18,13 @@ export class AtualizarConfiguracaoDto {
   @IsOptional() @IsBoolean() notifyLawyerNewEvent?: boolean;
   @IsOptional() @IsBoolean() notifyLawyerUpdateProcess?: boolean;
   @IsOptional() @IsBoolean() notifyLawyerUpdateSystem?: boolean;
+
+  /**
+   * Portoes do agente sobre o funil.
+   *
+   * Ficam aqui, e nao numa tela de IA a parte, porque sao decisao do
+   * escritorio sobre o proprio processo comercial — nao ajuste de modelo.
+   */
+  @IsOptional() @IsBoolean() aiCanMoveLeadStage?: boolean;
+  @IsOptional() @IsBoolean() aiCanTagLead?: boolean;
 }

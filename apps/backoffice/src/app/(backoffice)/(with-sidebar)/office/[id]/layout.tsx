@@ -4,7 +4,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import { getOfficeById } from "@/http/office/get-office-by-id";
-import { OfficeSignatureStatus } from "@/types/office";
+import { OfficeStatus } from "@/types/office";
+import { situacaoValida } from "@/constants/office-status";
 
 import { Header } from "@/components/header";
 import { Breadcrumbs } from "@/components/ui/custom-breadcrumb";
@@ -57,10 +58,7 @@ export default async function ProfileLayout({
         <Sidebar
           name={formatName(data?.name ?? "")}
           createdAt={formattedCreatedAtDate ?? "-"}
-          signatureStatus={
-            (data?.signature_status as OfficeSignatureStatus) ??
-            OfficeSignatureStatus.PENDING
-          }
+          status={situacaoValida(data?.status) ?? OfficeStatus.PENDING}
         />
 
         <main className="px-4 pb-12 max-md:px-0 lg:col-start-2 max-md:pb-0">

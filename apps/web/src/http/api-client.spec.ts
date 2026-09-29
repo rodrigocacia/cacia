@@ -166,6 +166,24 @@ describe("cliente HTTP", () => {
     expect(resposta.perPage).toBe(20)
   })
 
+  it("lista sem paginação (array puro) chega como página legada", async () => {
+    recebidas = []
+    responder = () => ({
+      status: 200,
+      corpo: [{ id: "cx1", provider: "WAHA", wahaState: "WORKING" }],
+    })
+
+    const api = await cliente()
+    const resposta = await api.get("connections").json<{
+      data: { _id: string; waha_state: string }[]
+      totalItems: number
+    }>()
+
+    expect(resposta.data[0]?._id).toBe("cx1")
+    expect(resposta.data[0]?.waha_state).toBe("WORKING")
+    expect(resposta.totalItems).toBe(1)
+  })
+
   it("não mexe no corpo de erro — os catch da aplicação já o leem assim", async () => {
     recebidas = []
     responder = () => ({

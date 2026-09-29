@@ -23,6 +23,9 @@ interface InputPhoneProps<T extends FieldValues> {
   control: Control<T>
   error?: string | FieldError | null
   placeholder?: string
+  disabled?: boolean
+  /** Texto de apoio abaixo do campo — ex.: por que ele não pode ser editado */
+  hint?: string
 }
 
 export function InputPhone<T extends FieldValues>({
@@ -31,6 +34,8 @@ export function InputPhone<T extends FieldValues>({
   control,
   error,
   placeholder,
+  disabled = false,
+  hint,
 }: InputPhoneProps<T>) {
   const [isFocused, setIsFocused] = useState(false)
   return (
@@ -86,7 +91,7 @@ export function InputPhone<T extends FieldValues>({
                   isFocused
                     ? "border-[#348C98] ring-1 ring-[#348C98]"
                     : "border-gray-200"
-                } bg-white`}
+                } ${disabled ? "bg-gray-50 opacity-70" : "bg-white"}`}
               >
                 <MdOutlineSmartphone
                   className={`h-5 w-5 shrink-0 transition-colors ${
@@ -99,6 +104,7 @@ export function InputPhone<T extends FieldValues>({
                   defaultCountry="BR"
                   international
                   placeholder={placeholder}
+                  disabled={disabled}
                   maxLength={20}
                   limitMaxLength={true}
                   onFocus={() => setIsFocused(true)}
@@ -115,6 +121,7 @@ export function InputPhone<T extends FieldValues>({
           }}
         />
       </div>
+      {hint && !error && <p className="text-xs text-gray-500">{hint}</p>}
       {error && (
         <p className="text-xs font-medium text-red-500 dark:text-red-400">
           {typeof error === "string" ? error : error.message}

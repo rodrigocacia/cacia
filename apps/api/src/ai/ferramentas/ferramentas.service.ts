@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { ChatCompletionTool } from 'openai/resources/chat/completions';
 import { EventStatus } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
+import { LeadsService } from '@/modules/leads/leads.service';
+import { TagsService } from '@/modules/tags/tags.service';
 import { RagService } from '../rag/rag.service';
 
 export interface ContextoFerramenta {
@@ -25,11 +27,44 @@ export class FerramentasService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly rag: RagService,
+    private readonly leads: LeadsService,
+    private readonly tags: TagsService,
   ) {}
 
-  /** Definições enviadas ao modelo. */
-  definicoes(): ChatCompletionTool[] {
-    return [
+  /**
+   * O que o escritorio autoriza o agente a fazer no funil.
+   *
+   * Lido a cada resposta, e nao guardado: desligar o portao na tela precisa
+   * valer na proxima mensagem, nao no proximo reinicio. E uma consulta por
+   * chave unica — barata perto do resto de uma resposta do agente.
+   */
+  private async permissoes(officeId: string): Promise<{
+    moverEtapa: boolean;
+    etiquetar: boolean;
+  }> {
+    const config = await this.prisma.setting.findUnique({
+      where: { officeId },
+      select: { aiCanMoveLeadStage: true, aiCanTagLead: true },
+    });
+
+    return {
+      moverEtapa: config?.aiCanMoveLeadStage ?? false,
+      etiquetar: config?.aiCanTagLead ?? false,
+    };
+  }
+
+  /**
+   * Definicoes enviadas ao modelo.
+   *
+   * Depende do escritorio: as ferramentas de funil so entram na lista quando o
+   * escritorio as ligou, e a descricao delas carrega os nomes reais das etapas
+   * e etiquetas. Sem isso o modelo teria de adivinhar como a coluna se chama —
+   * e adivinharia errado.
+   */
+  async definicoes(
+    contexto: ContextoFerramenta,
+  ): Promise<ChatCompletionTool[]> {
+    const ferramentas: ChatCompletionTool[] = [
       {
         type: 'function',
         function: {
@@ -97,6 +132,75 @@ export class FerramentasService {
         },
       },
     ];
+
+    // Sem lead nao ha funil que mova: quem ja e cliente saiu do funil, e a
+    // conversa interna com um usuario do escritorio nunca esteve nele.
+    if (!contexto.leadId) return ferramentas;
+
+    const permitido = await this.permissoes(contexto.officeId);
+
+    if (permitido.moverEtapa) {
+      const etapas = await this.etapasDoLead(contexto);
+
+      if (etapas.length > 0) {
+        ferramentas.push({
+          type: 'function',
+          function: {
+            name: 'mover_etapa',
+            description:
+              'Move este contato para outra etapa do funil de vendas. Use quando ' +
+              'a conversa mostrar que o negócio avançou ou foi descartado. ' +
+              `Etapas disponíveis: ${etapas.map((e) => e.name).join(', ')}.`,
+            parameters: {
+              type: 'object',
+              properties: {
+                etapa: {
+                  type: 'string',
+                  enum: etapas.map((e) => e.name),
+                  description: 'Nome exato da etapa de destino',
+                },
+                motivo: {
+                  type: 'string',
+                  description:
+                    'Obrigatório ao mover para uma etapa de perda: por que o negócio não seguiu',
+                },
+              },
+              required: ['etapa'],
+            },
+          },
+        });
+      }
+    }
+
+    if (permitido.etiquetar) {
+      const etiquetas = await this.etiquetasDoEscritorio(contexto.officeId);
+
+      if (etiquetas.length > 0) {
+        ferramentas.push({
+          type: 'function',
+          function: {
+            name: 'etiquetar',
+            description:
+              'Aplica etiquetas já cadastradas a este contato, substituindo as ' +
+              'atuais. Use para registrar assunto ou perfil que a conversa revelou. ' +
+              'Não é possível criar etiqueta nova.',
+            parameters: {
+              type: 'object',
+              properties: {
+                etiquetas: {
+                  type: 'array',
+                  items: { type: 'string', enum: etiquetas.map((e) => e.name) },
+                  description: 'Conjunto completo de etiquetas do contato',
+                },
+              },
+              required: ['etiquetas'],
+            },
+          },
+        });
+      }
+    }
+
+    return ferramentas;
   }
 
   /**
@@ -127,6 +231,21 @@ export class FerramentasService {
         case 'acionar_atendente':
           return await this.acionarAtendente(
             String(argumentos.motivo ?? ''),
+            contexto,
+          );
+        case 'mover_etapa':
+          return await this.moverEtapa(
+            String(argumentos.etapa ?? ''),
+            argumentos.motivo === undefined
+              ? undefined
+              : String(argumentos.motivo),
+            contexto,
+          );
+        case 'etiquetar':
+          return await this.etiquetar(
+            Array.isArray(argumentos.etiquetas)
+              ? argumentos.etiquetas.map((e) => String(e))
+              : [],
             contexto,
           );
         default:
@@ -282,5 +401,164 @@ export class FerramentasService {
     );
 
     return 'Atendente acionado. Avise a pessoa que alguém do escritório vai continuar o atendimento.';
+  }
+
+  /**
+   * Etapas do funil em que o lead esta, para oferecer ao modelo.
+   *
+   * Do funil DO LEAD, nao do padrao: um escritorio com dois funis moveria o
+   * contato para a coluna de outro processo comercial.
+   */
+  private async etapasDoLead(
+    contexto: ContextoFerramenta,
+  ): Promise<Array<{ id: string; name: string }>> {
+    const lead = await this.prisma.lead.findFirst({
+      where: {
+        id: contexto.leadId,
+        officeId: contexto.officeId,
+        deletedAt: null,
+      },
+      select: { pipelineId: true },
+    });
+
+    if (!lead?.pipelineId) return [];
+
+    return this.prisma.pipelineStage.findMany({
+      where: {
+        officeId: contexto.officeId,
+        pipelineId: lead.pipelineId,
+        deletedAt: null,
+      },
+      select: { id: true, name: true },
+      orderBy: [{ position: 'asc' }, { createdAt: 'asc' }],
+    });
+  }
+
+  private async etiquetasDoEscritorio(
+    officeId: string,
+  ): Promise<Array<{ id: string; name: string }>> {
+    return this.prisma.tag.findMany({
+      where: { officeId, deletedAt: null },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+      take: 50,
+    });
+  }
+
+  /**
+   * Move o lead de etapa, em nome do agente.
+   *
+   * A permissao e conferida AQUI de novo, e nao so na montagem da lista: o
+   * nome da ferramenta viaja no texto que o modelo produz, e um prompt
+   * injetado na mensagem do contato pode pedir uma ferramenta que nunca foi
+   * oferecida. Conferir uma vez so seria confiar na saida do modelo.
+   *
+   * A escrita passa pelo LeadsService, nao pelo Prisma direto: e la que a
+   * projecao do status e o registro no historico acontecem, e um caminho
+   * paralelo criaria um lead que mudou de etapa sem deixar rastro.
+   */
+  private async moverEtapa(
+    nomeDaEtapa: string,
+    motivo: string | undefined,
+    contexto: ContextoFerramenta,
+  ): Promise<string> {
+    if (!contexto.leadId) {
+      return 'Este contato não está no funil, então não há etapa para mover.';
+    }
+
+    const permitido = await this.permissoes(contexto.officeId);
+
+    if (!permitido.moverEtapa) {
+      return 'Não tenho permissão para mover contatos no funil deste escritório.';
+    }
+
+    const etapas = await this.etapasDoLead(contexto);
+    const alvo = etapas.find(
+      (e) => e.name.toLowerCase() === nomeDaEtapa.trim().toLowerCase(),
+    );
+
+    if (!alvo) {
+      return `Etapa "${nomeDaEtapa}" não existe. As etapas são: ${etapas
+        .map((e) => e.name)
+        .join(', ')}.`;
+    }
+
+    try {
+      await this.leads.moverEtapa(
+        contexto.officeId,
+        contexto.leadId,
+        { stageId: alvo.id, lostReason: motivo },
+        // userId nulo: foi o agente. E o que permite reconhecer, na linha do
+        // tempo, um cartao que andou sozinho.
+        null,
+      );
+    } catch (erro) {
+      // Regra de negocio recusada (ja esta na etapa, motivo faltando) e
+      // resposta legitima para o modelo, nao falha da ferramenta.
+      return erro instanceof Error
+        ? `Não foi possível mover: ${erro.message}`
+        : 'Não foi possível mover o contato de etapa.';
+    }
+
+    this.logger.log(
+      `Agente moveu o lead ${contexto.leadId} para a etapa ${alvo.name}`,
+    );
+
+    return `Contato movido para a etapa "${alvo.name}".`;
+  }
+
+  /**
+   * Aplica etiquetas existentes ao lead.
+   *
+   * Nome que nao existe e ignorado e reportado ao modelo, em vez de criar a
+   * etiqueta: deixar o modelo inventar nome transforma o filtro da tela em
+   * lixo — "urgente", "Urgente" e "urgencia" virariam tres etiquetas.
+   */
+  private async etiquetar(
+    nomes: string[],
+    contexto: ContextoFerramenta,
+  ): Promise<string> {
+    if (!contexto.leadId) {
+      return 'Este contato não está no funil, então não há o que etiquetar.';
+    }
+
+    const permitido = await this.permissoes(contexto.officeId);
+
+    if (!permitido.etiquetar) {
+      return 'Não tenho permissão para etiquetar contatos deste escritório.';
+    }
+
+    const existentes = await this.etiquetasDoEscritorio(contexto.officeId);
+    const porNome = new Map(
+      existentes.map((e) => [e.name.toLowerCase(), e.id]),
+    );
+
+    const encontradas: string[] = [];
+    const desconhecidas: string[] = [];
+
+    for (const nome of nomes) {
+      const id = porNome.get(nome.trim().toLowerCase());
+      if (id) encontradas.push(id);
+      else desconhecidas.push(nome);
+    }
+
+    await this.leads.definirEtiquetas(
+      contexto.officeId,
+      contexto.leadId,
+      encontradas,
+    );
+
+    const aplicadas = existentes
+      .filter((e) => encontradas.includes(e.id))
+      .map((e) => e.name);
+
+    const resumo =
+      aplicadas.length > 0
+        ? `Etiquetas do contato agora: ${aplicadas.join(', ')}.`
+        : 'O contato ficou sem etiquetas.';
+
+    return desconhecidas.length > 0
+      ? `${resumo} Não existem estas etiquetas: ${desconhecidas.join(', ')}.`
+      : resumo;
   }
 }

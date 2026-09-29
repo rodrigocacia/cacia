@@ -2,11 +2,9 @@ import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
   images: {
-    domains: [
-      "ialqt.nyc3.digitaloceanspaces.com",
-      "pps.whatsapp.net",
-      "cacia.nyc3.digitaloceanspaces.com",
-    ],
+    // Foto de perfil do WhatsApp. Documentos não passam por aqui: saem por
+    // link temporário do storage.
+    domains: ["pps.whatsapp.net"],
   },
   experimental: {
     serverActions: {

@@ -7,6 +7,7 @@ import { api } from "../api-client"
 
 export interface UpdateOfficeRequest {
   name?: string
+  legal_name?: string
   trade_name?: string
   description?: string
   onboarding?: boolean
@@ -47,6 +48,7 @@ interface UpdateOfficeResponse {
 
 export async function updateOffice({
   name,
+  legal_name,
   trade_name,
   description,
   onboarding,
@@ -56,6 +58,7 @@ export async function updateOffice({
     const requestBody: Record<string, unknown> = {}
 
     if (name) requestBody.name = name
+    if (legal_name) requestBody.legal_name = legal_name
     if (trade_name) requestBody.trade_name = trade_name
     if (description) requestBody.description = description
     if (address) requestBody.addresses = address

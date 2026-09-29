@@ -68,8 +68,8 @@ export default function Welcome() {
               </div>
 
               <p className="text-lg text-[#BDBDBD] text-center">
-                Aqui resumimos a funcionalidade que estamos tratando neste
-                slide, dando uma ideia geral.
+                Em poucos passos, a CacIA fica pronta para atender seus clientes
+                no WhatsApp, organizar sua agenda e acompanhar seus processos.
               </p>
             </div>
           </div>

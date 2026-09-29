@@ -37,7 +37,9 @@ export class RagService {
     documentId?: string;
     limite?: number;
   }): Promise<TrechoEncontrado[]> {
-    const vetor = await this.embeddings.gerar(params.pergunta);
+    const vetor = await this.embeddings.gerar(params.pergunta, {
+      officeId: params.officeId,
+    });
 
     const resultados = await this.qdrant.buscar(
       vetor,
@@ -80,7 +82,9 @@ export class RagService {
   }): Promise<number> {
     if (params.trechos.length === 0) return 0;
 
-    const vetores = await this.embeddings.gerarEmLote(params.trechos);
+    const vetores = await this.embeddings.gerarEmLote(params.trechos, {
+      officeId: params.officeId,
+    });
 
     await this.qdrant.inserir(
       params.trechos.map((trecho, i) => ({

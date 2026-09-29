@@ -6,6 +6,7 @@ import { DocumentDetail } from "./detail"
 import { getCustomerById } from "@/http/customer/get-customer-by-id"
 import { ptBR } from "date-fns/locale"
 import { CustomAvatar } from "@/components/ui/custom-avatar"
+import { getDocuments } from "@/http/document/get-documents"
 
 export default async function Document({
   params,
@@ -14,7 +15,10 @@ export default async function Document({
 }) {
   const { id: customerId } = await params
 
-  const customer = await getCustomerById(customerId)
+  const [customer, documentos] = await Promise.all([
+    getCustomerById(customerId),
+    getDocuments({ customerId }),
+  ])
 
   let formattedCreatedAtDate = null
 
@@ -42,7 +46,7 @@ export default async function Document({
   return (
     <div className="h-full">
       <div className="h-full max-md:hidden">
-        <DocumentDetail customer={customer} documents={customer?.documents} />
+        <DocumentDetail customer={customer} documents={documentos} />
       </div>
 
       <main className="w-full h-fit max-lg:h-full pb-6 max-lg:pb-0  grid grid-cols-[2fr_3fr] max-lg:flex max-lg max-lg:flex-col max-lg:justify-between md:hidden">
@@ -69,10 +73,7 @@ export default async function Document({
 
             <CustomTab tabs={tabs} />
 
-            <DocumentDetail
-              customer={customer}
-              documents={customer?.documents}
-            />
+            <DocumentDetail customer={customer} documents={documentos} />
           </div>
         </div>
       </main>

@@ -1,38 +1,27 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
-import { updateOffice } from "@/http/office/update-office";
+import { revalidatePath, revalidateTag } from "next/cache";
+import {
+  updateOffice,
+  type UpdateOfficeRequest,
+} from "@/http/office/update-office";
+import { updateOfficeStatus } from "@/http/office/update-office-status";
+import type { OfficeStatus } from "@/types/office";
 import { deleteOffice } from "@/http/office/delete-office";
 import { createOffice } from "@/http/office/create-office";
 
-export async function updateOfficeAction(data: {
-  id: string;
-  name: string;
-  document: string;
-  legal_name: string;
-  trade_name: string;
-  remotejid: string;
-  description: string;
-  address?: {
-    street: string;
-    number: string;
-    neighborhood: string;
-    city: string;
-    state: string;
-    cep: string;
-  };
-}) {
+interface Endereco {
+  street: string;
+  number: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  cep: string;
+}
+
+export async function updateOfficeAction(data: UpdateOfficeRequest) {
   try {
-    const result = await updateOffice({
-      id: data.id,
-      name: data.name,
-      document: data.document,
-      legal_name: data.legal_name,
-      trade_name: data.trade_name,
-      remotejid: data.remotejid,
-      description: data.description,
-      address: data.address ? [data.address] : [],
-    });
+    const result = await updateOffice(data);
 
     revalidateTag("offices");
 
@@ -56,31 +45,10 @@ export async function createOfficeAction(data: {
   owner_email: string;
   owner_password: string;
   owner_phone?: string;
-  address?: {
-    street: string;
-    number: string;
-    neighborhood: string;
-    city: string;
-    state: string;
-    cep: string;
-  };
+  addresses: Endereco[];
 }) {
   try {
-    const result = await createOffice({
-      name: data.name,
-      document: data.document,
-      legal_name: data.legal_name,
-      trade_name: data.trade_name,
-      remotejid: data.remotejid,
-      description: data.description,
-      oab_number: data.oab_number,
-      oab_uf: data.oab_uf,
-      owner_name: data.owner_name,
-      owner_email: data.owner_email,
-      owner_password: data.owner_password,
-      owner_phone: data.owner_phone,
-      address: data.address ? [data.address] : [],
-    });
+    const result = await createOffice(data);
 
     revalidateTag("offices");
 
@@ -89,6 +57,20 @@ export async function createOfficeAction(data: {
     console.error("Erro ao criar escritório:", error);
     return { success: false };
   }
+}
+
+export async function alterarSituacaoDoEscritorioAction(
+  officeId: string,
+  status: OfficeStatus,
+) {
+  const result = await updateOfficeStatus({ id: officeId, status });
+
+  if (result.success) {
+    revalidateTag("offices");
+    revalidatePath(`/office/${officeId}`, "layout");
+  }
+
+  return result;
 }
 
 export async function deleteOfficeAction(officeId: string) {

@@ -32,6 +32,11 @@ const items = [
     icon: (props: any) => <Icon icon="mdi:leads-outline" {...props} />,
   },
   {
+    title: "Conversas",
+    url: "/chat",
+    icon: (props: any) => <Icon icon="mdi:forum-outline" {...props} />,
+  },
+  {
     title: "Clientes",
     url: "/customer",
     icon: (props: any) => <Icon icon="mdi:account-group-outline" {...props} />,

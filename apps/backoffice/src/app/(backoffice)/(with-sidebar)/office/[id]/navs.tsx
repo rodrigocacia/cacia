@@ -16,5 +16,11 @@ export function navLinks(officeId: string) {
       icon: <Icon icon="mdi:chart-box-outline" className="w-5 h-5" />,
       path: `/office/${officeId}/performance`,
     },
+    {
+      id: 3,
+      name: "Consumo de IA",
+      icon: <Icon icon="mdi:robot-outline" className="w-5 h-5" />,
+      path: `/office/${officeId}/ai-usage`,
+    },
   ];
 }

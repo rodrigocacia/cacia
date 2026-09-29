@@ -85,6 +85,18 @@ export function Input({
 
   const handleKeyUp = useCallback(
     (e: FormEvent<HTMLInputElement>) => {
+      // Com texto selecionado não há o que mascarar — a tecla foi de seleção
+      // (Ctrl+A, Shift+setas). Reescrever o valor aqui desfaz a seleção: o
+      // Backspace seguinte apagava um dígito só, e o que se digitava depois
+      // era concatenado ao valor antigo.
+      const campo = e.currentTarget
+      if (
+        campo.selectionStart !== null &&
+        campo.selectionStart !== campo.selectionEnd
+      ) {
+        return
+      }
+
       switch (mask) {
         case "phone":
           phone(e)

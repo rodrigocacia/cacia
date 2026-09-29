@@ -14,7 +14,7 @@ import { AiOutlinePlus } from "react-icons/ai"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 import { useCustomers } from "@/http/hooks/customer"
-import { useProcess } from "@/http/hooks/process"
+import { useSWRConfig } from "swr"
 import { createProcess } from "@/http/process/create-process"
 
 import { Customer } from "@/types/customer"
@@ -43,6 +43,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { updateProcess } from "@/http/process/update-process"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 interface FormComponentProps {
   setOpen(value: boolean): void
@@ -62,13 +63,15 @@ function FormComponent({
   const [hasError, setHasError] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
 
-  const page = Number(searchParams.get("page")) || 1
-  const search = searchParams.get("page") || ""
-
   const router = useRouter()
   const pathname = usePathname()
 
-  const { mutate } = useProcess(page, search)
+  // Revalida TODAS as listagens de processos, com qualquer filtro: a tabela
+  // inclui o status na chave e o formulário não, então revalidar só a chave
+  // "igual" deixava a lista parada até recarregar a página.
+  const { mutate: mutateGlobal } = useSWRConfig()
+  const mutate = () =>
+    mutateGlobal((chave) => Array.isArray(chave) && chave[0] === "processs")
 
   const { customers } = useCustomers({ limit: 100, search: "" })
 
@@ -135,7 +138,7 @@ function FormComponent({
 
         if (!result.success) {
           setHasError(true)
-          setErrorMessage(JSON.stringify(result.error.message))
+          setErrorMessage(mensagemDeErro(result.error))
 
           return
         }
@@ -154,9 +157,7 @@ function FormComponent({
         if (!result.success) {
           setHasError(true)
 
-          const errorMessage = Array.isArray(result.error)
-            ? result.error.join(", ")
-            : result.error?.message || "Erro desconhecido"
+          const errorMessage = mensagemDeErro(result.error)
 
           setErrorMessage(errorMessage)
 
@@ -234,7 +235,7 @@ function FormComponent({
                 onChange(e)
               }}
               iconName="person"
-              disabled={!!customerId}
+              disabled={!!customerId || !!process}
               onNewAction={handleNewCustomer}
               newActionLabel="Novo Cliente"
             />

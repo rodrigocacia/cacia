@@ -16,7 +16,7 @@ interface DetailProps {
 export function Detail({ qrCode }: DetailProps) {
   const { connection, isLoading } = useConnection()
   const typeConnection =
-    connection?.whatsapp_connection?.toUpperCase() || "EVOLUTION"
+    connection?.whatsapp_connection?.toUpperCase() || "WAHA"
 
   if (isLoading) return <Spinner />
 

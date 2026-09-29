@@ -13,16 +13,28 @@ import { Weekday } from '@cacia/database';
 
 const HORA = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
+/**
+ * Horário em branco é horário não informado.
+ *
+ * A tela manda `""` nos dias e turnos desmarcados, e o `@IsOptional` só
+ * dispensa `null` e `undefined` — sem isto, qualquer agenda com um dia de
+ * folga era recusada com 400.
+ */
+const semHorarioVazio = ({ value }: { value: unknown }) =>
+  value === '' ? undefined : value;
+
 export class DiaDisponivelDto {
   @IsEnum(Weekday) day!: Weekday;
 
   @IsOptional() @IsBoolean() available?: boolean;
 
   @IsOptional()
+  @Transform(semHorarioVazio)
   @Matches(HORA, { message: 'Horário no formato HH:MM' })
   startTime?: string;
 
   @IsOptional()
+  @Transform(semHorarioVazio)
   @Matches(HORA, { message: 'Horário no formato HH:MM' })
   endTime?: string;
 
@@ -31,8 +43,15 @@ export class DiaDisponivelDto {
 
   /** Segundo turno do dia — atendimento de manhã e de tarde com intervalo */
   @IsOptional() @IsBoolean() shift2Available?: boolean;
-  @IsOptional() @Matches(HORA) shift2StartTime?: string;
-  @IsOptional() @Matches(HORA) shift2EndTime?: string;
+  @IsOptional()
+  @Transform(semHorarioVazio)
+  @Matches(HORA, { message: 'Horário no formato HH:MM' })
+  shift2StartTime?: string;
+
+  @IsOptional()
+  @Transform(semHorarioVazio)
+  @Matches(HORA, { message: 'Horário no formato HH:MM' })
+  shift2EndTime?: string;
   @IsOptional() @IsBoolean() shift2Online?: boolean;
   @IsOptional() @IsBoolean() shift2InPerson?: boolean;
 }

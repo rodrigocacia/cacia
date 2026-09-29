@@ -29,6 +29,7 @@ import { createProgress } from "@/http/progress/create-progress"
 import { useParams } from "next/navigation"
 import { CustomDateSelect } from "@/components/ui/custom-data-select"
 import { useState } from "react"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 export const areasDeAtuacao = [
   { value: "tecnologia", label: "Tecnologia" },
@@ -86,7 +87,7 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
 
         return
       }

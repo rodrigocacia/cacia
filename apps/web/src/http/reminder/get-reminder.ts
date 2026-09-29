@@ -5,11 +5,12 @@ import { Reminder } from "@/types/reminder"
 
 export async function getReminder(eventId: string) {
   try {
+    // A API devolve array puro; o cliente HTTP embrulha em `{ data }`.
     const result = await api
       .get(`reminders?eventId=${eventId}`)
-      .json<Reminder[]>()
+      .json<{ data: Reminder[] }>()
 
-    return { success: true, data: result }
+    return { success: true, data: result.data ?? [] }
   } catch (err: unknown) {
     if (err && typeof err === "object" && "response" in err) {
       const errorBody = await (

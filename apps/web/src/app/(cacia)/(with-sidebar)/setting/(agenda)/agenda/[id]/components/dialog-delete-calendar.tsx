@@ -73,9 +73,7 @@ export function DialogDeleteCalendar({ name }: DialogDeleteCalendarProps) {
 
       <DialogContent className="px-[30px]">
         <DialogHeader>
-          <DialogTitle className="sr-only">
-            Are you absolutely sure?
-          </DialogTitle>
+          <DialogTitle className="sr-only">Excluir agenda</DialogTitle>
         </DialogHeader>
 
         <form

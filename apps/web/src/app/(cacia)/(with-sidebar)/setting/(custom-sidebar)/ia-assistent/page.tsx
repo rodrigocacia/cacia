@@ -11,7 +11,7 @@ import { NavLinks } from "../navs"
 export default async function IaAssistent() {
   const agents = await getAgents()
 
-  const serviceAgent = agents?.data?.find((agent) => agent.type === "personal")
+  const serviceAgent = agents?.data?.find((agent) => agent.type === "PERSONAL")
 
   if (!serviceAgent) return <div>Nenhum assistente encontrado</div>
 

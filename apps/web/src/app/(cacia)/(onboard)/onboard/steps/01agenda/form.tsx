@@ -35,6 +35,7 @@ import { Spinner } from "@/components/ui/sppiner"
 import { HeaderSteps } from "../components/header-steps"
 import { useMe } from "@/http/hooks/user"
 import { Icon } from "@/components/icone"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 export function Form() {
   const [hasSuccess, setHasSuccess] = useState(false)
@@ -183,7 +184,7 @@ export function Form() {
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(result.error)
+        setErrorMessage(mensagemDeErro(result.error))
         return
       }
 
@@ -299,7 +300,7 @@ export function Form() {
                   control={control}
                   render={() => (
                     <Checkbox
-                      id="terms"
+                      id={`dia-${day.day}`}
                       className="w-6 h-6 
              border border-gray-300 
              data-[state=checked]:bg-[#348C98] 
@@ -335,7 +336,7 @@ export function Form() {
                 />
 
                 <label
-                  htmlFor="terms"
+                  htmlFor={`dia-${day.day}`}
                   className="text-sm text-[#3D3D3D] font-semibold"
                 >
                   {translateWeekdayToLocale(day.day)}
@@ -431,7 +432,7 @@ export function Form() {
               <div className="pl-14 max-[1300px]:flex-col flex items-center justify-between">
                 <div className="w-full flex items-center gap-3">
                   <Checkbox
-                    id="terms"
+                    id={`turno2-${day.day}`}
                     className="w-6 h-6 
              border border-gray-300 
              data-[state=checked]:bg-[#348C98] 
@@ -454,7 +455,7 @@ export function Form() {
                   />
 
                   <label
-                    htmlFor="terms"
+                    htmlFor={`turno2-${day.day}`}
                     className="text-sm text-[#3D3D3D] font-semibold"
                   >
                     Dois turnos

@@ -117,6 +117,17 @@ export function formatName(name: string): string {
   return name.trim().toUpperCase()
 }
 
+/**
+ * "R$ 1.250,50" → 1250.5
+ *
+ * Valores em reais, como a API guarda (`Decimal(12, 2)`). O sistema anterior
+ * guardava centavos; mandar centavos para a API nova multiplicava o preço da
+ * consulta por cem — no cadastro e no que a IA informa ao cliente.
+ */
+export function convertCurrencyToReais(value: string): number {
+  return convertCurrencyToCents(value) / 100
+}
+
 export function convertCurrencyToCents(value: string): number {
   if (!value || !value.trim()) return 0
   const cleanValue = value

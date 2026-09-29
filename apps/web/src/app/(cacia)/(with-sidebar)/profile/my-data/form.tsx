@@ -14,6 +14,7 @@ import { updateUser } from "@/http/user/update-user"
 import { Toast } from "@/components/ui/toast"
 import { useMe } from "@/http/hooks/user"
 import { revalidateProfile } from "../actions"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 function formatPhoneToE164(phone: string): string {
   if (!phone) return ""
@@ -74,7 +75,7 @@ export function Form({ name, document, phone }: FormProps) {
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(result.error)
+        setErrorMessage(mensagemDeErro(result.error))
         return
       }
 

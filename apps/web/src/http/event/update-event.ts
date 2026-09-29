@@ -4,21 +4,15 @@
 import { revalidateTag } from "next/cache"
 import { api } from "../api-client"
 
-import { UserReminder } from "@/schemas/event"
-
 interface UpdateEventRequest {
   eventId: string
-  calendar_id: string
-  process_id: string | null
-  customer_id: string | null
   type: string
   description: string
   title: string
   start_time: string
   end_time: string
-  status: string
-  user_reminder?: UserReminder[]
-  consultation_mode: string
+  status?: string
+  consultation_mode: "ONLINE" | "IN_PERSON"
 }
 
 interface UpdateEventResponse {
@@ -38,36 +32,34 @@ interface UpdateEventResponse {
   __v: number
 }
 
+/**
+ * Edita o compromisso.
+ *
+ * Vai só o que o DTO de edição aceita: a API recusa campo desconhecido, e
+ * agenda, cliente e processo não mudam depois de criado. Os lembretes também
+ * ficam de fora — na edição, o seletor de notificações os grava direto, um a
+ * um, pela rota de lembretes.
+ */
 export async function updateEvent({
   eventId,
-  calendar_id,
-  process_id,
-  customer_id,
   type,
   description,
   title,
   start_time,
   end_time,
   status,
-  user_reminder,
   consultation_mode,
 }: UpdateEventRequest) {
   try {
     const result = await api
       .patch(`events/${eventId}`, {
         json: {
-          calendar_id,
-          process_id,
-          customer_id,
           type,
           description,
           title,
           start_time,
           end_time,
           status,
-          // A API recebe apenas as antecedências, em minutos, e cria os
-          // lembretes junto com o compromisso — daí o mapeamento.
-          reminderOffsets: (user_reminder ?? []).map((r) => r.time_trigger),
           consultation_mode,
         },
       })

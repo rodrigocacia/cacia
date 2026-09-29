@@ -1,6 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ConfigService } from '@nestjs/config';
-import type OpenAI from 'openai';
 import type {
   ChatCompletion,
   ChatCompletionMessageParam,
@@ -11,6 +9,7 @@ import type {
   ContextoMemoria,
 } from '../memoria/memoria.service';
 import type { FerramentasService } from '../ferramentas/ferramentas.service';
+import type { LlmService } from '../llm.service';
 import type { PromptService } from './prompt.service';
 import { AgenteService } from './agente.service';
 
@@ -18,7 +17,7 @@ import { AgenteService } from './agente.service';
  * O laço de conversa do agente.
  *
  * O modelo é dublado com respostas roteirizadas — o que se verifica aqui não é
- * a qualidade do texto que a OpenAI produz, e sim a ORQUESTRAÇÃO em volta
+ * a qualidade do texto que o modelo produz, e sim a ORQUESTRAÇÃO em volta
  * dela: o que é enviado, o que volta para a memória, o que acontece quando o
  * modelo se perde. É a parte que é nossa, e a única que uma regressão nossa
  * pode quebrar.
@@ -95,9 +94,7 @@ function montar(
   // Depois do roteiro, o modelo simplesmente encerra
   create.mockResolvedValue(respostaComTexto('Fim.'));
 
-  const openai = {
-    chat: { completions: { create } },
-  } as unknown as OpenAI;
+  const llm = { completar: create } as unknown as LlmService;
 
   const registrarTurno = vi.fn().mockResolvedValue(undefined);
   const memoria = {
@@ -132,19 +129,8 @@ function montar(
     },
   } as unknown as PrismaService;
 
-  const config = {
-    get: vi.fn().mockReturnValue('gpt-4o'),
-  } as unknown as ConfigService;
-
   return {
-    agente: new AgenteService(
-      prisma,
-      memoria,
-      prompt,
-      ferramentas,
-      openai,
-      config,
-    ),
+    agente: new AgenteService(prisma, memoria, prompt, ferramentas, llm),
     create,
     executar,
     registrarTurno,
@@ -192,7 +178,7 @@ describe('AgenteService', () => {
 
   describe('montagem do prompt', () => {
     it('o bloco estático vem primeiro', async () => {
-      // A ordem habilita o desconto de cache de prefixo da OpenAI: o trecho
+      // A ordem habilita o desconto de cache de prefixo do provedor: o trecho
       // idêntico entre mensagens precisa estar no começo, sempre igual.
       const { agente, create } = montar([respostaComTexto('Ok.')]);
 
@@ -443,8 +429,7 @@ describe('AgenteService sem agente configurado', () => {
         definicoes: vi.fn().mockReturnValue([]),
         executar: vi.fn(),
       } as unknown as FerramentasService,
-      { chat: { completions: { create } } } as unknown as OpenAI,
-      { get: vi.fn().mockReturnValue('gpt-4o') } as unknown as ConfigService,
+      { completar: create } as unknown as LlmService,
     );
   });
 

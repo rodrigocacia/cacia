@@ -8,6 +8,9 @@ export enum EventType {
   DEADLINE = "DEADLINE",
   COMMITMENT = "COMMITMENT",
   SERVICE = "SERVICE",
+  /** Atividades comerciais, agendadas a partir da ficha do lead */
+  CALL = "CALL",
+  FOLLOW_UP = "FOLLOW_UP",
 }
 
 export enum EventStatus {
@@ -28,10 +31,20 @@ export interface Event {
     _id: string
     name: string
   }
-  calendar: {
+  /**
+   * A API devolve só o id da agenda; `calendar` é preenchido por
+   * `getEventById` com o título, para o painel de detalhe.
+   */
+  calendar?: {
     _id: string
     title: string
   }
+  calendar_id?: string
+  customer_id?: string | null
+  lead_id?: string | null
+  process_id?: string | null
+  /** Antecedências dos lembretes, em minutos */
+  reminder_offsets?: number[]
   type: EventType
   title: string
   description: string

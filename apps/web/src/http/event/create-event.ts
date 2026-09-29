@@ -10,15 +10,15 @@ import { UserReminder } from "@/schemas/event"
 export interface CreateEventRequest {
   calendar_id: string
   customer_id: string | null
+  lead_id?: string | null
   process_id: string | null
   type: string
   description: string
   title: string
   start_time: string
   end_time: string
-  status: string
   user_reminder?: UserReminder[]
-  consultation_mode: string
+  consultation_mode: "ONLINE" | "IN_PERSON"
 }
 
 interface CreateEventResponse {
@@ -41,13 +41,13 @@ interface CreateEventResponse {
 export async function createEvent({
   calendar_id,
   customer_id,
+  lead_id,
   process_id,
   type,
   title,
   description,
   start_time,
   end_time,
-  status,
   user_reminder,
   consultation_mode,
 }: CreateEventRequest) {
@@ -56,14 +56,17 @@ export async function createEvent({
       .post("events", {
         json: {
           calendar_id,
-          customer_id,
-          process_id,
+          // Vínculo vazio vai como ausente: a API valida o formato do id e
+          // recusaria a string vazia. `status` não vai — o compromisso nasce
+          // pendente e o DTO de criação não aceita o campo.
+          customer_id: customer_id || undefined,
+          lead_id: lead_id || undefined,
+          process_id: process_id || undefined,
           type,
           title,
           description,
           start_time,
           end_time,
-          status,
           // A API recebe apenas as antecedências, em minutos, e cria os
           // lembretes junto com o compromisso — daí o mapeamento.
           reminderOffsets: (user_reminder ?? []).map((r) => r.time_trigger),

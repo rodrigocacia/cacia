@@ -5,14 +5,53 @@ import {
   ChatStatus,
   ConnectionStatus,
   MessageSender,
+  MessageStatus,
   MessageType,
   WahaSessionStatus,
 } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
-import { WahaService } from '@/integrations/waha/waha.service';
+import { StorageService } from '@/infra/storage/storage.service';
+import { WahaService, type ConfigWaha } from '@/integrations/waha/waha.service';
 import { ChatsService } from '@/modules/chats/chats.service';
+import { idCurto } from '@/modules/chats/id-do-whatsapp';
+import { normalizarRemotejid } from '@/modules/leads/remotejid';
+import { PipelinesService } from '@/modules/pipelines/pipelines.service';
+import { projetarStatus } from '@/modules/leads/projecao-de-status';
 import { FILA, type JobAtendimento } from '@/worker/filas/filas';
-import type { EventoWahaDto } from './dto/waha-webhook.dto';
+import type {
+  EventoWahaDto,
+  PayloadMensagemWaha,
+} from './dto/waha-webhook.dto';
+
+/** Quanto tempo depois do envio o eco de uma mensagem ainda é esperado. */
+const JANELA_DO_ECO_MS = 2 * 60 * 1000;
+
+/** Ordem dos estados de entrega: um evento atrasado nunca faz voltar. */
+const ESTADO_PELO_ACK: Record<number, MessageStatus> = {
+  1: MessageStatus.SENT,
+  2: MessageStatus.DELIVERED,
+  3: MessageStatus.READ,
+  4: MessageStatus.READ,
+};
+
+const ANTERIORES: Record<MessageStatus, MessageStatus[]> = {
+  [MessageStatus.PENDING]: [],
+  [MessageStatus.FAILED]: [],
+  [MessageStatus.SENT]: [MessageStatus.PENDING, MessageStatus.FAILED],
+  [MessageStatus.DELIVERED]: [
+    MessageStatus.PENDING,
+    MessageStatus.FAILED,
+    MessageStatus.SENT,
+  ],
+  [MessageStatus.READ]: [
+    MessageStatus.PENDING,
+    MessageStatus.FAILED,
+    MessageStatus.SENT,
+    MessageStatus.DELIVERED,
+  ],
+};
+
+type Conexao = { id: string; apiUrl: string; apiKey: string };
 
 /**
  * Recebe os eventos do WAHA e os traduz para o modelo do sistema.
@@ -29,6 +68,8 @@ export class WahaWebhookService {
     private readonly prisma: PrismaService,
     private readonly waha: WahaService,
     private readonly chats: ChatsService,
+    private readonly pipelines: PipelinesService,
+    private readonly storage: StorageService,
     @InjectQueue(FILA.ATENDIMENTO)
     private readonly atendimento: Queue<JobAtendimento>,
   ) {}
@@ -43,7 +84,15 @@ export class WahaWebhookService {
         return;
       }
 
-      if (evento.event !== 'message') return;
+      if (evento.event === 'message.ack') {
+        await this.atualizarEntrega(officeId, evento.payload);
+        return;
+      }
+
+      // `message` vem de sessões criadas antes da troca para `message.any`
+      if (evento.event !== 'message' && evento.event !== 'message.any') {
+        return;
+      }
 
       await this.processarMensagem(officeId, evento);
     } catch (erro) {
@@ -87,19 +136,38 @@ export class WahaWebhookService {
   ): Promise<void> {
     const payload = evento.payload;
 
-    // Mensagem enviada pelo próprio bot volta como evento; ignorar evita
-    // gravar duas vezes o que o sistema acabou de mandar.
-    if (!payload || payload.fromMe) return;
+    if (!payload) return;
     if (!payload.body && !payload.hasMedia) return;
 
-    const conexao = await this.prisma.connection.findFirst({
+    // O WAHA reentrega o evento quando a resposta demora; o id impede que a
+    // mesma mensagem apareça duas vezes na conversa.
+    const externalId = idCurto(payload.id);
+    if (externalId && (await this.jaGravada(officeId, externalId))) return;
+
+    const linha = await this.prisma.connection.findFirst({
       where: { officeId, wahaSession: evento.session, deletedAt: null },
       select: { id: true, wahaApiHost: true, wahaApiKey: true },
     });
 
-    if (!conexao?.wahaApiHost || !conexao.wahaApiKey) {
+    if (!linha?.wahaApiHost || !linha.wahaApiKey) {
       this.logger.warn(
         `Evento de sessão sem conexão configurada: ${evento.session}`,
+      );
+      return;
+    }
+
+    const conexao: Conexao = {
+      id: linha.id,
+      apiUrl: linha.wahaApiHost,
+      apiKey: linha.wahaApiKey,
+    };
+
+    if (payload.fromMe) {
+      await this.processarMensagemPropria(
+        officeId,
+        evento.session,
+        conexao,
+        payload,
       );
       return;
     }
@@ -107,7 +175,7 @@ export class WahaWebhookService {
     const remetente = await this.resolverRemetente(
       evento.session,
       payload.from,
-      { apiUrl: conexao.wahaApiHost, apiKey: conexao.wahaApiKey },
+      conexao,
     );
 
     // Grupos ficam de fora: o atendimento é individual, e uma mensagem de grupo
@@ -135,11 +203,8 @@ export class WahaWebhookService {
       remetente: contato.customerId
         ? MessageSender.CUSTOMER
         : MessageSender.LEAD,
-      tipo: this.classificarTipo(payload),
-      texto: payload.body,
-      legenda: payload.caption,
-      arquivoUrl: payload.media?.url,
-      extensao: payload.media?.mimetype?.split('/')[1],
+      externalId: externalId ?? undefined,
+      ...(await this.conteudo(officeId, conexao, payload)),
     });
 
     await this.pedirResposta({
@@ -149,6 +214,202 @@ export class WahaWebhookService {
       para: remetente,
       status: chat.status,
     });
+  }
+
+  /**
+   * Mensagem que saiu do número do escritório.
+   *
+   * Pode ser o eco do que o próprio sistema mandou (resposta da IA ou da
+   * tela), ou algo que o advogado digitou no celular. O eco é reconhecido e
+   * descartado; o resto entra na conversa como mensagem da equipe.
+   *
+   * Quem responde pelo celular assumiu a conversa, como quem responde pela
+   * tela: a IA para, senão o contato receberia duas respostas.
+   *
+   * Contato desconhecido é ignorado: o número do escritório também fala com
+   * quem não é lead nem cliente, e isso não deve virar ficha no funil.
+   */
+  private async processarMensagemPropria(
+    officeId: string,
+    sessao: string,
+    conexao: Conexao,
+    payload: PayloadMensagemWaha,
+  ): Promise<void> {
+    if (!payload.to) return;
+
+    const destino = await this.resolverRemetente(sessao, payload.to, conexao);
+    if (destino.includes('@g.us')) return;
+
+    const contato = await this.localizarContato(officeId, destino);
+    if (!contato) return;
+
+    const chat = await this.chats.encontrarOuCriar({ officeId, ...contato });
+    const externalId = idCurto(payload.id);
+
+    if (await this.reconhecerEco(officeId, chat.id, payload, externalId)) {
+      return;
+    }
+
+    await this.chats.registrarMensagem({
+      officeId,
+      chatId: chat.id,
+      ...contato,
+      remetente: MessageSender.USER,
+      status: MessageStatus.SENT,
+      externalId: externalId ?? undefined,
+      ...(await this.conteudo(officeId, conexao, payload)),
+    });
+
+    if (chat.status === ChatStatus.ACTIVE) {
+      await this.prisma.chat.update({
+        where: { id: chat.id },
+        data: { status: ChatStatus.PENDING },
+      });
+    }
+  }
+
+  /**
+   * O eco do que o sistema acabou de enviar.
+   *
+   * Pelo id quando o worker já o gravou; senão, pela mensagem da equipe ou da
+   * IA ainda sem id, recente, com o mesmo texto (ou do mesmo tipo, se for
+   * mídia). O evento pode chegar antes de o worker gravar o id, por isso o
+   * segundo caminho. Reconhecido, o id fica gravado para os avisos de entrega.
+   */
+  private async reconhecerEco(
+    officeId: string,
+    chatId: string,
+    payload: PayloadMensagemWaha,
+    externalId: string | null,
+  ): Promise<boolean> {
+    const tipo = this.classificarTipo(payload);
+
+    const eco = await this.prisma.message.findFirst({
+      where: {
+        officeId,
+        chatId,
+        deletedAt: null,
+        externalId: null,
+        sender: { in: [MessageSender.USER, MessageSender.AGENT] },
+        createdAt: { gte: new Date(Date.now() - JANELA_DO_ECO_MS) },
+        ...(tipo === MessageType.TEXT
+          ? { type: MessageType.TEXT, messageText: payload.body }
+          : { type: tipo }),
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    });
+
+    if (!eco) return false;
+
+    if (externalId) {
+      await this.prisma.message.update({
+        where: { id: eco.id },
+        data: { externalId },
+      });
+    }
+
+    return true;
+  }
+
+  private async jaGravada(
+    officeId: string,
+    externalId: string,
+  ): Promise<boolean> {
+    const existente = await this.prisma.message.findFirst({
+      where: { officeId, externalId },
+      select: { id: true },
+    });
+
+    return Boolean(existente);
+  }
+
+  /**
+   * Entrega e leitura de uma mensagem enviada.
+   *
+   * Só avança: o evento de "entregue" que chega depois do de "lida" não pode
+   * desfazer o visto azul.
+   */
+  private async atualizarEntrega(
+    officeId: string,
+    payload: PayloadMensagemWaha | undefined,
+  ): Promise<void> {
+    const externalId = idCurto(payload?.id);
+    if (!externalId || payload?.ack === undefined) return;
+
+    if (payload.ack < 0) {
+      await this.prisma.message.updateMany({
+        where: {
+          officeId,
+          externalId,
+          status: { in: [MessageStatus.PENDING, MessageStatus.SENT] },
+        },
+        data: { status: MessageStatus.FAILED },
+      });
+      return;
+    }
+
+    const novo = ESTADO_PELO_ACK[payload.ack];
+    if (!novo) return;
+
+    await this.prisma.message.updateMany({
+      where: { officeId, externalId, status: { in: ANTERIORES[novo] } },
+      data: { status: novo },
+    });
+  }
+
+  /**
+   * Texto e mídia da mensagem, com a mídia já no storage.
+   *
+   * O link do evento aponta para o WAHA, exige a chave da API e expira; a
+   * cópia no storage é o que a tela consegue exibir depois. Falhar ao copiar
+   * não perde a mensagem: ela entra sem o anexo.
+   */
+  private async conteudo(
+    officeId: string,
+    conexao: Conexao,
+    payload: PayloadMensagemWaha,
+  ) {
+    const tipo = this.classificarTipo(payload);
+    const mime = payload.media?.mimetype?.split(';')[0]?.trim();
+    const extensao =
+      payload.media?.filename?.split('.').pop() ?? mime?.split('/')[1];
+
+    const base = {
+      tipo,
+      texto: tipo === MessageType.TEXT ? payload.body : undefined,
+      legenda:
+        tipo === MessageType.TEXT
+          ? undefined
+          : (payload.caption ?? payload.body),
+      extensao,
+    };
+
+    if (!payload.media?.url) return base;
+
+    try {
+      const conteudo = await this.waha.baixarMidia(payload.media.url, conexao);
+
+      const enviado = await this.storage.enviar({
+        officeId,
+        conteudo,
+        nomeOriginal: payload.media.filename ?? `midia.${extensao ?? 'bin'}`,
+        mimetype: mime ?? 'application/octet-stream',
+      });
+
+      return {
+        ...base,
+        arquivoUrl: enviado.chave,
+        tamanhoBytes: enviado.tamanhoBytes,
+      };
+    } catch (erro) {
+      this.logger.warn(
+        `Não foi possível copiar a mídia da mensagem ${payload.id}: ${
+          erro instanceof Error ? erro.message : 'erro'
+        }`,
+      );
+      return base;
+    }
   }
 
   /**
@@ -205,7 +466,7 @@ export class WahaWebhookService {
   private async resolverRemetente(
     sessao: string,
     de: string,
-    config: { apiUrl: string; apiKey: string },
+    config: ConfigWaha,
   ): Promise<string> {
     if (!de.includes('@lid')) return de.replace('@c.us', '');
 
@@ -220,6 +481,40 @@ export class WahaWebhookService {
   }
 
   /**
+   * As formas como o mesmo número pode estar gravado.
+   *
+   * A tela grava `5511988887777@c.us` (ver normalizarRemotejid); o webhook,
+   * até 29/09, gravava só os dígitos. Procurar pelas duas evita que o lead
+   * cadastrado na tela vire um lead duplicado ao mandar a primeira mensagem.
+   */
+  private formasDoNumero(remotejid: string): string[] {
+    const canonico = normalizarRemotejid(remotejid);
+    return [...new Set([canonico, canonico.replace('@c.us', ''), remotejid])];
+  }
+
+  /** Cliente tem prioridade sobre lead, como em encontrarOuCriarContato. */
+  private async localizarContato(
+    officeId: string,
+    remotejid: string,
+  ): Promise<{ leadId?: string; customerId?: string } | null> {
+    const formas = this.formasDoNumero(remotejid);
+
+    const cliente = await this.prisma.customer.findFirst({
+      where: { officeId, remotejid: { in: formas }, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (cliente) return { customerId: cliente.id };
+
+    const lead = await this.prisma.lead.findFirst({
+      where: { officeId, remotejid: { in: formas }, deletedAt: null },
+      select: { id: true },
+    });
+
+    return lead ? { leadId: lead.id } : null;
+  }
+
+  /**
    * Localiza o contato pelo número, ou cria um lead.
    *
    * Cliente tem prioridade: quem já é cliente do escritório não deve virar lead
@@ -230,28 +525,62 @@ export class WahaWebhookService {
     remotejid: string,
     nome?: string,
   ): Promise<{ leadId?: string; customerId?: string }> {
+    const formas = this.formasDoNumero(remotejid);
+
     const cliente = await this.prisma.customer.findFirst({
-      where: { officeId, remotejid, deletedAt: null },
+      where: { officeId, remotejid: { in: formas }, deletedAt: null },
       select: { id: true },
     });
 
     if (cliente) return { customerId: cliente.id };
 
+    // Sem `deletedAt: null` de proposito: a unicidade (office_id, remotejid)
+    // nao ignora exclusao logica, entao criar outro lead para um numero ja
+    // excluido estouraria no banco. Quem volta a escrever e restaurado.
     const lead = await this.prisma.lead.findFirst({
-      where: { officeId, remotejid, deletedAt: null },
-      select: { id: true },
+      where: { officeId, remotejid: { in: formas } },
+      select: { id: true, deletedAt: true },
     });
 
+    if (lead?.deletedAt) {
+      await this.prisma.lead.update({
+        where: { id: lead.id },
+        data: { deletedAt: null, lastActivityAt: new Date() },
+      });
+
+      this.logger.log(`Lead restaurado ao voltar a escrever: ${lead.id}`);
+
+      return { leadId: lead.id };
+    }
+
     if (lead) return { leadId: lead.id };
+
+    // Quem chega pelo WhatsApp nao escolhe funil nem etapa: cai na primeira
+    // etapa do funil padrao. Sem isso o lead nasceria fora do quadro, invisivel
+    // para quem trabalha o funil.
+    const etapa = await this.pipelines.etapaInicial(officeId);
 
     const novo = await this.prisma.lead.create({
       data: {
         officeId,
-        remotejid,
+        remotejid: normalizarRemotejid(remotejid),
         name: nome ?? remotejid,
         lastActivityAt: new Date(),
+        pipelineId: etapa.pipelineId,
+        stageId: etapa.stageId,
+        stageChangedAt: new Date(),
+        status: projetarStatus(etapa),
       },
       select: { id: true },
+    });
+
+    await this.prisma.leadStageHistory.create({
+      data: {
+        officeId,
+        leadId: novo.id,
+        toStageId: etapa.stageId,
+        userId: null,
+      },
     });
 
     this.logger.log(`Lead criado a partir de mensagem recebida: ${novo.id}`);

@@ -24,7 +24,7 @@ export interface SessaoWaha {
   me?: { id: string; pushName: string };
 }
 
-const EVENTOS_PADRAO = ['message', 'session.status'];
+const EVENTOS_PADRAO = ['message.any', 'message.ack', 'session.status'];
 
 @Injectable()
 export class WahaService {
@@ -204,7 +204,30 @@ export class WahaService {
       session: sessao,
       chatId: this.normalizarDestino(para),
       file: arquivo,
+      // O navegador grava em WebM (Chrome) ou MP4 (Safari); o WhatsApp só
+      // toca como mensagem de voz em OGG/Opus. O WAHA converte.
+      convert: true,
     });
+  }
+
+  /**
+   * Baixa a mídia de uma mensagem recebida.
+   *
+   * O link que vem no evento aponta para o próprio WAHA e exige a chave da
+   * API: o navegador não consegue abri-lo, e o WAHA apaga os arquivos depois
+   * de um tempo.
+   */
+  async baixarMidia(url: string, config = this.padrao): Promise<Buffer> {
+    const resposta = await fetch(url, {
+      headers: { 'X-Api-Key': config.apiKey },
+      signal: AbortSignal.timeout(60_000),
+    });
+
+    if (!resposta.ok) {
+      throw new Error(`Mídia indisponível: ${resposta.status}`);
+    }
+
+    return Buffer.from(await resposta.arrayBuffer());
   }
 
   /** Simula digitação. Falhar aqui não atrapalha o atendimento. */

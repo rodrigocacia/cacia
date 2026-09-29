@@ -45,6 +45,24 @@ describe('clientes (e2e)', () => {
       id = resposta.corpo.id;
     });
 
+    it('cria com endereço, como a tela de cadastro envia', async () => {
+      // Com officeId dentro do endereço aninhado o Prisma recusava a chamada
+      // e o cadastro inteiro caía com 500.
+      const resposta = await conta.api.post<Cliente>('/customers', {
+        name: 'Cliente com Endereço',
+        document: '39053344705',
+        remotejid: '11933332222',
+        addresses: [{ cep: '01310-100', city: 'São Paulo', state: 'SP' }],
+      });
+
+      expect(resposta.status).toBe(201);
+
+      const enderecos = await aplicacao.prisma.customerAddress.count({
+        where: { customerId: resposta.corpo.id },
+      });
+      expect(enderecos).toBe(1);
+    });
+
     it('aparece na listagem', async () => {
       const resposta = await conta.api.get<Pagina>('/customers');
 
@@ -89,6 +107,27 @@ describe('clientes (e2e)', () => {
       });
 
       expect(linha?.deletedAt).toBeInstanceOf(Date);
+    });
+
+    it('recadastrar o mesmo documento restaura o cliente excluído', async () => {
+      // A unicidade ignora a exclusão lógica: antes isto caía com 500.
+      const resposta = await conta.api.post<Cliente>('/customers', {
+        ...novo,
+        name: 'Voltou',
+      });
+
+      expect(resposta.status).toBe(201);
+      expect(resposta.corpo.id).toBe(id);
+      expect(resposta.corpo.name).toBe('Voltou');
+    });
+
+    it('busca pelo telefone', async () => {
+      const digitos = String(novo.remotejid).replace(/\D/g, '').slice(-8);
+      const resposta = await conta.api.get<Pagina>(
+        `/customers?search=${digitos}`,
+      );
+
+      expect(resposta.corpo.data.map((c) => c.id)).toContain(id);
     });
   });
 

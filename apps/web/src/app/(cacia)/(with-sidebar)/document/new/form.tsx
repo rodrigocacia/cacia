@@ -26,6 +26,7 @@ import { AiOutlinePlus } from "react-icons/ai"
 import { createFolder } from "@/http/folder/create-folder"
 import { useState } from "react"
 import { Toast } from "@/components/ui/toast"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 const createFolderFormSchema = z.object({
   title: z.string().min(2, { message: "Insira um nome válido" }),
@@ -42,6 +43,7 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const returnTo = searchParams.get("returnTo")
+  const [erro, setErro] = useState<string | null>(null)
 
   const {
     handleSubmit,
@@ -56,7 +58,12 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
     try {
       const { title } = data
 
-      await createFolder({ title })
+      const resultado = await createFolder({ title })
+
+      if (!resultado.success) {
+        setErro(mensagemDeErro(resultado.error))
+        return
+      }
 
       setOpen(false)
 
@@ -82,6 +89,15 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
       onSubmit={handleSubmit(onSubmit)}
       className="px-4 pb-6 w-full h-screen flex flex-col max-md:overflow-y-scroll"
     >
+      {erro && (
+        <Toast
+          onClose={() => setErro(null)}
+          variant="error"
+          title="Não foi possível criar a pasta"
+          description={erro}
+        />
+      )}
+
       <div className="mt-10 flex flex-col gap-3">
         <div className="flex gap-2">
           <Icon

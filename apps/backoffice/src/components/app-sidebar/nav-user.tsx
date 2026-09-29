@@ -2,6 +2,8 @@
 
 import { LogOut } from "lucide-react";
 
+import { sairAction } from "@/auth/sair";
+
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -26,9 +28,11 @@ export function NavUser({
             <span className="truncate text-xs">{user.email}</span>
           </div>
 
-          <a href="/api/auth/sign-out">
-            <LogOut className="ml-auto size-4" />
-          </a>
+          <form action={sairAction} className="ml-auto">
+            <button type="submit" aria-label="Sair" className="cursor-pointer">
+              <LogOut className="size-4" />
+            </button>
+          </form>
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>

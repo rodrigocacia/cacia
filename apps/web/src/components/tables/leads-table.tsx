@@ -108,6 +108,19 @@ export function LeadsTable() {
                     <RowActions
                       actions={[
                         {
+                          // A ficha é onde ficam etapa, etiquetas, valor,
+                          // responsável e histórico — nada disso cabe na linha
+                          // da tabela.
+                          label: "Abrir ficha",
+                          href: `/lead/${lead._id}`,
+                          icon: (
+                            <Icon
+                              icon="mdi:open-in-new"
+                              className="h-[18px] w-[18px]"
+                            />
+                          ),
+                        },
+                        {
                           label: "Editar",
                           href: `/lead?editLeadId=${lead._id}`,
                           icon: (

@@ -37,33 +37,29 @@ import { EmptySearch } from "../empty-search";
 import { formatDate } from "date-fns";
 import { formatPhone } from "@/utils/formatters";
 import { formatName } from "@/utils/formatters";
+import {
+  SITUACOES_DO_ESCRITORIO,
+  situacaoValida,
+} from "@/constants/office-status";
 
 function StatusBadge({ status }: { status: string }) {
-  const getStatusDisplay = (status: string) => {
-    switch (status) {
-      case "active":
-        return { text: "Ativo", color: "bg-[#EDFDEE] text-[#16A31B]" };
-      case "pending":
-        return { text: "Pendente", color: "bg-[#FEF7D7] text-[#F7CB08]" };
-      case "cancelled":
-        return { text: "Cancelado", color: "bg-[#FEF2F2] text-[#DC2626]" };
-      default:
-        return { text: status, color: "bg-gray-100 text-gray-800" };
-    }
-  };
+  const situacao = situacaoValida(status);
+  const { rotulo, cor } = situacao
+    ? SITUACOES_DO_ESCRITORIO[situacao]
+    : { rotulo: status, cor: "bg-gray-100 text-gray-800" };
 
-  const { text, color } = getStatusDisplay(status);
   return (
-    <span className={`px-3 py-1 rounded-full text-xs font-bold ${color}`}>
-      {text}
+    <span className={`px-3 py-1 rounded-full text-xs font-bold ${cor}`}>
+      {rotulo}
     </span>
   );
 }
+
 export function OfficesTable() {
   const searchParams = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
   const search = searchParams.get("search");
-  const signature_status = searchParams.get("signature_status");
+  const status = searchParams.get("status");
 
   const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState<{
@@ -87,7 +83,7 @@ export function OfficesTable() {
   } = useOffices({
     page,
     search: search ?? "",
-    signature_status: signature_status ?? undefined,
+    status: status ?? undefined,
   });
 
   const handleDeleteSuccess = async () => {
@@ -187,7 +183,7 @@ export function OfficesTable() {
                   {formatDate(new Date(office.created_at), "dd/MM/yyyy")}
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-sm font-medium text-[#707070]">
-                  <StatusBadge status={office.signature_status} />
+                  <StatusBadge status={office.status} />
                 </TableCell>
 
                 <TableCell className="text-right max-md:hidden">

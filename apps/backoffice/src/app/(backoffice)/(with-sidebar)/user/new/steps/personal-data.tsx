@@ -13,6 +13,7 @@ import { updateUserAction, createUserAction } from "../../actions";
 import { Toast } from "@/components/ui/toast";
 import { useState } from "react";
 import { InputPhone } from "@/components/ui/custom-input-phone";
+import { mensagemDeErro } from "@/http/mensagem-de-erro";
 
 export function PersonalData({
   editId,
@@ -86,10 +87,10 @@ export function PersonalData({
           } else {
             setToastConfig({
               title: "Erro!",
-              description:
-                "error" in result
-                  ? result.error?.message
-                  : "Erro ao atualizar usuário",
+              description: mensagemDeErro(
+                "error" in result ? result.error : null,
+                "Erro ao atualizar usuário",
+              ),
               variant: "errorSolid",
             });
           }
@@ -116,10 +117,10 @@ export function PersonalData({
           } else {
             setToastConfig({
               title: "Erro!",
-              description:
-                "error" in result
-                  ? result.error?.message
-                  : "Erro ao criar usuário",
+              description: mensagemDeErro(
+                "error" in result ? result.error : null,
+                "Erro ao criar usuário",
+              ),
               variant: "errorSolid",
             });
           }

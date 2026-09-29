@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation"
 import { useOfficeById } from "@/http/hooks/office"
 import { updateOffice } from "@/http/office/udpate-office"
 import { Spinner } from "@/components/ui/sppiner"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 export function Form() {
   const { prevStep, resetStep } = useOnboardingStore()
@@ -92,7 +93,7 @@ export function Form() {
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
 
         return
       }
@@ -110,7 +111,7 @@ export function Form() {
 
       if (!resultUpdateOffice) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
 
         return
       }

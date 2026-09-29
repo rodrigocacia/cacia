@@ -1,18 +1,26 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use server';
 
-import { api } from '../api-client';
+import { HTTPError } from 'ky';
 import { revalidateTag } from 'next/cache';
 
+import { api } from '../api-client';
+
+/**
+ * Edição do escritório pelo painel — `PATCH /admin/offices/:id`.
+ *
+ * O documento não vai: é a identidade do escritório e a API recusa o campo.
+ * Os endereços substituem os atuais por inteiro, e lista vazia apaga todos.
+ */
 export interface UpdateOfficeRequest {
   id: string;
   name: string;
-  document: string;
   legal_name: string;
   trade_name: string;
   remotejid: string;
   description: string;
-  address: {
+  oab_number: string;
+  oab_uf: string;
+  addresses: {
     street: string;
     number: string;
     neighborhood: string;
@@ -22,56 +30,19 @@ export interface UpdateOfficeRequest {
   }[];
 }
 
-interface UpdateOfficeResponse {
-  _id: string;
-  name: string;
-  category: string;
-  document: string;
-  legal_name: string;
-  trade_name: string;
-  remotejid: string;
-  description: string;
-  plan: string;
-  created_at: string;
-  updated_at: string;
-  __v: number;
-}
-
-export async function updateOffice({
-  id,
-  name,
-  document,
-  legal_name,
-  trade_name,
-  remotejid,
-  description,
-  address,
-}: UpdateOfficeRequest) {
+export async function updateOffice({ id, ...dados }: UpdateOfficeRequest) {
   try {
     const result = await api
-      .patch(`admin/offices/${id}`, {
-        json: {
-          name,
-          remotejid,
-          document,
-          legal_name,
-          trade_name,
-          description,
-          address,
-        },
-      })
-      .json<UpdateOfficeResponse>();
+      .patch(`admin/offices/${id}`, { json: dados })
+      .json<{ _id: string; name: string }>();
 
     revalidateTag('offices');
 
     return { success: true, data: result };
-  } catch (err: any) {
-    if (err.response) {
-      const errorBody = await err.response.json();
-      return {
-        success: false,
-        error: errorBody,
-      };
+  } catch (err) {
+    if (err instanceof HTTPError) {
+      const errorBody: unknown = await err.response.json().catch(() => null);
+      return { success: false, error: errorBody };
     }
 
     console.error('Erro inesperado:', err);

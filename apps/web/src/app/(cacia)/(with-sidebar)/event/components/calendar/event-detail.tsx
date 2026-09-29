@@ -17,6 +17,7 @@ import { useEventById } from "@/http/hooks/event"
 
 import { TypeEvent } from "./type-event"
 import { StatusEvent } from "./status-event"
+import { BotaoCancelarEvento } from "../button-cancel-event"
 
 import { formatProcess } from "@/utils/formatters"
 
@@ -171,7 +172,7 @@ export function EventDetail() {
           </div>
         )}
 
-        <div className="w-full flex items-center justify-start gap-2 mt-2">
+        <div className="w-full flex flex-wrap items-center justify-start gap-2 mt-2">
           <button
             type="button"
             onClick={handleEditEvent}
@@ -189,6 +190,10 @@ export function EventDetail() {
             <Icon icon="mdi:trash-can" className="w-4 h-4 text-[#DC2626]" />
             Excluir
           </button>
+
+          {eventId && (
+            <BotaoCancelarEvento eventId={eventId} status={event?.status} />
+          )}
         </div>
       </div>
     </div>

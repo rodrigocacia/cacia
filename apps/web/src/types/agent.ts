@@ -23,7 +23,8 @@ export const agentStyleLabels: Record<AgentStyle, string> = {
 export interface Agent {
   _id: string
   office: string
-  type: string
+  /** Em maiúsculas, como a API devolve: "SUPPORT" (atendimento) ou "PERSONAL" (assistente) */
+  type: "SUPPORT" | "PERSONAL"
   name: string
   gender: "man" | "woman" | "neutral"
   style: string

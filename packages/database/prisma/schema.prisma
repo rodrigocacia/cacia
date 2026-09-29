@@ -90,12 +90,74 @@ enum PaymentType {
   @@map("payment_type")
 }
 
+/// Resumo grosso da situacao do lead.
+///
+/// A VERDADE e a etapa do funil (PipelineStage), configuravel por escritorio.
+/// Este enum sobrevive como PROJECAO dela, mantida num unico lugar
+/// (LeadsService.projetarStatus): as telas e as ferramentas do agente que ja
+/// liam `status` continuam funcionando sem conhecer o funil.
 enum LeadStatus {
   NEW        @map("new")
   IN_CONTACT @map("in_contact")
   CONVERTED  @map("converted")
+  LOST       @map("lost")
 
   @@map("lead_status")
+}
+
+/// Natureza da etapa do funil.
+///
+/// O nome da etapa e livre — "Proposta enviada", "Aguardando documentos" — mas
+/// o sistema precisa saber quais significam fim de linha: WON alimenta a
+/// conversao em cliente, LOST tira o lead do funil aberto e das metricas.
+enum StageKind {
+  OPEN @map("open")
+  WON  @map("won")
+  LOST @map("lost")
+
+  @@map("stage_kind")
+}
+
+/// Para que a IA foi chamada. É o recorte que o relatório de consumo mostra.
+enum AiTask {
+  /// Responder o contato no WhatsApp
+  ATTENDANCE @map("attendance")
+  /// Resumo rolante da conversa (memória)
+  SUMMARY    @map("summary")
+  /// Fatos duráveis sobre o contato (memória)
+  FACTS      @map("facts")
+  /// Vetores para busca em documentos e na memória
+  EMBEDDING  @map("embedding")
+
+  @@map("ai_task")
+}
+
+/// De onde o lead veio.
+///
+/// WHATSAPP e o que o webhook cria sozinho; IMPORT marca quem entrou por
+/// planilha — e e o que permite desfazer uma importacao errada sem varrer a
+/// base inteira.
+enum LeadSource {
+  WHATSAPP  @map("whatsapp")
+  MANUAL    @map("manual")
+  IMPORT    @map("import")
+  SITE      @map("site")
+  INDICACAO @map("indicacao")
+  OTHER     @map("other")
+
+  @@map("lead_source")
+}
+
+enum LeadImportStatus {
+  /// Arquivo recebido e lido: colunas detectadas, aguardando o mapeamento
+  PREVIEW  @map("preview")
+  QUEUED   @map("queued")
+  RUNNING  @map("running")
+  DONE     @map("done")
+  FAILED   @map("failed")
+  CANCELED @map("canceled")
+
+  @@map("lead_import_status")
 }
 
 enum ProcessType {
@@ -309,6 +371,9 @@ enum EventType {
   DEADLINE   @map("deadline")
   COMMITMENT @map("commitment")
   SERVICE    @map("service")
+  /// Atividades comerciais, agendadas a partir da ficha do lead
+  CALL       @map("call")
+  FOLLOW_UP  @map("follow_up")
 
   @@map("event_type")
 }
@@ -487,6 +552,10 @@ model User {
   signatures    Signature[]
   recurrences   Recurrence[]
 
+  ownedLeads       Lead[]             @relation("LeadOwner")
+  leadStageChanges LeadStageHistory[]
+  leadImports      LeadImport[]
+
   @@index([deletedAt])
   @@map("users")
 }
@@ -509,6 +578,10 @@ model OfficeMember {
   marks         Mark[]
   reminders     Reminder[]
   notifications Notification[]
+
+  ownedLeads       Lead[]
+  leadStageChanges LeadStageHistory[]
+  leadImports      LeadImport[]
 
   @@unique([userId, officeId])
   @@index([officeId])
@@ -582,6 +655,16 @@ model Office {
   services      Service[]
   setting       Setting?
   signatures    Signature[]
+
+  pipelines    Pipeline[]
+  stages       PipelineStage[]
+  tags         Tag[]
+  leadTags     LeadTag[]
+  customerTags CustomerTag[]
+  stageHistory LeadStageHistory[]
+  leadImports  LeadImport[]
+
+  aiUsage AiUsage[]
 
   @@index([ownerId])
   @@index([document])
@@ -719,6 +802,7 @@ model Customer {
   messages  Message[]
   processes Process[]
   reminders Reminder[]
+  tags      CustomerTag[]
 
   /// A unicidade não considera deletedAt: depois de excluir logicamente um
   /// cliente, o mesmo documento não pode ser recadastrado. É deliberado — o
@@ -743,26 +827,300 @@ model Lead {
   status         LeadStatus @default(NEW)
   lastActivityAt DateTime?  @map("last_activity_at")
 
+  /// Posição no funil. Opcional no tipo, sempre preenchido na prática: o
+  /// serviço resolve o funil padrão do escritório quando não vem etapa —
+  /// inclusive para o lead que o webhook do WhatsApp cria sozinho.
+  pipelineId     String?   @map("pipeline_id") @db.Uuid
+  stageId        String?   @map("stage_id") @db.Uuid
+  /// Quando entrou na etapa atual. Dá o tempo em etapa sem precisar ler o
+  /// histórico inteiro na listagem do quadro.
+  stageChangedAt DateTime? @map("stage_changed_at")
+
+  /// Responsável comercial. É um membro do escritório — garantido pela FK
+  /// composta com office_id abaixo, não por verificação no serviço.
+  ownerId String? @map("owner_id") @db.Uuid
+
+  value           Decimal?   @db.Decimal(12, 2)
+  source          LeadSource @default(WHATSAPP)
+  sourceDetail    String?    @map("source_detail")
+  expectedCloseAt DateTime?  @map("expected_close_at")
+
+  lostReason String?   @map("lost_reason")
+  lostAt     DateTime? @map("lost_at")
+
+  /// Preenchido quando o lead entrou por planilha. Permite refazer o caminho
+  /// de uma importação errada sem varrer a base.
+  importId String? @map("import_id") @db.Uuid
+
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  office   Office    @relation(fields: [officeId], references: [id])
-  customer Customer? @relation(fields: [customerId, officeId], references: [id, officeId])
+  office      Office         @relation(fields: [officeId], references: [id])
+  customer    Customer?      @relation(fields: [customerId, officeId], references: [id, officeId])
+  pipeline    Pipeline?      @relation(fields: [pipelineId, officeId], references: [id, officeId])
+  stage       PipelineStage? @relation(fields: [stageId, officeId], references: [id, officeId])
+  owner       User?          @relation("LeadOwner", fields: [ownerId], references: [id])
+  /// Garante que o responsável seja membro DESTE escritório
+  ownerMember OfficeMember?  @relation(fields: [ownerId, officeId], references: [userId, officeId])
+  import      LeadImport?    @relation(fields: [importId, officeId], references: [id, officeId])
 
-  chats     Chat[]
-  documents Document[]
-  events    Event[]
-  marks     Mark[]
-  messages  Message[]
-  reminders Reminder[]
+  chats        Chat[]
+  documents    Document[]
+  events       Event[]
+  marks        Mark[]
+  messages     Message[]
+  reminders    Reminder[]
+  tags         LeadTag[]
+  stageHistory LeadStageHistory[]
 
+  /// Um número, um lead. A unicidade ignora deletedAt pelo mesmo motivo que a
+  /// de Customer: excluir logicamente e recadastrar o mesmo contato criaria
+  /// duas fichas para a mesma pessoa, com o histórico partido ao meio. O
+  /// caminho certo é restaurar o registro existente.
+  @@unique([officeId, remotejid])
   /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
   @@unique([id, officeId])
   @@index([officeId, status])
   @@index([officeId, remotejid])
   @@index([officeId, deletedAt])
+  @@index([officeId, stageId, lastActivityAt])
+  @@index([officeId, ownerId])
+  @@index([officeId, importId])
   @@map("leads")
+}
+
+// =============================================================================
+// FUNIL DE VENDAS
+// =============================================================================
+
+/// Funil de vendas do escritório.
+///
+/// Mais de um é permitido — um escritório pode separar "Trabalhista" de
+/// "Previdenciário" — mas exatamente um é o padrão, e é nele que caem os leads
+/// que ninguém escolheu onde colocar: os que o webhook do WhatsApp cria.
+model Pipeline {
+  id        String  @id @default(uuid()) @db.Uuid
+  officeId  String  @map("office_id") @db.Uuid
+  name      String
+  isDefault Boolean @default(false) @map("is_default")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office Office @relation(fields: [officeId], references: [id])
+
+  stages  PipelineStage[]
+  leads   Lead[]
+  imports LeadImport[]
+
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, deletedAt])
+  @@map("pipelines")
+}
+
+/// Etapa do funil — uma coluna do quadro.
+///
+/// `position` NÃO é única de propósito: reordenar sob restrição de unicidade
+/// exigiria constraint adiada ou deslocamento temporário, e são poucas etapas
+/// por funil. A leitura ordena por (position, createdAt) e o endpoint de
+/// reordenar reescreve todas as posições numa transação.
+model PipelineStage {
+  id         String    @id @default(uuid()) @db.Uuid
+  officeId   String    @map("office_id") @db.Uuid
+  pipelineId String    @map("pipeline_id") @db.Uuid
+  name       String
+  color      String    @default("#6B7280")
+  position   Int
+  kind       StageKind @default(OPEN)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office   Office   @relation(fields: [officeId], references: [id])
+  pipeline Pipeline @relation(fields: [pipelineId, officeId], references: [id, officeId], onDelete: Cascade)
+
+  leads         Lead[]
+  imports       LeadImport[]
+  historicoDe   LeadStageHistory[] @relation("EtapaAnterior")
+  historicoPara LeadStageHistory[] @relation("EtapaNova")
+
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, pipelineId, position])
+  @@map("pipeline_stages")
+}
+
+/// Passagem de um lead por uma etapa.
+///
+/// Sem esta tabela o quadro mostra onde o lead ESTÁ e nada mais: não há tempo
+/// médio por etapa nem taxa de conversão entre etapas — que é justamente o que
+/// distingue um funil de uma lista com colunas.
+model LeadStageHistory {
+  id          String  @id @default(uuid()) @db.Uuid
+  officeId    String  @map("office_id") @db.Uuid
+  leadId      String  @map("lead_id") @db.Uuid
+  fromStageId String? @map("from_stage_id") @db.Uuid
+  toStageId   String  @map("to_stage_id") @db.Uuid
+
+  /// Nulo quando quem moveu foi o agente — ver Setting.aiCanMoveLeadStage.
+  /// A distinção importa: um cartão que andou sozinho precisa ser
+  /// reconhecível na linha do tempo.
+  userId String? @map("user_id") @db.Uuid
+
+  /// Tempo que o lead passou na etapa anterior. Nulo na primeira entrada.
+  secondsInPreviousStage Int? @map("seconds_in_previous_stage")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  office    Office         @relation(fields: [officeId], references: [id])
+  lead      Lead           @relation(fields: [leadId, officeId], references: [id, officeId], onDelete: Cascade)
+  fromStage PipelineStage? @relation("EtapaAnterior", fields: [fromStageId, officeId], references: [id, officeId])
+  toStage   PipelineStage  @relation("EtapaNova", fields: [toStageId, officeId], references: [id, officeId])
+  user      User?          @relation(fields: [userId], references: [id])
+  /// Garante que quem moveu seja membro deste escritório
+  member    OfficeMember?  @relation(fields: [userId, officeId], references: [userId, officeId])
+
+  @@index([officeId, leadId, createdAt])
+  @@index([officeId, toStageId, createdAt])
+  @@map("lead_stage_history")
+}
+
+// =============================================================================
+// ETIQUETAS
+// =============================================================================
+
+/// Etiqueta livre do escritório, aplicável a lead e a cliente.
+///
+/// Não confundir com Mark: Mark é memória do agente e vai para o Qdrant.
+/// Etiqueta é organização humana e nunca entra no contexto do modelo.
+model Tag {
+  id       String @id @default(uuid()) @db.Uuid
+  officeId String @map("office_id") @db.Uuid
+  name     String
+  color    String @default("#6B7280")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  office Office @relation(fields: [officeId], references: [id])
+
+  leads     LeadTag[]
+  customers CustomerTag[]
+
+  /// A unicidade ignora deletedAt: duas etiquetas com o mesmo nome, uma delas
+  /// excluída, confundem o seletor tanto quanto duas ativas.
+  @@unique([officeId, name])
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, deletedAt])
+  @@map("tags")
+}
+
+/// Junção lead ↔ etiqueta.
+///
+/// Tabela própria em vez de um par (tipo, id) genérico: alvo polimórfico não
+/// aceita chave estrangeira, e é a chave composta com office_id que impede um
+/// filho de apontar para pai de outro escritório. Duas tabelas custam menos
+/// que abrir mão dessa garantia.
+model LeadTag {
+  leadId   String @map("lead_id") @db.Uuid
+  tagId    String @map("tag_id") @db.Uuid
+  officeId String @map("office_id") @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  lead   Lead   @relation(fields: [leadId, officeId], references: [id, officeId], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId, officeId], references: [id, officeId], onDelete: Cascade)
+  office Office @relation(fields: [officeId], references: [id])
+
+  @@id([leadId, tagId])
+  @@index([officeId, tagId])
+  @@map("lead_tags")
+}
+
+/// Junção cliente ↔ etiqueta. Ver LeadTag para o motivo de serem duas tabelas.
+model CustomerTag {
+  customerId String @map("customer_id") @db.Uuid
+  tagId      String @map("tag_id") @db.Uuid
+  officeId   String @map("office_id") @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  customer Customer @relation(fields: [customerId, officeId], references: [id, officeId], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId, officeId], references: [id, officeId], onDelete: Cascade)
+  office   Office   @relation(fields: [officeId], references: [id])
+
+  @@id([customerId, tagId])
+  @@index([officeId, tagId])
+  @@map("customer_tags")
+}
+
+// =============================================================================
+// IMPORTAÇÃO DE LEADS
+// =============================================================================
+
+/// Importação de leads por planilha CSV.
+///
+/// Duas etapas de propósito: o arquivo é lido e devolve uma PRÉVIA — colunas
+/// detectadas, amostra e erros — antes de qualquer escrita. Mapeamento cego
+/// gera base suja que ninguém limpa depois.
+///
+/// A escrita em si sai da requisição HTTP: cinco mil linhas não cabem no tempo
+/// de resposta de quem clicou em confirmar.
+model LeadImport {
+  id       String @id @default(uuid()) @db.Uuid
+  officeId String @map("office_id") @db.Uuid
+  userId   String @map("user_id") @db.Uuid
+
+  fileKey  String @map("file_key")
+  fileName String @map("file_name")
+
+  status LeadImportStatus @default(PREVIEW)
+
+  /// Destino, escolhido na confirmação
+  pipelineId String?  @map("pipeline_id") @db.Uuid
+  stageId    String?  @map("stage_id") @db.Uuid
+  /// Etiquetas aplicadas a todo lead desta importação
+  tagIds     String[] @default([]) @map("tag_ids") @db.Uuid
+
+  /// Índice da coluna no arquivo para campo do lead: { "0": "name" }
+  mapping Json?
+
+  totalRows    Int @default(0) @map("total_rows")
+  importedRows Int @default(0) @map("imported_rows")
+  /// Linha ignorada por já existir lead com aquele número
+  skippedRows  Int @default(0) @map("skipped_rows")
+  failedRows   Int @default(0) @map("failed_rows")
+
+  /// Amostra dos erros, por linha. Limitada de propósito: o relatório serve
+  /// para corrigir a planilha, não para ser a planilha.
+  errors Json?
+
+  errorMessage String? @map("error_message")
+
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  startedAt  DateTime? @map("started_at")
+  finishedAt DateTime? @map("finished_at")
+
+  office   Office         @relation(fields: [officeId], references: [id])
+  user     User           @relation(fields: [userId], references: [id])
+  /// Garante que quem importou seja membro deste escritório
+  member   OfficeMember   @relation(fields: [userId, officeId], references: [userId, officeId])
+  pipeline Pipeline?      @relation(fields: [pipelineId, officeId], references: [id, officeId])
+  stage    PipelineStage? @relation(fields: [stageId, officeId], references: [id, officeId])
+
+  leads Lead[]
+
+  /// Chave candidata para as FKs compostas — amarra o filho ao mesmo tenant
+  @@unique([id, officeId])
+  @@index([officeId, status, createdAt])
+  @@map("lead_imports")
 }
 
 model Process {
@@ -960,6 +1318,9 @@ model Message {
   messageFileAttachment Boolean       @default(false) @map("message_file_attachment")
   messageFileExtension  String?       @map("message_file_extension")
   messageFileSizeBytes  Int?          @map("message_file_size_bytes")
+  /// Id da mensagem no WhatsApp. Liga os eventos de entrega e leitura à
+  /// mensagem gravada, e reconhece o eco do que o próprio sistema enviou.
+  externalId            String?       @map("external_id")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -977,6 +1338,7 @@ model Message {
   @@unique([id, officeId])
   @@index([officeId, chatId, createdAt])
   @@index([officeId, status])
+  @@index([officeId, externalId])
   @@map("messages")
 }
 
@@ -1322,6 +1684,18 @@ model Setting {
   notifyLawyerUpdateProcess   Boolean @default(true) @map("n_w_a_update_process")
   notifyLawyerUpdateSystem    Boolean @default(true) @map("n_w_a_update_system")
 
+  /// O agente pode mover o lead de etapa no funil.
+  ///
+  /// Desligado por padrão, e é uma decisão do escritório: um cartão que anda
+  /// sozinho surpreende quem olha o quadro, e quando um lead avançou é
+  /// julgamento comercial. Quando ligado, o movimento fica registrado em
+  /// LeadStageHistory com userId nulo — dá para distinguir depois.
+  aiCanMoveLeadStage Boolean @default(false) @map("ai_can_move_lead_stage")
+
+  /// O agente pode aplicar etiquetas JÁ CADASTRADAS. Nunca cria etiqueta nova:
+  /// deixar o modelo inventar nome de etiqueta transforma o filtro em lixo.
+  aiCanTagLead Boolean @default(false) @map("ai_can_tag_lead")
+
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -1407,4 +1781,67 @@ model Connection {
   @@index([wahaSession])
   @@index([evolutionApiInstance])
   @@map("connections")
+}
+
+// ============================================================================
+// CONSUMO DE IA
+// ============================================================================
+
+/// Uma chamada a um modelo de IA feita em nome de um escritório.
+///
+/// É a base da cobrança pelo uso da IA. O custo é calculado e gravado no
+/// momento da chamada, com o preço e o câmbio vigentes: mudar a tabela de
+/// preços depois não reescreve o que já foi consumido.
+model AiUsage {
+  id                String  @id @default(uuid()) @db.Uuid
+  officeId          String  @map("office_id") @db.Uuid
+  /// Sem FK de propósito: apagar a conversa não pode apagar o consumo cobrado
+  chatId            String? @map("chat_id") @db.Uuid
+  task              AiTask
+  provider          String
+  model             String
+  /// A chamada foi atendida pelo provedor de reserva
+  fallback          Boolean @default(false)
+  inputTokens       Int     @map("input_tokens")
+  cachedInputTokens Int     @default(0) @map("cached_input_tokens")
+  outputTokens      Int     @default(0) @map("output_tokens")
+  costUsd           Decimal @map("cost_usd") @db.Decimal(14, 8)
+  costBrl           Decimal @map("cost_brl") @db.Decimal(14, 6)
+  /// Falso quando o modelo não estava na tabela de preços: custo zero, e o
+  /// painel avisa para que o consumo não fique sem cobrança por engano
+  priced            Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  office Office @relation(fields: [officeId], references: [id], onDelete: Cascade)
+
+  @@index([officeId, createdAt])
+  @@index([createdAt])
+  @@map("ai_usage")
+}
+
+/// Preço de um modelo, em dólares por milhão de tokens, como os provedores
+/// publicam. Editável no painel: os provedores mudam preço sem aviso.
+model AiModelPrice {
+  model                    String  @id
+  inputUsdPerMillion       Decimal @map("input_usd_per_million") @db.Decimal(12, 6)
+  cachedInputUsdPerMillion Decimal @map("cached_input_usd_per_million") @db.Decimal(12, 6)
+  outputUsdPerMillion      Decimal @map("output_usd_per_million") @db.Decimal(12, 6)
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("ai_model_prices")
+}
+
+/// Parâmetros de cobrança da IA, únicos para a plataforma (linha id = 1).
+model AiBillingSettings {
+  id            Int     @id @default(1)
+  /// Margem sobre o custo, em %. 30 = cobra custo × 1,30
+  markupPercent Decimal @default(0) @map("markup_percent") @db.Decimal(7, 2)
+  /// Câmbio usado para converter o custo em reais no momento da chamada
+  usdToBrl      Decimal @default(5.5) @map("usd_to_brl") @db.Decimal(10, 4)
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("ai_billing_settings")
 }

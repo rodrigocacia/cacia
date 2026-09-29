@@ -9,5 +9,31 @@
     }
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist", "**/*.spec.ts"]
+  "exclude": ["node_modules", "dist", "**/*.spec.ts"],
+
+  // Só vale para o `nest start --watch`; o `tsc` de build e de typecheck ignora.
+  //
+  // O TypeScript vigia pastas dentro de node_modules — os "failed lookup
+  // locations", onde ele espera um pacote aparecer — e no Windows esses
+  // vigias disparam sem que arquivo nenhum tenha mudado. O Nest reinicia a API
+  // a cada ciclo, mesmo sem nada emitido, e cada reinício são segundos de
+  // ECONNREFUSED: a tela de leads chegou a mostrar "Ocorreu um erro ao carregar
+  // os leads" no meio de uma rajada de reinícios sem mudança em arquivo algum.
+  //
+  // node_modules só muda em `pnpm install`, depois do qual o dev é reiniciado
+  // de qualquer forma. Os pacotes do workspace (@cacia/contracts,
+  // @cacia/database) continuam vigiados: o TypeScript os enxerga pelo caminho
+  // real, em packages/, e não pelo link em node_modules.
+  //
+  // "../../node_modules" é o store do pnpm na raiz do monorepo. Os padrões são
+  // relativos a esta pasta, então "**/node_modules" sozinho só alcançaria o
+  // node_modules de apps/api — e o store, onde está a maioria dos vigias,
+  // ficaria de fora.
+  //
+  // Polling foi testado e descartado: o `tsc --watch` isolado detectava a
+  // edição, mas sob o `nest start --watch` salvar um arquivo deixou de recarregar.
+  "watchOptions": {
+    "excludeDirectories": ["../../node_modules", "**/node_modules", "dist"],
+    "excludeFiles": ["../../node_modules/**", "**/node_modules/**"]
+  }
 }

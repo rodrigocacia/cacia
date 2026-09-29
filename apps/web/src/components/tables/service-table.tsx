@@ -76,7 +76,9 @@ export function ServiceTable() {
                       </div>
 
                       <p className="text-sm text-[#707070]">
-                        {`${service?.title?.substring(0, 20)}...`}
+                        {(service?.title ?? "").length > 20
+                          ? `${service?.title?.substring(0, 20)}...`
+                          : service?.title}
                       </p>
                     </div>
                   </TableCell>

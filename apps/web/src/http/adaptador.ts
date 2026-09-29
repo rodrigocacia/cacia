@@ -94,6 +94,13 @@ function converter(
     }
   }
 
+  // Endereço: a API devolve `addresses`; as telas de cliente e de escritório
+  // leem `address`, o nome do sistema anterior. Sem o espelho, o endereço
+  // gravado nunca aparecia nem vinha preenchido na edição.
+  if (espelharId && Array.isArray(saida.addresses) && !("address" in saida)) {
+    saida.address = saida.addresses
+  }
+
   return saida
 }
 

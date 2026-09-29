@@ -10,5 +10,10 @@ export function tabs(officeId: string) {
       name: 'Performance',
       path: `/office/${officeId}/performance`,
     },
+    {
+      id: 3,
+      name: 'Consumo de IA',
+      path: `/office/${officeId}/ai-usage`,
+    },
   ];
 }

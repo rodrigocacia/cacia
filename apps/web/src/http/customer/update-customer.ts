@@ -12,6 +12,7 @@ interface Address {
   city?: string
   state?: string
   neighborhood?: string
+  complement?: string
 }
 
 export interface UpdateCustomerRequest {
@@ -38,11 +39,16 @@ interface UpdateCustomerResponse {
   documents: []
 }
 
+function camposDoEndereco(endereco: Address): Address {
+  const { cep, street, number, complement, neighborhood, city, state } =
+    endereco
+  return { cep, street, number, complement, neighborhood, city, state }
+}
+
 export async function updateCustomer({
   customer_id,
   name,
   remotejid,
-  document,
   email,
   legal_name,
   trade_name,
@@ -51,14 +57,18 @@ export async function updateCustomer({
   try {
     const result = await api
       .patch(`customers/${customer_id}`, {
+        // O documento não vai: CPF/CNPJ é a identidade do cliente e a API
+        // recusa a edição inteira (400) se ele vier no corpo. Do endereço vão
+        // só os campos editáveis — o que veio da API traz id e chaves que o
+        // DTO também recusa.
         json: {
           name,
           remotejid,
-          document,
           ...(email && { email }),
           legal_name,
           trade_name,
-          ...(address && address.length > 0 && { addresses: address }),
+          ...(address &&
+            address.length > 0 && { addresses: address.map(camposDoEndereco) }),
         },
       })
       .json<UpdateCustomerResponse>()

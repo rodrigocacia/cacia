@@ -12,11 +12,20 @@ import { updatePassword } from "@/http/user/update-password";
 import { revalidateProfile } from "../actions";
 
 import { z } from "zod";
-export const changePasswordSchema = z.object({
-  password: z.string().min(6, "Senha atual obrigatória"),
-  newPassword: z.string().min(6, "Nova senha obrigatória"),
-  confirmNewPassword: z.string().min(6, "Confirme a nova senha"),
-});
+// Mesmo mínimo da API (TrocarSenhaDto): com 6 aqui, a senha de 6 ou 7
+// caracteres passava na tela e voltava recusada do servidor.
+export const changePasswordSchema = z
+  .object({
+    password: z.string().min(1, "Senha atual obrigatória"),
+    newPassword: z
+      .string()
+      .min(8, "A nova senha precisa de ao menos 8 caracteres"),
+    confirmNewPassword: z.string().min(1, "Confirme a nova senha"),
+  })
+  .refine((dados) => dados.newPassword === dados.confirmNewPassword, {
+    message: "As senhas não conferem",
+    path: ["confirmNewPassword"],
+  });
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 
 export function Form() {
@@ -36,9 +45,8 @@ export function Form() {
   const onSubmit: SubmitHandler<ChangePasswordFormData> = async (data) => {
     try {
       const result = await updatePassword({
-        password: data.password,
+        currentPassword: data.password,
         newPassword: data.newPassword,
-        confirmNewPassword: data.confirmNewPassword,
       });
 
       if (!result.success) {

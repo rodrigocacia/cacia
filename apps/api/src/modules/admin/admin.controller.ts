@@ -10,12 +10,20 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import { AdminDaPlataforma } from '@/auth/decorators/admin.decorator';
 import { SkipTenant } from '@/auth/decorators/skip-tenant.decorator';
+import { RelatorioDeConsumoService } from '@/modules/ai-usage/relatorio-de-consumo.service';
+import {
+  ParametrosDeCobrancaDto,
+  PeriodoDeConsumoDto,
+  PrecoDeModeloDto,
+} from '@/modules/ai-usage/dto/ai-usage.dto';
 import { AdminService } from './admin.service';
 import {
+  AtualizarEscritorioPeloPainelDto,
   AtualizarSituacaoDoEscritorioDto,
   AtualizarUsuarioDto,
   CriarEscritorioComDonoDto,
@@ -36,7 +44,10 @@ import {
 @AdminDaPlataforma()
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly admin: AdminService) {}
+  constructor(
+    private readonly admin: AdminService,
+    private readonly consumo: RelatorioDeConsumoService,
+  ) {}
 
   @Get('dashboard')
   painel() {
@@ -70,6 +81,14 @@ export class AdminController {
     return this.admin.desempenhoDoEscritorio(id, dias ?? 30);
   }
 
+  @Patch('offices/:id')
+  atualizarEscritorio(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AtualizarEscritorioPeloPainelDto,
+  ) {
+    return this.admin.atualizarEscritorio(id, dto);
+  }
+
   @Patch('offices/:id/status')
   alterarSituacao(
     @Param('id', ParseUUIDPipe) id: string,
@@ -82,6 +101,43 @@ export class AdminController {
   @HttpCode(HttpStatus.NO_CONTENT)
   removerEscritorio(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.admin.removerEscritorio(id);
+  }
+
+  // ---- consumo de IA ------------------------------------------------------
+
+  /** Todos os escritórios no período: custo, margem e valor a cobrar. */
+  @Get('ai-usage')
+  consumoGeral(@Query() dto: PeriodoDeConsumoDto) {
+    return this.consumo.visaoGeral(dto.from, dto.to);
+  }
+
+  @Get('offices/:id/ai-usage')
+  async consumoDoEscritorio(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() dto: PeriodoDeConsumoDto,
+  ) {
+    await this.consumo.garantirEscritorio(id);
+    return this.consumo.detalheDoEscritorio(id, dto.from, dto.to);
+  }
+
+  @Get('ai-billing')
+  parametrosDeCobranca() {
+    return this.consumo.parametros();
+  }
+
+  @Put('ai-billing')
+  atualizarCobranca(@Body() dto: ParametrosDeCobrancaDto) {
+    return this.consumo.atualizarParametros(dto);
+  }
+
+  @Put('ai-prices/:model')
+  salvarPreco(@Param('model') modelo: string, @Body() dto: PrecoDeModeloDto) {
+    return this.consumo.salvarPreco(modelo, dto);
+  }
+
+  @Delete('ai-prices/:model')
+  removerPreco(@Param('model') modelo: string) {
+    return this.consumo.removerPreco(modelo);
   }
 
   // ---- usuários -----------------------------------------------------------

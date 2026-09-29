@@ -24,7 +24,7 @@ export function useQuestion(page: number, search?: string) {
 
 export function useQuestionById(questionId: string) {
   const { data, error, isLoading, mutate } = useSWR<Question>(
-    ["question", questionId],
+    questionId ? ["question", questionId] : null,
     () => getQuestionById(questionId)
   )
 

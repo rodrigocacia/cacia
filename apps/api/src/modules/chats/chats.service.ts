@@ -1,13 +1,27 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  ServiceUnavailableException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import type { Queue } from 'bullmq';
 import {
   AgentType,
   ChatStatus,
   ChatType,
+  ConnectionStatus,
   MessageSender,
-  type MessageType,
+  MessageStatus,
+  MessageType,
+  type Prisma,
 } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
+import { StorageService } from '@/infra/storage/storage.service';
 import { janela, montarPaginacao } from '@/common/dto/paginacao.dto';
+import { FILA, type JobEnvioWhatsapp } from '@/worker/filas/filas';
 import type { ListarChatsDto, ListarMensagensDto } from './dto/chat.dto';
 
 const CAMPOS = {
@@ -24,6 +38,31 @@ const CAMPOS = {
   createdAt: true,
 } as const;
 
+const CONTATO = { select: { id: true, name: true, remotejid: true } } as const;
+
+/** Etapa do funil junto do lead: a conversa mostra em que fase ele está. */
+const LEAD = {
+  select: {
+    id: true,
+    name: true,
+    remotejid: true,
+    stage: { select: { id: true, name: true, color: true } },
+  },
+} as const;
+
+const MENSAGEM = {
+  id: true,
+  sender: true,
+  type: true,
+  status: true,
+  messageText: true,
+  messageCaption: true,
+  messageFileUrl: true,
+  messageFileExtension: true,
+  messageFileSizeBytes: true,
+  createdAt: true,
+} as const;
+
 export interface DadosMensagemRecebida {
   officeId: string;
   chatId: string;
@@ -36,18 +75,104 @@ export interface DadosMensagemRecebida {
   tamanhoBytes?: number;
   leadId?: string;
   customerId?: string;
+  /** Id da mensagem no WhatsApp (ver id-do-whatsapp.ts). */
+  externalId?: string;
+  status?: MessageStatus;
+}
+
+/** O que o atendente anexou na tela. */
+export interface AnexoEnviado {
+  buffer: Buffer;
+  originalname: string;
+  mimetype: string;
+  size: number;
+}
+
+/**
+ * 16 MB é o teto do WhatsApp para vídeo e áudio. Documento pode ir além, mas
+ * um teto único é mais fácil de explicar na tela do que um por tipo.
+ */
+const TAMANHO_MAXIMO_DO_ANEXO = 16 * 1024 * 1024;
+
+type Conteudo =
+  | { tipo: typeof MessageType.TEXT; texto: string }
+  | {
+      tipo: MessageType;
+      chave: string;
+      mimetype: string;
+      nomeDoArquivo: string;
+      extensao: string;
+      tamanhoBytes: number;
+      legenda?: string;
+    };
+
+function tipoPeloMime(mime: string): MessageType {
+  if (mime.startsWith('image/')) return MessageType.IMAGE;
+  if (mime.startsWith('audio/')) return MessageType.AUDIO;
+  if (mime.startsWith('video/')) return MessageType.VIDEO;
+  return MessageType.DOCUMENT;
 }
 
 @Injectable()
 export class ChatsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(ChatsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    @InjectQueue(FILA.ENVIO_WHATSAPP)
+    private readonly envio: Queue<JobEnvioWhatsapp>,
+    private readonly storage: StorageService,
+  ) {}
+
+  /**
+   * Troca a chave do storage por um link temporário.
+   *
+   * Anexo enviado pela tela ou baixado do WhatsApp fica no storage, privado;
+   * o navegador só o abre por link assinado. URL que já é absoluta passa
+   * intacta. Assinar é local (HMAC), então fazer isso a cada consulta da tela
+   * não custa uma ida ao storage.
+   */
+  private async comLinks<T extends { messageFileUrl: string | null }>(
+    officeId: string,
+    mensagens: T[],
+  ): Promise<T[]> {
+    return Promise.all(
+      mensagens.map(async (m) => {
+        const chave = m.messageFileUrl;
+
+        if (!chave || /^https?:\/\//.test(chave)) return m;
+
+        if (!this.storage.pertenceAoEscritorio(chave, officeId)) {
+          return { ...m, messageFileUrl: null };
+        }
+
+        return {
+          ...m,
+          messageFileUrl: await this.storage.gerarLinkTemporario(chave),
+        };
+      }),
+    );
+  }
 
   async listar(officeId: string, dto: ListarChatsDto) {
-    const where = {
+    const busca = dto.search?.trim();
+
+    const where: Prisma.ChatWhereInput = {
       officeId,
       deletedAt: null,
       ...(dto.status && { status: dto.status }),
       ...(dto.type && { type: dto.type }),
+      ...(dto.leadId && { leadId: dto.leadId }),
+      ...(dto.customerId && { customerId: dto.customerId }),
+      ...(busca && {
+        OR: [
+          { userName: { contains: busca, mode: 'insensitive' } },
+          { lead: { name: { contains: busca, mode: 'insensitive' } } },
+          { lead: { remotejid: { contains: busca } } },
+          { customer: { name: { contains: busca, mode: 'insensitive' } } },
+          { customer: { remotejid: { contains: busca } } },
+        ],
+      }),
     };
 
     const [data, total] = await Promise.all([
@@ -55,9 +180,17 @@ export class ChatsService {
         where,
         select: {
           ...CAMPOS,
-          customer: { select: { id: true, name: true, remotejid: true } },
-          lead: { select: { id: true, name: true, remotejid: true } },
+          customer: CONTATO,
+          lead: LEAD,
           _count: { select: { messages: true } },
+          // A última mensagem vira a prévia da lista e diz quem falou por
+          // último: é assim que o atendente vê quem está esperando resposta.
+          messages: {
+            where: { deletedAt: null },
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            select: MENSAGEM,
+          },
         },
         orderBy: { lastActivityAt: 'desc' },
         ...janela(dto),
@@ -65,7 +198,14 @@ export class ChatsService {
       this.prisma.chat.count({ where }),
     ]);
 
-    return montarPaginacao(data, total, dto);
+    const comPrevia = await Promise.all(
+      data.map(async (chat) => ({
+        ...chat,
+        messages: await this.comLinks(officeId, chat.messages),
+      })),
+    );
+
+    return montarPaginacao(comPrevia, total, dto);
   }
 
   async detalhar(officeId: string, id: string) {
@@ -74,8 +214,8 @@ export class ChatsService {
       select: {
         ...CAMPOS,
         agent: { select: { id: true, name: true, style: true } },
-        customer: { select: { id: true, name: true, remotejid: true } },
-        lead: { select: { id: true, name: true, remotejid: true } },
+        customer: CONTATO,
+        lead: LEAD,
       },
     });
 
@@ -96,25 +236,14 @@ export class ChatsService {
     const [data, total] = await Promise.all([
       this.prisma.message.findMany({
         where,
-        select: {
-          id: true,
-          sender: true,
-          type: true,
-          status: true,
-          messageText: true,
-          messageCaption: true,
-          messageFileUrl: true,
-          messageFileExtension: true,
-          messageFileSizeBytes: true,
-          createdAt: true,
-        },
+        select: MENSAGEM,
         orderBy: { createdAt: 'desc' },
         ...janela(dto),
       }),
       this.prisma.message.count({ where }),
     ]);
 
-    return montarPaginacao(data, total, dto);
+    return montarPaginacao(await this.comLinks(officeId, data), total, dto);
   }
 
   /**
@@ -144,6 +273,30 @@ export class ChatsService {
     });
 
     if (existente) return existente;
+
+    // Lead convertido em cliente: a conversa continua a mesma. Sem isso, o
+    // histórico inteiro ficaria na conversa do lead e o cliente começaria uma
+    // conversa vazia, sem o que foi combinado antes da conversão.
+    if (customerId) {
+      const doLead = await this.prisma.chat.findFirst({
+        where: {
+          officeId,
+          deletedAt: null,
+          customerId: null,
+          lead: { customerId },
+        },
+        orderBy: { lastActivityAt: 'desc' },
+        select: { id: true },
+      });
+
+      if (doLead) {
+        return this.prisma.chat.update({
+          where: { id: doLead.id },
+          data: { customerId, type: ChatType.CUSTOMER },
+          select: { id: true, agentId: true, status: true },
+        });
+      }
+    }
 
     const agente = await this.prisma.agent.findFirst({
       where: { officeId, type: AgentType.SUPPORT, deletedAt: null },
@@ -191,6 +344,8 @@ export class ChatsService {
           messageFileUrl: dados.arquivoUrl,
           messageFileExtension: dados.extensao,
           messageFileSizeBytes: dados.tamanhoBytes,
+          externalId: dados.externalId,
+          ...(dados.status && { status: dados.status }),
         },
         select: { id: true, createdAt: true },
       });
@@ -222,6 +377,209 @@ export class ChatsService {
     return this.prisma.chat.update({
       where: { id },
       data: { audioReply: ativo },
+      select: CAMPOS,
+    });
+  }
+
+  /**
+   * Resposta escrita pelo atendente na plataforma.
+   *
+   * Responder é assumir: a conversa sai do automático no mesmo passo. Se a IA
+   * continuasse ligada, a próxima mensagem do contato receberia duas
+   * respostas, a do advogado e a do agente, que não sabe o que foi combinado.
+   *
+   * A mensagem nasce PENDING e o worker a marca como enviada ou falha; a tela
+   * mostra esse estado, então o atendente sabe se ela saiu de verdade.
+   */
+  enviarMensagem(officeId: string, id: string, texto: string) {
+    return this.enviar(officeId, id, { tipo: MessageType.TEXT, texto });
+  }
+
+  /**
+   * Arquivo ou áudio gravado na tela.
+   *
+   * Vai para o storage antes de tudo: o provedor do WhatsApp baixa o arquivo
+   * por link, e a tela precisa exibi-lo depois. Tamanho e conexão são
+   * checados antes do upload, para não guardar arquivo que não vai sair.
+   */
+  async enviarAnexo(
+    officeId: string,
+    id: string,
+    arquivo: AnexoEnviado | undefined,
+    legenda?: string,
+  ) {
+    if (!arquivo) throw new BadRequestException('Envie um arquivo');
+
+    if (arquivo.size > TAMANHO_MAXIMO_DO_ANEXO) {
+      throw new BadRequestException('Arquivo acima de 16 MB');
+    }
+
+    // O Chrome manda "audio/webm;codecs=opus"; o parâmetro só atrapalha
+    const mimetype = arquivo.mimetype.split(';')[0]!.trim();
+
+    const enviado = await this.storage.enviar({
+      officeId,
+      conteudo: arquivo.buffer,
+      nomeOriginal: arquivo.originalname,
+      mimetype,
+    });
+
+    return this.enviar(officeId, id, {
+      tipo: tipoPeloMime(mimetype),
+      chave: enviado.chave,
+      mimetype,
+      nomeDoArquivo: arquivo.originalname,
+      extensao: arquivo.originalname.split('.').pop() ?? '',
+      tamanhoBytes: enviado.tamanhoBytes,
+      legenda: legenda?.trim() || undefined,
+    });
+  }
+
+  private async enviar(officeId: string, id: string, conteudo: Conteudo) {
+    const chat = await this.detalhar(officeId, id);
+
+    const para = chat.customer?.remotejid ?? chat.lead?.remotejid;
+
+    if (!para) {
+      throw new UnprocessableEntityException(
+        'Este contato não tem número de WhatsApp',
+      );
+    }
+
+    const conexao = await this.conexaoParaEnvio(officeId);
+
+    const mensagem = await this.prisma.$transaction(async (tx) => {
+      const criada = await tx.message.create({
+        data: {
+          officeId,
+          chatId: id,
+          leadId: chat.leadId,
+          customerId: chat.customerId,
+          sender: MessageSender.USER,
+          type: conteudo.tipo,
+          status: MessageStatus.PENDING,
+          ...('texto' in conteudo
+            ? { messageText: conteudo.texto }
+            : {
+                messageCaption: conteudo.legenda,
+                messageFileUrl: conteudo.chave,
+                messageFileExtension: conteudo.extensao,
+                messageFileSizeBytes: conteudo.tamanhoBytes,
+              }),
+        },
+        select: MENSAGEM,
+      });
+
+      await tx.chat.update({
+        where: { id },
+        data: {
+          lastActivityAt: criada.createdAt,
+          ...(chat.status === ChatStatus.ACTIVE && {
+            status: ChatStatus.PENDING,
+          }),
+        },
+      });
+
+      return criada;
+    });
+
+    try {
+      await this.envio.add(
+        'enviar',
+        {
+          officeId,
+          connectionId: conexao.id,
+          para,
+          tipo: conteudo.tipo,
+          ...('texto' in conteudo
+            ? { texto: conteudo.texto }
+            : {
+                arquivo: {
+                  chave: conteudo.chave,
+                  mimetype: conteudo.mimetype,
+                  filename: conteudo.nomeDoArquivo,
+                },
+                legenda: conteudo.legenda,
+              }),
+          chatId: id,
+          messageId: mensagem.id,
+        },
+        {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 5000 },
+          removeOnComplete: true,
+        },
+      );
+    } catch (erro) {
+      this.logger.error(
+        `Não foi possível enfileirar o envio na conversa ${id}: ${
+          erro instanceof Error ? erro.message : 'erro'
+        }`,
+      );
+
+      await this.prisma.message.update({
+        where: { id: mensagem.id },
+        data: { status: MessageStatus.FAILED },
+      });
+
+      throw new ServiceUnavailableException(
+        'Não foi possível enviar agora. Tente de novo em instantes.',
+      );
+    }
+
+    const [comLink] = await this.comLinks(officeId, [mensagem]);
+    return comLink!;
+  }
+
+  /**
+   * A conexão por onde a resposta sai.
+   *
+   * Sem nenhuma conectada, recusar é melhor do que gravar uma mensagem que o
+   * atendente acha que foi e nunca vai sair.
+   */
+  private async conexaoParaEnvio(officeId: string) {
+    const conexao = await this.prisma.connection.findFirst({
+      where: {
+        officeId,
+        deletedAt: null,
+        status: ConnectionStatus.CONNECTED,
+      },
+      orderBy: { updatedAt: 'desc' },
+      select: { id: true },
+    });
+
+    if (!conexao) {
+      throw new UnprocessableEntityException(
+        'O WhatsApp do escritório não está conectado. Conecte em Configurações > WhatsApp.',
+      );
+    }
+
+    return conexao;
+  }
+
+  /** O atendente assume: a IA para de responder nesta conversa. */
+  async assumir(officeId: string, id: string) {
+    await this.detalhar(officeId, id);
+
+    return this.prisma.chat.update({
+      where: { id },
+      data: { status: ChatStatus.PENDING },
+      select: CAMPOS,
+    });
+  }
+
+  /**
+   * Devolve a conversa para a IA.
+   *
+   * Vale também para conversa encerrada: o contato que volta a escrever
+   * depois do encerramento precisa de alguém respondendo.
+   */
+  async devolverParaIa(officeId: string, id: string) {
+    await this.detalhar(officeId, id);
+
+    return this.prisma.chat.update({
+      where: { id },
+      data: { status: ChatStatus.ACTIVE },
       select: CAMPOS,
     });
   }

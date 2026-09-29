@@ -57,10 +57,24 @@ export async function createCustomer({
     // API marca o lead como convertido e liga o histórico ao novo cliente na
     // mesma transação. Criar um cliente solto deixaria o lead para trás,
     // ativo, e o mesmo contato apareceria nas duas listas.
+    //
+    // A resposta da conversão é o LEAD atualizado — o cliente criado vem em
+    // `customer_id`. Devolvemos `_id` já apontando para o cliente, para quem
+    // chama redirecionar para a ficha certa.
     const result = lead_id
       ? await api
-          .post(`leads/${lead_id}/convert`, { json: { document } })
-          .json<CreateCustomerResponse>()
+          .post(`leads/${lead_id}/convert`, {
+            json: {
+              document,
+              name,
+              ...(email && { email }),
+              ...(legal_name && { legal_name }),
+              ...(trade_name && { trade_name }),
+              ...(address && address.length > 0 && { addresses: address }),
+            },
+          })
+          .json<CreateCustomerResponse & { customer_id?: string }>()
+          .then((lead) => ({ ...lead, _id: lead.customer_id ?? lead._id }))
       : await api
           .post("customers", {
             json: {

@@ -18,6 +18,7 @@ import { CustomSelect } from "@/components/ui/custom-select"
 import { AgentStyle, agentStyleLabels } from "@/types/agent"
 import { HeaderSteps } from "../components/header-steps"
 import { useOnboardingStore } from "@/stores/use-onboard-store"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 const agentStyle = [
   {
@@ -58,7 +59,7 @@ export function Form() {
 
   const { agents, isLoading, mutate } = useAgents()
 
-  const serviceAgent = agents?.find((agent) => agent.type === "personal")
+  const serviceAgent = agents?.find((agent) => agent.type === "PERSONAL")
 
   const {
     control,
@@ -86,7 +87,7 @@ export function Form() {
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
         return
       }
 

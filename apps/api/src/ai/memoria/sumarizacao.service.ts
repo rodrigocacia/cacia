@@ -1,9 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import type OpenAI from 'openai';
-import { CLIENTE_OPENAI } from '../cliente-openai';
+import { Injectable, Logger } from '@nestjs/common';
 import { MessageSender } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
+import { LlmService } from '../llm.service';
+import type { UsoDeIa } from '../consumo/consumo-de-ia.service';
 import { MemoriaService } from './memoria.service';
 
 /** A partir de quantas mensagens novas o resumo é refeito. */
@@ -35,18 +34,12 @@ o resultado substitui o anterior por completo.`;
 @Injectable()
 export class SumarizacaoService {
   private readonly logger = new Logger(SumarizacaoService.name);
-  private readonly modelo: string;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly memoria: MemoriaService,
-    @Inject(CLIENTE_OPENAI) private readonly openai: OpenAI,
-    config: ConfigService,
-  ) {
-    // Sumarização é tarefa simples e frequente: usa o modelo barato, não o
-    // mesmo do atendimento.
-    this.modelo = config.get<string>('OPENAI_SUMMARY_MODEL') ?? 'gpt-4o-mini';
-  }
+    private readonly llm: LlmService,
+  ) {}
 
   /**
    * Refaz o resumo se houver mensagens novas suficientes.
@@ -92,7 +85,10 @@ export class SumarizacaoService {
     if (transcricao.trim().length === 0) return false;
 
     try {
-      const resumo = await this.resumir(chat.summary, transcricao);
+      const resumo = await this.resumir(chat.summary, transcricao, {
+        officeId,
+        chatId,
+      });
 
       await this.memoria.gravarResumo(
         officeId,
@@ -121,15 +117,17 @@ export class SumarizacaoService {
   private async resumir(
     resumoAnterior: string | null,
     transcricao: string,
+    uso: UsoDeIa,
   ): Promise<string> {
     const entrada = resumoAnterior
       ? `Resumo anterior:\n${resumoAnterior}\n\nMensagens novas:\n${transcricao}`
       : `Mensagens da conversa:\n${transcricao}`;
 
-    const resposta = await this.openai.chat.completions.create({
-      model: this.modelo,
-      temperature: 0.2,
-      max_tokens: 400,
+    const resposta = await this.llm.completar({
+      tarefa: 'resumo',
+      uso,
+      temperatura: 0.2,
+      maxTokens: 400,
       messages: [
         { role: 'system', content: INSTRUCAO },
         { role: 'user', content: entrada },

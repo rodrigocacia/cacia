@@ -161,7 +161,7 @@ export function UsersTable() {
                   {user.email}
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-sm font-medium text-[#707070]">
-                  {user.role === "admin" ? "Administrador" : "Usuário"}
+                  {user.role === "ADMIN" ? "Administrador" : "Usuário"}
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-sm font-medium text-[#707070]">
                   {user.offices?.length ?? 0}

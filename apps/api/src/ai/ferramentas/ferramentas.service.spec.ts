@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PrismaService } from '@/infra/prisma/prisma.service';
+import type { LeadsService } from '@/modules/leads/leads.service';
+import type { TagsService } from '@/modules/tags/tags.service';
 import type { RagService } from '../rag/rag.service';
 import {
   FerramentasService,
@@ -37,29 +39,52 @@ function montar(
     eventos?: unknown[];
     agendas?: unknown[];
     trechos?: { documento: string; conteudo: string; relevancia: number }[];
+    /** O que o escritório autoriza o agente a fazer no funil */
+    permissoes?: { aiCanMoveLeadStage: boolean; aiCanTagLead: boolean };
+    etapas?: Array<{ id: string; name: string }>;
+    etiquetas?: Array<{ id: string; name: string }>;
   } = {},
 ) {
   const processoFindMany = vi.fn().mockResolvedValue(retornos.processos ?? []);
   const eventoFindMany = vi.fn().mockResolvedValue(retornos.eventos ?? []);
   const agendaFindMany = vi.fn().mockResolvedValue(retornos.agendas ?? []);
   const chatUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
+  const configuracao = vi
+    .fn()
+    .mockResolvedValue(
+      retornos.permissoes ?? { aiCanMoveLeadStage: false, aiCanTagLead: false },
+    );
+  const etapaFindMany = vi.fn().mockResolvedValue(retornos.etapas ?? []);
+  const etiquetaFindMany = vi.fn().mockResolvedValue(retornos.etiquetas ?? []);
 
   const prisma = {
     process: { findMany: processoFindMany },
     event: { findMany: eventoFindMany },
     calendar: { findMany: agendaFindMany },
     chat: { updateMany: chatUpdateMany },
+    setting: { findUnique: configuracao },
+    lead: { findFirst: vi.fn().mockResolvedValue({ pipelineId: 'funil-1' }) },
+    pipelineStage: { findMany: etapaFindMany },
+    tag: { findMany: etiquetaFindMany },
   } as unknown as PrismaService;
 
   const buscar = vi.fn().mockResolvedValue(retornos.trechos ?? []);
   const rag = { buscar } as unknown as RagService;
 
+  const moverEtapa = vi.fn().mockResolvedValue({ id: 'lead-1' });
+  const definirEtiquetas = vi.fn().mockResolvedValue({ id: 'lead-1' });
+  const leads = { moverEtapa, definirEtiquetas } as unknown as LeadsService;
+  const tags = {} as unknown as TagsService;
+
   return {
-    ferramentas: new FerramentasService(prisma, rag),
+    ferramentas: new FerramentasService(prisma, rag, leads, tags),
     processoFindMany,
     eventoFindMany,
     agendaFindMany,
     chatUpdateMany,
+    configuracao,
+    moverEtapa,
+    definirEtiquetas,
     buscar,
   };
 }
@@ -75,9 +100,15 @@ describe('FerramentasService', () => {
     it('nenhuma ferramenta aceita o escritório como argumento', async () => {
       // Se aceitasse, o modelo poderia ser convencido a preenchê-lo. O
       // contexto vem do servidor justamente por isso.
-      const { ferramentas } = montar();
+      const { ferramentas } = montar({
+        permissoes: { aiCanMoveLeadStage: true, aiCanTagLead: true },
+        etapas: [{ id: 'etapa-1', name: 'Proposta enviada' }],
+        etiquetas: [{ id: 'etiqueta-1', name: 'Trabalhista' }],
+      });
 
-      for (const definicao of ferramentas.definicoes()) {
+      // Com as duas do funil ligadas: é a lista mais larga possível, e é nela
+      // que um argumento de escritório passaria despercebido.
+      for (const definicao of await ferramentas.definicoes(SEM_CLIENTE)) {
         const propriedades = Object.keys(
           (definicao.function.parameters?.properties as object) ?? {},
         );
@@ -85,15 +116,157 @@ describe('FerramentasService', () => {
         expect(propriedades).not.toContain('officeId');
         expect(propriedades).not.toContain('customerId');
         expect(propriedades).not.toContain('chatId');
+        expect(propriedades).not.toContain('leadId');
+        expect(propriedades).not.toContain('stageId');
       }
     });
 
     it('toda ferramenta tem descrição — é como o modelo escolhe', async () => {
-      const { ferramentas } = montar();
+      const { ferramentas } = montar({
+        permissoes: { aiCanMoveLeadStage: true, aiCanTagLead: true },
+        etapas: [{ id: 'etapa-1', name: 'Proposta enviada' }],
+        etiquetas: [{ id: 'etiqueta-1', name: 'Trabalhista' }],
+      });
 
-      for (const definicao of ferramentas.definicoes()) {
+      for (const definicao of await ferramentas.definicoes(SEM_CLIENTE)) {
         expect(definicao.function.description).toBeTruthy();
       }
+    });
+  });
+
+  /**
+   * O portão do funil.
+   *
+   * Mover o cartão sozinho é decisão do escritório, não do modelo — e a
+   * verificação precisa valer nos DOIS pontos: na lista oferecida e na
+   * execução. Só na lista seria confiar que o modelo não inventa um nome de
+   * ferramenta, e o nome dela viaja no texto que ele produz.
+   */
+  describe('permissão do escritório sobre o funil', () => {
+    const comFunil = {
+      etapas: [{ id: 'etapa-1', name: 'Proposta enviada' }],
+      etiquetas: [{ id: 'etiqueta-1', name: 'Trabalhista' }],
+    };
+
+    it('desligado, mover_etapa não é oferecida ao modelo', async () => {
+      const { ferramentas } = montar({
+        ...comFunil,
+        permissoes: { aiCanMoveLeadStage: false, aiCanTagLead: false },
+      });
+
+      const nomes = (await ferramentas.definicoes(SEM_CLIENTE)).map(
+        (d) => d.function.name,
+      );
+
+      expect(nomes).not.toContain('mover_etapa');
+      expect(nomes).not.toContain('etiquetar');
+    });
+
+    it('ligado, mover_etapa aparece com as etapas reais', async () => {
+      const { ferramentas } = montar({
+        ...comFunil,
+        permissoes: { aiCanMoveLeadStage: true, aiCanTagLead: false },
+      });
+
+      const definicoes = await ferramentas.definicoes(SEM_CLIENTE);
+      const mover = definicoes.find((d) => d.function.name === 'mover_etapa');
+
+      expect(mover).toBeDefined();
+      expect(mover?.function.description).toContain('Proposta enviada');
+      // Etiquetar continua fora: são dois portões independentes
+      expect(definicoes.map((d) => d.function.name)).not.toContain('etiquetar');
+    });
+
+    it('sem lead no contexto, nenhuma das duas é oferecida', async () => {
+      // Quem já é cliente saiu do funil; não há cartão para mover.
+      const { ferramentas } = montar({
+        ...comFunil,
+        permissoes: { aiCanMoveLeadStage: true, aiCanTagLead: true },
+      });
+
+      const nomes = (await ferramentas.definicoes(CONTEXTO)).map(
+        (d) => d.function.name,
+      );
+
+      expect(nomes).not.toContain('mover_etapa');
+      expect(nomes).not.toContain('etiquetar');
+    });
+
+    it('desligado, executar mover_etapa não move nada', async () => {
+      const { ferramentas, moverEtapa } = montar({
+        ...comFunil,
+        permissoes: { aiCanMoveLeadStage: false, aiCanTagLead: false },
+      });
+
+      const resposta = await ferramentas.executar(
+        'mover_etapa',
+        { etapa: 'Proposta enviada' },
+        SEM_CLIENTE,
+      );
+
+      expect(moverEtapa).not.toHaveBeenCalled();
+      expect(resposta).toContain('permissão');
+    });
+
+    it('ligado, mover_etapa grava a passagem sem autor humano', async () => {
+      const { ferramentas, moverEtapa } = montar({
+        ...comFunil,
+        permissoes: { aiCanMoveLeadStage: true, aiCanTagLead: false },
+      });
+
+      await ferramentas.executar(
+        'mover_etapa',
+        { etapa: 'proposta ENVIADA' },
+        SEM_CLIENTE,
+      );
+
+      // O nome casa sem diferenciar maiúsculas: o modelo escreve o que leu na
+      // descrição, e exigir o texto exato faria a ferramenta falhar por caixa.
+      expect(moverEtapa).toHaveBeenCalledWith(
+        SEM_CLIENTE.officeId,
+        SEM_CLIENTE.leadId,
+        { stageId: 'etapa-1', lostReason: undefined },
+        // userId nulo é o que marca o movimento como do agente
+        null,
+      );
+    });
+
+    it('etapa inexistente devolve as opções em vez de mover', async () => {
+      const { ferramentas, moverEtapa } = montar({
+        ...comFunil,
+        permissoes: { aiCanMoveLeadStage: true, aiCanTagLead: false },
+      });
+
+      const resposta = await ferramentas.executar(
+        'mover_etapa',
+        { etapa: 'Etapa Inventada' },
+        SEM_CLIENTE,
+      );
+
+      expect(moverEtapa).not.toHaveBeenCalled();
+      expect(resposta).toContain('Proposta enviada');
+    });
+
+    it('etiquetar ignora nome que não existe e avisa', async () => {
+      const { ferramentas, definirEtiquetas } = montar({
+        ...comFunil,
+        permissoes: { aiCanMoveLeadStage: false, aiCanTagLead: true },
+      });
+
+      const resposta = await ferramentas.executar(
+        'etiquetar',
+        { etiquetas: ['Trabalhista', 'Inventada'] },
+        SEM_CLIENTE,
+      );
+
+      // Só a que existe é aplicada — deixar o modelo criar etiqueta
+      // transformaria o filtro da tela em lixo.
+      expect(definirEtiquetas).toHaveBeenCalledWith(
+        SEM_CLIENTE.officeId,
+        SEM_CLIENTE.leadId,
+        ['etiqueta-1'],
+      );
+      expect(resposta).toContain('Inventada');
     });
   });
 
@@ -368,9 +541,15 @@ describe('FerramentasService', () => {
         },
       } as unknown as PrismaService;
 
-      const ferramentas = new FerramentasService(prisma, {
-        buscar: vi.fn(),
-      } as unknown as RagService);
+      // Leads e etiquetas não participam desta ferramenta; entram porque o
+      // construtor os exige, e passar menos esconderia de vez um deles passar
+      // a ser usado aqui.
+      const ferramentas = new FerramentasService(
+        prisma,
+        { buscar: vi.fn() } as unknown as RagService,
+        {} as unknown as LeadsService,
+        {} as unknown as TagsService,
+      );
 
       const texto = await ferramentas.executar(
         'consultar_processos',

@@ -172,7 +172,10 @@ export class MemoriaService {
     if (mensagemAtual.trim().length < 3) return [];
 
     try {
-      const vetor = await this.embeddings.gerar(mensagemAtual);
+      const vetor = await this.embeddings.gerar(mensagemAtual, {
+        officeId,
+        chatId,
+      });
 
       const resultados = await this.qdrant.buscar(
         vetor,
@@ -206,7 +209,10 @@ export class MemoriaService {
     customerId?: string;
     leadId?: string;
   }): Promise<void> {
-    const vetor = await this.embeddings.gerar(params.conteudo);
+    const vetor = await this.embeddings.gerar(params.conteudo, {
+      officeId: params.officeId,
+      chatId: params.chatId,
+    });
 
     await this.qdrant.inserir([
       {

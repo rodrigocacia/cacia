@@ -13,6 +13,7 @@ import { FinancialFiltersButton } from "@/components/tables/financial-filters-bu
 import { LoadingText } from "@/components/ui/sppiner";
 
 import { financialCrumbs } from "@/constants/breadcrumbs";
+import { COBRANCA_INDISPONIVEL } from "@/constants/cobranca";
 import { FinancialTable } from "@/components/tables/financial-table";
 
 export default async function Financial({
@@ -50,27 +51,43 @@ export default async function Financial({
         </div>
       </div>
 
-      <div className="w-full flex items-center gap-3 max-md:mt-3.5">
-        <Suspense fallback={<LoadingText />}>
-          <CustomSearchFilter placeholder="Buscar por cliente ou valor..." />
-        </Suspense>
+      {/*
+        Sem cobrança, busca e filtros não têm o que filtrar, e a tabela vazia
+        diria "nenhum resultado" — como se houvesse cobranças e nenhuma
+        batesse com a pesquisa.
+      */}
+      {!recurrences.disponivel ? (
+        <div className="w-full mt-6 p-8 bg-white rounded-2xl shadow-sm flex items-center gap-3">
+          <Icon icon="mdi:bank-outline" className="text-[#BDBDBD] w-8 h-8" />
+          <p className="text-base text-[#707070] font-medium">
+            {COBRANCA_INDISPONIVEL}
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="w-full flex items-center gap-3 max-md:mt-3.5">
+            <Suspense fallback={<LoadingText />}>
+              <CustomSearchFilter placeholder="Buscar por cliente ou valor..." />
+            </Suspense>
 
-        <FinancialFiltersButton />
-      </div>
+            <FinancialFiltersButton />
+          </div>
 
-      <SWRConfig
-        value={{
-          fallback: {
-            recurrences: recurrences,
-          },
-          revalidateOnFocus: true,
-          revalidateIfStale: true,
-          revalidateOnReconnect: true,
-          refreshInterval: 0,
-        }}
-      >
-        <FinancialTable />
-      </SWRConfig>
+          <SWRConfig
+            value={{
+              fallback: {
+                recurrences: recurrences,
+              },
+              revalidateOnFocus: true,
+              revalidateIfStale: true,
+              revalidateOnReconnect: true,
+              refreshInterval: 0,
+            }}
+          >
+            <FinancialTable />
+          </SWRConfig>
+        </>
+      )}
     </div>
   );
 }

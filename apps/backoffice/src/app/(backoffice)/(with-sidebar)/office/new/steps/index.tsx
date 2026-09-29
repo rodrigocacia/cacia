@@ -14,7 +14,11 @@ import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Toast } from "@/components/ui/toast";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { officeFormSchema, OfficeFormData } from "@/schemas/office";
+import {
+  officeEditSchema,
+  officeFormSchema,
+  OfficeFormData,
+} from "@/schemas/office";
 import { getOfficeById } from "@/http/office/get-office-by-id";
 import { Spinner } from "@/components/ui/sppiner";
 import { formatDocument } from "@/utils/formatters";
@@ -32,8 +36,10 @@ function FormComponent({
 
   const [loading, setLoading] = useState(!!editId);
 
+  // Na edição o dono e a senha não fazem parte do formulário: exigir os dois
+  // travava o "Salvar" com erro em campo que nem aparece na tela.
   const methods = useForm<OfficeFormData>({
-    resolver: zodResolver(officeFormSchema),
+    resolver: zodResolver(editId ? officeEditSchema : officeFormSchema),
     defaultValues: {},
   });
 
@@ -44,6 +50,9 @@ function FormComponent({
           const { data } = await getOfficeById({ id: editId });
 
           if (data) {
+            // A API devolve `addresses` (lista); o formulário edita o primeiro
+            const endereco = data.addresses?.[0];
+
             methods.reset({
               name: data.name || "",
               document: formatDocument(data.document || ""),
@@ -51,12 +60,14 @@ function FormComponent({
               trade_name: data.trade_name || "",
               remotejid: data.remotejid || "",
               description: data.description || "",
-              street: data.address?.[0]?.street || "",
-              number: data.address?.[0]?.number || "",
-              neighborhood: data.address?.[0]?.neighborhood || "",
-              city: data.address?.[0]?.city || "",
-              state: data.address?.[0]?.state || "",
-              cep: data.address?.[0]?.cep || "",
+              oab_number: data.oab_number || "",
+              oab_uf: data.oab_uf || "",
+              street: endereco?.street || "",
+              number: endereco?.number || "",
+              neighborhood: endereco?.neighborhood || "",
+              city: endereco?.city || "",
+              state: endereco?.state || "",
+              cep: endereco?.cep || "",
             });
 
             editProcessedRef.current = true;
@@ -121,12 +132,15 @@ export function Form() {
   const router = useRouter();
   const pathname = usePathname();
   const editId = searchParams.get("editId");
+  // `?novo=1` abre o cadastro — o formulário de criação existia, mas só abria
+  // com `editId`, e não havia como chegar nele pela tela.
+  const aberto = !!editId || searchParams.get("novo") === "1";
 
   const editProcessedRef = useRef(false);
 
   useEffect(() => {
     const handleResize = () => {
-      if (editId) {
+      if (aberto) {
         const isMobile = window.innerWidth < 768;
         if (isMobile) {
           setOpenDrawer(true);
@@ -138,7 +152,7 @@ export function Form() {
       }
     };
 
-    if (editId) {
+    if (aberto) {
       const isMobile = window.innerWidth < 768;
       if (isMobile) {
         setOpenDrawer(true);
@@ -154,14 +168,19 @@ export function Form() {
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [editId]);
+  }, [aberto]);
+
+  const fecharNaUrl = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("editId");
+    params.delete("novo");
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    editProcessedRef.current = false;
+  };
 
   const handleChangeSheet = (value: boolean) => {
-    if (!value && editId) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("editId");
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-      editProcessedRef.current = false;
+    if (!value && aberto) {
+      fecharNaUrl();
       return;
     }
 
@@ -169,12 +188,7 @@ export function Form() {
   };
 
   const handleChangeDrawer = (value: boolean) => {
-    if (!value && editId) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("editId");
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-      editProcessedRef.current = false;
-    }
+    if (!value && aberto) fecharNaUrl();
 
     setOpenDrawer(value);
   };

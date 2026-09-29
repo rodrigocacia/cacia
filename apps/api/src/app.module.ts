@@ -16,7 +16,10 @@ import { UsersModule } from './modules/users/users.module';
 import { OfficesModule } from './modules/offices/offices.module';
 import { PlansModule } from './modules/plans/plans.module';
 import { CustomersModule } from './modules/customers/customers.module';
+import { LeadImportsModule } from './modules/lead-imports/lead-imports.module';
 import { LeadsModule } from './modules/leads/leads.module';
+import { PipelinesModule } from './modules/pipelines/pipelines.module';
+import { TagsModule } from './modules/tags/tags.module';
 import { ProcessesModule } from './modules/processes/processes.module';
 import { CalendarsModule } from './modules/calendars/calendars.module';
 import { EventsModule } from './modules/events/events.module';
@@ -38,6 +41,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { ConsultationsModule } from './modules/consultations/consultations.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { AiUsageModule } from './modules/ai-usage/ai-usage.module';
 
 @Module({
   imports: [
@@ -73,7 +77,10 @@ import { AdminModule } from './modules/admin/admin.module';
     OfficesModule,
     PlansModule,
     CustomersModule,
+    LeadImportsModule,
     LeadsModule,
+    PipelinesModule,
+    TagsModule,
     ProcessesModule,
     CalendarsModule,
     EventsModule,
@@ -95,6 +102,7 @@ import { AdminModule } from './modules/admin/admin.module';
     ConsultationsModule,
     DashboardModule,
     AdminModule,
+    AiUsageModule,
   ],
   providers: [
     // Ambos globais e nesta ordem: autentica, depois resolve o escritório.

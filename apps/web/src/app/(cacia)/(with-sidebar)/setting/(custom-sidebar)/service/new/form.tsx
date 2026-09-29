@@ -38,6 +38,7 @@ import {
   convertCurrencyToNumber,
   formatNumberToCurrency,
 } from "@/utils/formatters"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 interface FormComponentProps {
   setOpen(value: boolean): void
@@ -51,7 +52,7 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
   const [errorMessage, setErrorMessage] = useState("")
 
   const page = Number(searchParams.get("page")) || 1
-  const search = searchParams.get("page") || ""
+  const search = searchParams.get("search") || ""
   const editId = searchParams.get("editId")
 
   const router = useRouter()
@@ -128,7 +129,7 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
 
         if (!result.success) {
           setHasError(true)
-          setErrorMessage(JSON.stringify(result.error.message))
+          setErrorMessage(mensagemDeErro(result.error))
 
           return
         }
@@ -155,7 +156,7 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
 
         if (!result.success) {
           setHasError(true)
-          setErrorMessage(JSON.stringify(result.error.message))
+          setErrorMessage(mensagemDeErro(result.error))
 
           return
         }
@@ -195,7 +196,9 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
           />
 
           <h3 className="text-xl text-[#3D3D3D] font-bold">
-            {service ? "Editar serviço" : "Novo serviço"}
+            {/* Pelo `editId`, e não pelo serviço carregado: enquanto ele chega,
+                o título dizia "Novo" numa edição. */}
+            {editId ? "Editar serviço" : "Novo serviço"}
           </h3>
         </div>
 
@@ -262,21 +265,21 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
             <Controller
               name="value_type"
               control={control}
-              defaultValue="fixed"
+              defaultValue="FIXED"
               render={({ field }) => (
                 <>
                   <CustomRadioButton
                     {...field}
                     label="Valor fixo"
-                    value="fixed"
-                    checked={field.value === "fixed"}
+                    value="FIXED"
+                    checked={field.value === "FIXED"}
                     onChange={(e) => field.onChange(e)}
                   />
                   <CustomRadioButton
                     {...field}
                     label="Valor flutuante"
-                    value="float"
-                    checked={field.value === "float"}
+                    value="FLOAT"
+                    checked={field.value === "FLOAT"}
                     onChange={(e) => field.onChange(e)}
                   />
                 </>
@@ -285,7 +288,7 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
           </div>
         </div>
 
-        {valueType === "fixed" && (
+        {valueType === "FIXED" && (
           <Input
             {...register("value_fixed")}
             iconName="money"
@@ -296,7 +299,7 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
           />
         )}
 
-        {valueType === "float" && (
+        {valueType === "FLOAT" && (
           <div className="flex gap-4 max-md:flex-col">
             <Input
               {...register("value_fixed")}
@@ -377,7 +380,7 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
             variant="primary"
             isLoading={isSubmitting}
           >
-            {service ? "Atualizar serviço" : "Salvar serviço"}
+            {editId ? "Atualizar serviço" : "Salvar serviço"}
           </CustomButton>
         </div>
       </div>
@@ -508,7 +511,9 @@ export function Form({ setting = false }: { setting?: boolean }) {
           </Button>
 
           <SheetContent className="w-full md:min-w-[707px] rounded-tl-[24px] rounded-bl-[24px] max-w-full">
-            <SheetTitle className="sr-only">Novo serviço</SheetTitle>
+            <SheetTitle className="sr-only">
+              {editId ? "Editar serviço" : "Novo serviço"}
+            </SheetTitle>
 
             <FormComponent
               setOpen={setOpenSheet}
@@ -537,7 +542,9 @@ export function Form({ setting = false }: { setting?: boolean }) {
             </DrawerTrigger>
           )}
           <DrawerContent className="h-[90vh]">
-            <DialogTitle className="sr-only">Novo serviço</DialogTitle>
+            <DialogTitle className="sr-only">
+              {editId ? "Editar serviço" : "Novo serviço"}
+            </DialogTitle>
 
             <FormComponent
               setOpen={setOpenDrawer}

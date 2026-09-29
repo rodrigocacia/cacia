@@ -136,12 +136,15 @@ export function Form() {
   const router = useRouter();
   const pathname = usePathname();
   const editId = searchParams.get("editId");
+  // `?novo=1` abre o cadastro — o formulário de criação existia, mas só abria
+  // com `editId`, e não havia como chegar nele pela tela.
+  const aberto = !!editId || searchParams.get("novo") === "1";
 
   const editProcessedRef = useRef(false);
 
   useEffect(() => {
     const handleResize = () => {
-      if (editId) {
+      if (aberto) {
         const isMobile = window.innerWidth < 768;
         if (isMobile) {
           setOpenDrawer(true);
@@ -153,7 +156,7 @@ export function Form() {
       }
     };
 
-    if (editId) {
+    if (aberto) {
       const isMobile = window.innerWidth < 768;
       if (isMobile) {
         setOpenDrawer(true);
@@ -169,14 +172,19 @@ export function Form() {
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [editId]);
+  }, [aberto]);
+
+  const fecharNaUrl = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("editId");
+    params.delete("novo");
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    editProcessedRef.current = false;
+  };
 
   const handleChangeSheet = (value: boolean) => {
-    if (!value && editId) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("editId");
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-      editProcessedRef.current = false;
+    if (!value && aberto) {
+      fecharNaUrl();
       return;
     }
 
@@ -184,12 +192,7 @@ export function Form() {
   };
 
   const handleChangeDrawer = (value: boolean) => {
-    if (!value && editId) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("editId");
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-      editProcessedRef.current = false;
-    }
+    if (!value && aberto) fecharNaUrl();
 
     setOpenDrawer(value);
   };

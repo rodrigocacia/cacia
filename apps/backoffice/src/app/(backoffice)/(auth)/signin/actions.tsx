@@ -4,7 +4,7 @@ import { HTTPError } from "ky";
 import { z } from "zod";
 import { cookies } from "next/headers";
 
-import { signIn } from "@/http/auth/login";
+import { buscarPapel, signIn } from "@/http/auth/login";
 
 const signInSchema = z.object({
   email: z.string().email({ message: "Por favor, insira um email válido" }),
@@ -31,6 +31,16 @@ export async function signInAction(data: FormData) {
       email,
       password,
     });
+
+    // As rotas /admin já recusam quem não é ADMIN, mas sem esta verificação
+    // o usuário comum entrava num painel em que tudo falhava com 403.
+    if ((await buscarPapel(token)) !== "ADMIN") {
+      return {
+        success: false,
+        message: "Acesso restrito à administração da plataforma",
+        errors: null,
+      };
+    }
 
     cookieStore.set("token:backoffice", token, {
       maxAge: 60 * 60 * 24,

@@ -203,3 +203,28 @@ export const eventCrumbs: Crumb[] = [
     isActive: false,
   },
 ];
+
+export const aiUsageCrumbs: Crumb[] = [
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: <Icon icon="mdi:chart-box-outline" className="w-4 h-4" />,
+    isActive: true,
+  },
+  {
+    label: "Consumo de IA",
+    href: "/ai-usage",
+    icon: <Icon icon="mdi:robot-outline" className="w-4 h-4" />,
+    isActive: false,
+  },
+];
+
+export const aiBillingCrumbs: Crumb[] = [
+  ...aiUsageCrumbs,
+  {
+    label: "Parâmetros de cobrança",
+    href: "/ai-usage/billing",
+    icon: <Icon icon="mdi:cog-outline" className="w-4 h-4" />,
+    isActive: false,
+  },
+];

@@ -67,6 +67,28 @@ describe('agenda (e2e)', () => {
       expect(resposta.status).toBe(400);
     });
 
+    it('aceita dia de folga com horário em branco, como a tela envia', async () => {
+      // `@IsOptional` não dispensa string vazia: toda agenda com um dia
+      // desmarcado era recusada com 400.
+      const resposta = await conta.api.post('/calendars', {
+        title: 'Com folga',
+        availableDays: [
+          {
+            day: 'MONDAY',
+            available: true,
+            startTime: '08:00',
+            endTime: '12:00',
+            shift2Available: false,
+            shift2StartTime: '',
+            shift2EndTime: '',
+          },
+          { day: 'SUNDAY', available: false, startTime: '', endTime: '' },
+        ],
+      });
+
+      expect(resposta.status).toBe(201);
+    });
+
     it('recusa dia da semana que não existe', async () => {
       const resposta = await conta.api.post('/calendars', {
         title: 'Inválida',

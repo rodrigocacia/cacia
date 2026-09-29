@@ -25,6 +25,7 @@ export const serviceArea: Record<string, string> = {
   other: "Outro",
 }
 
+/** Aceita a chave como a API devolve ("LABOR") ou como o sistema anterior ("labor"). */
 export function translateServiceArea(value: string): string {
-  return serviceArea[value] ?? "Desconhecido"
+  return serviceArea[value?.toLowerCase()] ?? "Desconhecido"
 }

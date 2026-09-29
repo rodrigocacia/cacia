@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Queue } from 'bullmq';
 import { ChatStatus } from '@cacia/database';
+import type { PipelinesService } from '@/modules/pipelines/pipelines.service';
 import { WahaWebhookService } from './waha-webhook.service';
 import type { PrismaService } from '@/infra/prisma/prisma.service';
+import type { StorageService } from '@/infra/storage/storage.service';
 import type { WahaService } from '@/integrations/waha/waha.service';
 import type { ChatsService } from '@/modules/chats/chats.service';
 import type { JobAtendimento } from '@/worker/filas/filas';
@@ -22,9 +24,12 @@ function montar(
     leadExistente?: { id: string } | null;
     lidResolvido?: string | null;
     statusDaConversa?: ChatStatus;
+    /** Resultado de message.findFirst: mensagem já gravada ou eco. */
+    mensagemExistente?: { id: string } | null;
   } = {},
 ) {
   const criarLead = vi.fn().mockResolvedValue({ id: 'lead-novo' });
+  const registrarEtapa = vi.fn().mockResolvedValue({ id: 'passagem-1' });
 
   const prisma = {
     connection: {
@@ -37,13 +42,30 @@ function montar(
     lead: {
       findFirst: vi.fn().mockResolvedValue(opcoes.leadExistente ?? null),
       create: criarLead,
+      update: vi.fn().mockResolvedValue({ id: 'lead-restaurado' }),
     },
+    leadStageHistory: { create: registrarEtapa },
+    message: {
+      findFirst: vi.fn().mockResolvedValue(opcoes.mensagemExistente ?? null),
+      update: vi.fn(),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+    },
+    chat: { update: vi.fn() },
   } as unknown as PrismaService;
 
   const resolverLid = vi
     .fn()
     .mockResolvedValue(opcoes.lidResolvido ?? '5511999998888');
-  const waha = { resolverLid } as unknown as WahaService;
+  const baixarMidia = vi.fn().mockResolvedValue(Buffer.from('arquivo'));
+  const waha = { resolverLid, baixarMidia } as unknown as WahaService;
+
+  const storage = {
+    enviar: vi.fn().mockResolvedValue({
+      chave: `${ESCRITORIO}/midia.ogg`,
+      url: `${ESCRITORIO}/midia.ogg`,
+      tamanhoBytes: 7,
+    }),
+  } as unknown as StorageService;
 
   const encontrarOuCriar = vi.fn().mockResolvedValue({
     id: 'chat-1',
@@ -59,11 +81,32 @@ function montar(
   const enfileirar = vi.fn().mockResolvedValue({ id: 'job-1' });
   const atendimento = { add: enfileirar } as unknown as Queue<JobAtendimento>;
 
+  // O lead criado aqui nasce numa etapa do funil padrão — sem isso ficaria
+  // fora do quadro, invisível para quem trabalha o funil.
+  const etapaInicial = vi.fn().mockResolvedValue({
+    pipelineId: 'funil-1',
+    stageId: 'etapa-1',
+    position: 0,
+    kind: 'OPEN',
+  });
+  const pipelines = { etapaInicial } as unknown as PipelinesService;
+
   return {
-    servico: new WahaWebhookService(prisma, waha, chats, atendimento),
+    servico: new WahaWebhookService(
+      prisma,
+      waha,
+      chats,
+      pipelines,
+      storage,
+      atendimento,
+    ),
     prisma,
+    storage,
+    baixarMidia,
     resolverLid,
     criarLead,
+    registrarEtapa,
+    etapaInicial,
     encontrarOuCriar,
     registrarMensagem,
     enfileirar,
@@ -86,12 +129,138 @@ function mensagem(extra: Record<string, unknown> = {}): EventoWahaDto {
 }
 
 describe('WahaWebhookService', () => {
-  describe('mensagens ignoradas', () => {
-    it('ignora mensagem enviada pelo próprio bot', async () => {
-      // Sem isso, tudo que o sistema manda volta e é gravado duas vezes
-      const { servico, registrarMensagem } = montar();
+  describe('mensagens que saem do número do escritório', () => {
+    function doCelular(extra: Record<string, unknown> = {}) {
+      return {
+        ...mensagem({
+          fromMe: true,
+          from: '5511000000000@c.us',
+          to: '5511999998888@c.us',
+          body: 'Oi, aqui é a Dra. Helena pelo celular',
+          ...extra,
+        }),
+        event: 'message.any',
+      };
+    }
 
-      await servico.processar(ESCRITORIO, mensagem({ fromMe: true }));
+    it('o eco do que o sistema enviou não é gravado de novo', async () => {
+      // Sem isso, tudo que a IA e a tela mandam apareceria duas vezes
+      const { servico, registrarMensagem, prisma } = montar({
+        leadExistente: { id: 'lead-1' },
+      });
+      vi.mocked(prisma.message.findFirst)
+        .mockResolvedValueOnce(null) // não há mensagem com este id
+        .mockResolvedValueOnce({ id: 'enviada-pela-tela' } as never); // eco
+
+      await servico.processar(ESCRITORIO, doCelular());
+
+      expect(registrarMensagem).not.toHaveBeenCalled();
+      // O id fica gravado para os avisos de entrega
+      expect(prisma.message.update).toHaveBeenCalledWith({
+        where: { id: 'enviada-pela-tela' },
+        data: { externalId: 'msg-waha-1' },
+      });
+    });
+
+    it('o que o advogado digita no celular entra na conversa', async () => {
+      const { servico, registrarMensagem, prisma, enfileirar } = montar({
+        leadExistente: { id: 'lead-1' },
+      });
+
+      await servico.processar(ESCRITORIO, doCelular());
+
+      const args = registrarMensagem.mock.calls[0]?.[0] as {
+        remetente: string;
+        texto: string;
+        status: string;
+        leadId: string;
+      };
+      expect(args).toMatchObject({
+        remetente: 'USER',
+        texto: 'Oi, aqui é a Dra. Helena pelo celular',
+        status: 'SENT',
+        leadId: 'lead-1',
+      });
+      // Respondeu pelo celular, assumiu: a IA para
+      expect(prisma.chat.update).toHaveBeenCalledWith({
+        where: { id: 'chat-1' },
+        data: { status: ChatStatus.PENDING },
+      });
+      expect(enfileirar).not.toHaveBeenCalled();
+    });
+
+    it('conversa com quem não é lead nem cliente é ignorada', async () => {
+      // O número do escritório também fala com fornecedor, colega, família
+      const { servico, registrarMensagem, criarLead } = montar();
+
+      await servico.processar(ESCRITORIO, doCelular());
+
+      expect(registrarMensagem).not.toHaveBeenCalled();
+      expect(criarLead).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('entrega e leitura', () => {
+    function ack(valor: number) {
+      return {
+        event: 'message.ack',
+        session: 'office-1',
+        payload: {
+          id: 'true_5511999998888@c.us_3EB0XYZ',
+          timestamp: Date.now(),
+          from: '5511000000000@c.us',
+          fromMe: true,
+          ack: valor,
+        },
+      };
+    }
+
+    it('entregue só avança a partir de estados anteriores', async () => {
+      // Um "entregue" atrasado não pode apagar o visto azul
+      const { servico, prisma } = montar();
+
+      await servico.processar(ESCRITORIO, ack(2));
+
+      expect(prisma.message.updateMany).toHaveBeenCalledWith({
+        where: {
+          officeId: ESCRITORIO,
+          externalId: '3EB0XYZ',
+          status: { in: ['PENDING', 'FAILED', 'SENT'] },
+        },
+        data: { status: 'DELIVERED' },
+      });
+    });
+
+    it('lida e ouvida viram READ', async () => {
+      const { servico, prisma } = montar();
+
+      await servico.processar(ESCRITORIO, ack(4));
+
+      const args = vi.mocked(prisma.message.updateMany).mock.calls[0]?.[0] as {
+        data: { status: string };
+      };
+      expect(args.data.status).toBe('READ');
+    });
+
+    it('erro de entrega marca como falha', async () => {
+      const { servico, prisma } = montar();
+
+      await servico.processar(ESCRITORIO, ack(-1));
+
+      const args = vi.mocked(prisma.message.updateMany).mock.calls[0]?.[0] as {
+        data: { status: string };
+      };
+      expect(args.data.status).toBe('FAILED');
+    });
+  });
+
+  describe('mensagens ignoradas', () => {
+    it('ignora mensagem já gravada (reentrega do WAHA)', async () => {
+      const { servico, registrarMensagem } = montar({
+        mensagemExistente: { id: 'ja-gravada' },
+      });
+
+      await servico.processar(ESCRITORIO, mensagem());
 
       expect(registrarMensagem).not.toHaveBeenCalled();
     });
@@ -145,7 +314,8 @@ describe('WahaWebhookService', () => {
       const dados = criarLead.mock.calls[0]?.[0] as {
         data: { remotejid: string };
       };
-      expect(dados.data.remotejid).toBe('5511977776666');
+      // Gravado no mesmo formato da tela, para não duplicar o contato
+      expect(dados.data.remotejid).toBe('5511977776666@c.us');
     });
 
     it('não chama a resolução quando já é telefone', async () => {
@@ -227,6 +397,48 @@ describe('WahaWebhookService', () => {
         expect(args.tipo).toBe(caso.esperado);
       });
     }
+
+    it('copia a mídia para o storage, onde a tela consegue abrir', async () => {
+      // O link do evento aponta para o WAHA, exige a chave e expira
+      const { servico, registrarMensagem, baixarMidia, storage } = montar();
+
+      await servico.processar(
+        ESCRITORIO,
+        mensagem({
+          hasMedia: true,
+          body: '',
+          media: { url: 'https://waha/files/a.oga', mimetype: 'audio/ogg' },
+        }),
+      );
+
+      expect(baixarMidia).toHaveBeenCalledWith(
+        'https://waha/files/a.oga',
+        expect.objectContaining({ apiKey: 'chave' }),
+      );
+      expect(storage.enviar).toHaveBeenCalled();
+      const args = registrarMensagem.mock.calls[0]?.[0] as {
+        arquivoUrl: string;
+      };
+      expect(args.arquivoUrl).toBe(`${ESCRITORIO}/midia.ogg`);
+    });
+
+    it('falha ao copiar a mídia não perde a mensagem', async () => {
+      const { servico, registrarMensagem, baixarMidia } = montar();
+      baixarMidia.mockRejectedValueOnce(new Error('WAHA fora'));
+
+      await servico.processar(
+        ESCRITORIO,
+        mensagem({
+          hasMedia: true,
+          media: {
+            url: 'https://waha/files/a.pdf',
+            mimetype: 'application/pdf',
+          },
+        }),
+      );
+
+      expect(registrarMensagem).toHaveBeenCalledOnce();
+    });
   });
 
   describe('pedido de resposta ao agente', () => {

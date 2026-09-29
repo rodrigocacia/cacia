@@ -1,7 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import type OpenAI from 'openai';
-import { CLIENTE_OPENAI } from '../cliente-openai';
+import { Injectable, Logger } from '@nestjs/common';
 import type {
   ChatCompletionMessageParam,
   ChatCompletionTool,
@@ -12,6 +9,8 @@ import {
   FerramentasService,
   type ContextoFerramenta,
 } from '../ferramentas/ferramentas.service';
+import { LlmService } from '../llm.service';
+import type { UsoDeIa } from '../consumo/consumo-de-ia.service';
 import { PromptService } from './prompt.service';
 
 export interface PedidoAoAgente {
@@ -39,18 +38,14 @@ const MAX_RODADAS = 4;
 @Injectable()
 export class AgenteService {
   private readonly logger = new Logger(AgenteService.name);
-  private readonly modelo: string;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly memoria: MemoriaService,
     private readonly prompt: PromptService,
     private readonly ferramentas: FerramentasService,
-    @Inject(CLIENTE_OPENAI) private readonly openai: OpenAI,
-    config: ConfigService,
-  ) {
-    this.modelo = config.get<string>('OPENAI_MODEL') ?? 'gpt-4o';
-  }
+    private readonly llm: LlmService,
+  ) {}
 
   async responder(pedido: PedidoAoAgente): Promise<RespostaDoAgente> {
     const agente = await this.buscarAgente(pedido.officeId, pedido.chatId);
@@ -65,7 +60,7 @@ export class AgenteService {
     ]);
 
     // A ordem importa: o bloco estático vem primeiro e é idêntico entre
-    // mensagens, o que habilita o desconto de cache de prefixo da OpenAI.
+    // mensagens, o que habilita o desconto de cache de prefixo do provedor.
     const mensagens: ChatCompletionMessageParam[] = [
       { role: 'system', content: blocoEstatico },
       { role: 'system', content: this.prompt.blocoDeComportamento(agente) },
@@ -87,8 +82,9 @@ export class AgenteService {
     };
 
     const resposta = await this.executarLaco(
+      { officeId: pedido.officeId, chatId: pedido.chatId },
       mensagens,
-      this.ferramentas.definicoes(),
+      await this.ferramentas.definicoes(contextoFerramenta),
       contextoFerramenta,
     );
 
@@ -113,6 +109,7 @@ export class AgenteService {
    * o modelo encadear as chamadas, mas não sobrevive à resposta.
    */
   private async executarLaco(
+    uso: UsoDeIa,
     mensagens: ChatCompletionMessageParam[],
     ferramentas: ChatCompletionTool[],
     contexto: ContextoFerramenta,
@@ -121,10 +118,11 @@ export class AgenteService {
     let acionouAtendente = false;
 
     for (let rodada = 0; rodada < MAX_RODADAS; rodada++) {
-      const resposta = await this.openai.chat.completions.create({
-        model: this.modelo,
-        temperature: 0.3,
-        max_tokens: 800,
+      const resposta = await this.llm.completar({
+        tarefa: 'atendimento',
+        uso,
+        temperatura: 0.3,
+        maxTokens: 800,
         messages: mensagens,
         tools: ferramentas,
       });

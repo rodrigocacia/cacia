@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 
 import { useRouter } from "next/navigation";
 
@@ -60,8 +59,6 @@ export function SignInForm() {
             <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike" />{" "}
             Lembra de mim
           </span>
-
-          <Link href="forgot-password">Esqueci minha senha</Link>
         </div>
       </div>
 

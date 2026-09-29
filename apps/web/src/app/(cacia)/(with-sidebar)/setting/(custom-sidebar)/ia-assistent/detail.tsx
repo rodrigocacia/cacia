@@ -15,28 +15,15 @@ import { Spinner } from "@/components/ui/sppiner"
 import { updateAgent } from "@/http/agent/update-agent"
 import { Toast } from "@/components/ui/toast"
 import { CustomSelect } from "@/components/ui/custom-select"
-import { AgentStyle } from "@/types/agent"
+import { AgentStyle, agentStyleLabels } from "@/types/agent"
 import { Check } from "lucide-react"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
-const agentStyle = [
-  { value: AgentStyle.LEGAL_FORMAL, label: AgentStyle.LEGAL_FORMAL },
-  {
-    value: AgentStyle.CLEAR_AND_OBJECTIVE,
-    label: AgentStyle.CLEAR_AND_OBJECTIVE,
-  },
-  {
-    value: AgentStyle.ASSERTIVE_AND_PERSUASIVE,
-    label: AgentStyle.ASSERTIVE_AND_PERSUASIVE,
-  },
-  {
-    value: AgentStyle.EMPATHETIC_AND_SUPPORTIVE,
-    label: AgentStyle.EMPATHETIC_AND_SUPPORTIVE,
-  },
-  {
-    value: AgentStyle.PROFESSIONAL_AND_CASUAL,
-    label: AgentStyle.PROFESSIONAL_AND_CASUAL,
-  },
-]
+// O rótulo em português vem do mapa central; o valor continua o enum da API
+const agentStyle = Object.values(AgentStyle).map((estilo) => ({
+  value: estilo,
+  label: agentStyleLabels[estilo],
+}))
 
 const iaAssistentFormSchema = z.object({
   style: z.string().min(4, { message: "Insira um estilo válido" }),
@@ -52,7 +39,7 @@ export function AssistantDetail() {
 
   const { agents, isLoading, mutate } = useAgents()
 
-  const serviceAgent = agents?.find((agent) => agent.type === "personal")
+  const serviceAgent = agents?.find((agent) => agent.type === "PERSONAL")
 
   const {
     control,
@@ -80,7 +67,7 @@ export function AssistantDetail() {
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
         return
       }
 

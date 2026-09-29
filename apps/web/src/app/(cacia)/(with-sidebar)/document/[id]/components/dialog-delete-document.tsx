@@ -8,6 +8,7 @@ import {
 import { Icon } from "@/components/icone"
 import { deleteDocument } from "@/http/document/delete-document"
 import { useState } from "react"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 interface DialogDeleteDocumentProps {
   id: string
@@ -42,7 +43,7 @@ export function DialogDeleteDocument({
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
 
         setIsLoading(false)
 
@@ -64,9 +65,7 @@ export function DialogDeleteDocument({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="px-[30px]">
         <DialogHeader>
-          <DialogTitle className="sr-only">
-            Are you absolutely sure?
-          </DialogTitle>
+          <DialogTitle className="sr-only">Excluir documento</DialogTitle>
         </DialogHeader>
 
         <form
@@ -92,7 +91,11 @@ export function DialogDeleteDocument({
           </div>
 
           <div className="w-full flex items-center justify-center gap-3.5 mt-[34px]">
-            <Button variant="outline">Cancelar</Button>
+            {/* type="button": sem ele o "Cancelar" enviava o formulário e
+                excluía do mesmo jeito. */}
+            <Button variant="outline" type="button" onClick={onClose}>
+              Cancelar
+            </Button>
 
             <Button
               type="submit"

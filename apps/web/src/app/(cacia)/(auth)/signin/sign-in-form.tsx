@@ -14,9 +14,11 @@ import { AuthTabs } from "@/components/ui/auth-tabs"
 import { Toast } from "@/components/ui/toast"
 import { DialogCheckoutPlan } from "@/components/dialog-checkout-plan"
 import { AUTOCOMPLETE_VALUES } from "@/constants/autocomplete"
+import { useHidratado } from "@/hooks/use-hidratado"
 
 export function SignInForm() {
   const router = useRouter()
+  const hidratado = useHidratado()
 
   const [
     { errors, message, success },
@@ -31,7 +33,11 @@ export function SignInForm() {
 
   return (
     <>
+      {/* `method="post"` e o botão travado até hidratar: sem os dois, um
+          envio antes do React assumir virava GET nativo e a senha ia parar na
+          URL — no histórico, nos logs do servidor e no Referer. */}
       <form
+        method="post"
         onSubmit={handleSubmit}
         className="bg-white relative z-10 w-full h-full max-lg:h-fit flex flex-col gap-8 shadow-md rounded-4xl max-lg:rounded-t-4xl max-lg:rounded-b-none px-8 pt-[28px] max-lg:pb-4"
       >
@@ -62,17 +68,7 @@ export function SignInForm() {
             error={errors?.password[0]}
           />
 
-          <div className="flex items-center justify-between">
-            <span>
-              <input
-                type="checkbox"
-                id="vehicle1"
-                name="vehicle1"
-                value="Bike"
-              />{" "}
-              Lembra de mim
-            </span>
-
+          <div className="flex items-center justify-end">
             <Link href="forgot-password">Esqueci minha senha</Link>
           </div>
         </div>
@@ -92,6 +88,7 @@ export function SignInForm() {
             ) : null
           }
           isLoading={isPending}
+          disabled={!hidratado || isPending}
         >
           Entrar
         </Button>

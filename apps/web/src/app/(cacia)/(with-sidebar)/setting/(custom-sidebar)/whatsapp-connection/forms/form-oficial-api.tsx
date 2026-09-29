@@ -18,6 +18,7 @@ import { Check } from "lucide-react"
 import { Icon } from "@/components/icone"
 import { Switch } from "@/components/ui/switch"
 import { formatDocument } from "@/utils/formatters"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 const updateOfficeFormSchema = z.object({
   name: z.string().min(6, { message: "Insira um nome válido" }),
@@ -63,7 +64,7 @@ export function FormOficialApi() {
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
         return
       }
 

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/custom-input"
 import { Plus } from "lucide-react"
 import Image from "next/image"
 import { GetQrCodeResponse, getQrCode } from "@/http/connection/qr-code"
+import { createConnection } from "@/http/connection/create-connection"
 import { disconnect } from "@/http/connection/disconnect"
 import { setConnectionProxy } from "@/http/connection/set-proxy"
 import { useConnection } from "@/http/hooks/connection"
@@ -61,17 +62,27 @@ export function FormWaha({ qrCode }: FormWahaProps) {
   }
 
   const handleFetchQr = async () => {
-    if (!connection) return
-
     setIsLoadingQr(true)
     setQrError(null)
 
     try {
-      const result = await getQrCode({ connectionId: connection._id })
+      // Sem conexão cadastrada: cria uma antes de pedir o QR. No sistema
+      // anterior ela nascia com o escritório; na API nova é sob demanda.
+      const alvo = connection ?? (await createConnection())
+      if (!alvo) throw new Error("Conexão não criada")
+
+      const result = await getQrCode({ connectionId: alvo._id })
       setLiveQrCode(result)
+
+      if (!connection) {
+        await mutate()
+        setTypeConnection("CREATING_CONNECTION")
+      }
     } catch {
       setQrError(
-        "Não foi possível gerar o QR agora. A sessão pode estar reiniciando — tente de novo em alguns segundos."
+        connection
+          ? "Não foi possível gerar o QR agora. A sessão pode estar reiniciando — tente de novo em alguns segundos."
+          : "Não foi possível criar a conexão. Confira se o provedor de WhatsApp está configurado e tente de novo."
       )
       setLiveQrCode(null)
     } finally {
@@ -114,8 +125,8 @@ export function FormWaha({ qrCode }: FormWahaProps) {
       <div className="w-full mt-6 flex flex-col justify-between gap-8 pb-10">
         {connection?.fallback_enabled && (
           <p className="text-xs text-[#707070]">
-            Provedor ativo: <strong>WAHA</strong> · fallback:{" "}
-            <strong>Evolution</strong>
+            Provedor ativo: <strong>Provedor 1</strong> · reserva:{" "}
+            <strong>Provedor 2</strong>
           </p>
         )}
 
@@ -193,7 +204,7 @@ export function FormWaha({ qrCode }: FormWahaProps) {
                   {connection?.waha_profile_picture_url ? (
                     <Image
                       src={connection.waha_profile_picture_url}
-                      alt="WAHA"
+                      alt="Provedor 1"
                       width={60}
                       height={60}
                       className="rounded-full w-15 h-15 object-cover"

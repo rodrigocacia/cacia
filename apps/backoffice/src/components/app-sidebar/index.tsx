@@ -4,7 +4,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { Icon } from "@/components/icone";
 
@@ -19,7 +19,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { deleteCookie } from "cookies-next";
+import { sairAction } from "@/auth/sair";
 
 const items = [
   {
@@ -40,6 +40,11 @@ const items = [
     ),
   },
   {
+    title: "Consumo de IA",
+    url: "/ai-usage",
+    icon: (props: any) => <Icon icon="mdi:robot-outline" {...props} />,
+  },
+  {
     title: "Financeiro ",
     url: "/financial",
     icon: (props: any) => <Icon icon="mdi:bank-outline" {...props} />,
@@ -48,16 +53,6 @@ const items = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-
-  function handleLogout() {
-    deleteCookie("token:backoffice");
-    deleteCookie("userData");
-    deleteCookie("office_id");
-
-    router.push("/signin");
-  }
-
   const currentSegment = pathname.split("/")[1];
 
   return (
@@ -116,38 +111,19 @@ export function AppSidebar() {
 
       <SidebarFooter className="bg-[#24211E] rounded-bl-3xl rounded-br-3xl max-md:rounded-none">
         <div className="w-full flex flex-col gap-2 pb-8 px-2.5">
-          <Link
-            href="/support"
-            className="w-full py-[7px]  flex items-center justify-start gap-2 cursor-pointer"
-          >
-            <Icon
-              icon="mdi:help-circle-outline"
-              className="text-[#707070] w-[22px] h-[22px]"
-            />
+          <form action={sairAction}>
+            <button
+              type="submit"
+              className="w-full py-[7px] flex items-center justify-start gap-2 cursor-pointer"
+            >
+              <Icon
+                icon="mdi:logout"
+                className="text-[#DC2626] w-[22px] h-[22px]"
+              />
 
-            <span className="text-[#BDBDBD] text-sm">Precisa de ajuda?</span>
-          </Link>
-
-          <div
-            onClick={handleLogout}
-            className="w-full py-[7px] flex items-center justify-start gap-2 cursor-pointer"
-          >
-            <Icon
-              icon="mdi:logout"
-              className="text-[#DC2626] w-[22px] h-[22px]"
-            />
-
-            <span className="text-[#BDBDBD] text-sm">Sair</span>
-          </div>
-
-          <a
-            href="https://www.linkedin.com/company/alqm-io"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-[7px] flex items-center justify-start gap-2 cursor-pointer"
-          >
-            <span className="text-[#BDBDBD] text-sm">∆ ∟ Q ⋈</span>
-          </a>
+              <span className="text-[#BDBDBD] text-sm">Sair</span>
+            </button>
+          </form>
         </div>
       </SidebarFooter>
     </Sidebar>

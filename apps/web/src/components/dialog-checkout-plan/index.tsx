@@ -46,9 +46,7 @@ export function DialogCheckoutPlan() {
         showCloseButton={false}
       >
         <DialogHeader>
-          <DialogTitle className="sr-only">
-            Are you absolutely sure?
-          </DialogTitle>
+          <DialogTitle className="sr-only">Contratar plano</DialogTitle>
         </DialogHeader>
 
         {step === "final-checkout" ? (

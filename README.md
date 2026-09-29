@@ -137,7 +137,8 @@ Detalhamento e justificativa das decisões: [docs/ARQUITETURA.md](docs/ARQUITETU
 
 ## Banco de dados
 
-Suba a infraestrutura local (PostgreSQL, Redis e Qdrant):
+Suba a infraestrutura local (PostgreSQL, Redis, Qdrant e um S3 local para os
+arquivos, no lugar do R2):
 
 ```bash
 docker compose up -d
@@ -413,14 +414,15 @@ por instância, não uma vez por minuto.
 
 ## Infraestrutura
 
-| Serviço      | Onde               | Por quê                               |
-| ------------ | ------------------ | ------------------------------------- |
-| API e worker | Fly.io `gru`       | Já configurado                        |
-| WAHA         | Fly.io, com volume | Sessões em disco; não pode dormir     |
-| Qdrant       | Fly.io, com volume | Vetor é dado derivado — reprocessável |
-| PostgreSQL   | Gerenciado         | Dado perdido não volta                |
-| Redis        | Gerenciado         | Filas e memória quente                |
-| Frontends    | Cloudflare Workers | OpenNext                              |
+| Serviço      | Onde               | Por quê                                 |
+| ------------ | ------------------ | --------------------------------------- |
+| API e worker | Fly.io `gru`       | Já configurado                          |
+| WAHA         | Fly.io, com volume | Sessões em disco; não pode dormir       |
+| Qdrant       | Fly.io, com volume | Vetor é dado derivado — reprocessável   |
+| PostgreSQL   | Gerenciado         | Dado perdido não volta                  |
+| Redis        | Gerenciado         | Filas e memória quente                  |
+| Arquivos     | Cloudflare R2      | S3 compatível; privado, link temporário |
+| Frontends    | Cloudflare Workers | OpenNext                                |
 
 Detalhes de provisionamento em [`infra/README.md`](infra/README.md).
 

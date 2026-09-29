@@ -38,14 +38,14 @@ export function AgendaDetail() {
         <Icon icon="mdi:calendar-check" className="text-[#BDBDBD] w-5 h-5" />
 
         <h2 className="text-sm text-[#3D3D3D] font-bold">
-          Todos as agendas ({calendar?.length})
+          Todas as agendas ({calendar?.length})
         </h2>
       </div>
 
       <div className="h-full w-full mt-4 flex flex-col justify-between gap-8">
         <div className="w-full flex flex-col gap-4">
           {calendar.length === 0 ? (
-            <EmptySearch title="Sem agendas cadastradass" subtitle="" />
+            <EmptySearch title="Sem agendas cadastradas" subtitle="" />
           ) : null}
 
           {calendar.length > 0 ? (

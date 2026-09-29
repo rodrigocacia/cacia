@@ -1,9 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import type OpenAI from 'openai';
-import { CLIENTE_OPENAI } from '../cliente-openai';
+import { Injectable, Logger } from '@nestjs/common';
 import { MarkAuthor, MarkCategory, MarkType } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
+import { LlmService } from '../llm.service';
+import type { UsoDeIa } from '../consumo/consumo-de-ia.service';
 import { MemoriaService } from './memoria.service';
 
 const INSTRUCAO = `Você extrai fatos duráveis de conversas de atendimento jurídico.
@@ -44,16 +43,12 @@ const CATEGORIAS: Record<string, MarkCategory> = {
 @Injectable()
 export class ExtracaoDeFatosService {
   private readonly logger = new Logger(ExtracaoDeFatosService.name);
-  private readonly modelo: string;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly memoria: MemoriaService,
-    @Inject(CLIENTE_OPENAI) private readonly openai: OpenAI,
-    config: ConfigService,
-  ) {
-    this.modelo = config.get<string>('OPENAI_SUMMARY_MODEL') ?? 'gpt-4o-mini';
-  }
+    private readonly llm: LlmService,
+  ) {}
 
   async extrairDoTurno(params: {
     officeId: string;
@@ -67,6 +62,7 @@ export class ExtracaoDeFatosService {
       const fatos = await this.pedirExtracao(
         params.mensagemCliente,
         params.respostaAgente,
+        { officeId: params.officeId, chatId: params.chatId },
       );
 
       if (fatos.length === 0) return 0;
@@ -94,12 +90,14 @@ export class ExtracaoDeFatosService {
   private async pedirExtracao(
     mensagemCliente: string,
     respostaAgente: string,
+    uso: UsoDeIa,
   ): Promise<FatoExtraido[]> {
-    const resposta = await this.openai.chat.completions.create({
-      model: this.modelo,
-      temperature: 0,
-      response_format: { type: 'json_object' },
-      max_tokens: 300,
+    const resposta = await this.llm.completar({
+      tarefa: 'extracao',
+      uso,
+      temperatura: 0,
+      json: true,
+      maxTokens: 300,
       messages: [
         { role: 'system', content: INSTRUCAO },
         {

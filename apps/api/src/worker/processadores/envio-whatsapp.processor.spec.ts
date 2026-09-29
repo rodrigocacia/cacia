@@ -5,6 +5,7 @@ import { EnvioWhatsappProcessor } from './envio-whatsapp.processor';
 import type { PrismaService } from '@/infra/prisma/prisma.service';
 import type { WahaService } from '@/integrations/waha/waha.service';
 import type { EvolutionService } from '@/integrations/evolution/evolution.service';
+import type { StorageService } from '@/infra/storage/storage.service';
 import type { JobEnvioWhatsapp } from '../filas/filas';
 
 /**
@@ -66,8 +67,13 @@ function montar(
     enviarAudio: vi.fn(),
   } as unknown as EvolutionService;
 
+  const storage = {
+    gerarLinkTemporario: vi.fn().mockResolvedValue('https://storage/assinado'),
+  } as unknown as StorageService;
+
   return {
-    processador: new EnvioWhatsappProcessor(prisma, waha, evolution),
+    storage,
+    processador: new EnvioWhatsappProcessor(prisma, waha, evolution, storage),
     enviarTextoWaha,
     enviarTextoEvolution,
     prisma,
@@ -171,6 +177,67 @@ describe('EnvioWhatsappProcessor', () => {
     });
   });
 
+  describe('estado da mensagem', () => {
+    it('marca como SENT e grava o id que o WhatsApp devolveu', async () => {
+      // O id é o que liga os avisos de entrega e leitura a esta mensagem
+      const { processador, prisma, enviarTextoWaha } = montar();
+      enviarTextoWaha.mockResolvedValueOnce({
+        id: 'true_5511999998888@c.us_3EB0XYZ',
+      });
+
+      await processador.process(job({ messageId: 'mensagem-1' }));
+
+      const chamadas = (prisma.message.updateMany as ReturnType<typeof vi.fn>)
+        .mock.calls;
+      expect(chamadas[0]?.[0]).toMatchObject({
+        where: { id: 'mensagem-1', officeId: 'escritorio-1' },
+        data: { status: 'SENT' },
+      });
+      expect(chamadas[1]?.[0]).toMatchObject({
+        data: { externalId: '3EB0XYZ' },
+      });
+    });
+
+    it('arquivo do storage sai com link gerado na hora do envio', async () => {
+      // Gerado ao enfileirar, o link venceria antes de uma nova tentativa
+      const { processador, storage } = montar();
+      const enviarArquivo = vi.fn().mockResolvedValue({ id: 'x' });
+      Object.assign((processador as unknown as { waha: object }).waha, {
+        enviarArquivo,
+      });
+
+      await processador.process(
+        job({
+          tipo: MessageType.DOCUMENT,
+          texto: undefined,
+          arquivo: {
+            chave: 'escritorio-1/a.pdf',
+            mimetype: 'application/pdf',
+            filename: 'contrato.pdf',
+          },
+        }),
+      );
+
+      expect(storage.gerarLinkTemporario).toHaveBeenCalledWith(
+        'escritorio-1/a.pdf',
+      );
+      expect(enviarArquivo.mock.calls[0]?.[2]).toEqual({
+        url: 'https://storage/assinado',
+        mimetype: 'application/pdf',
+        filename: 'contrato.pdf',
+      });
+    });
+
+    it('sem messageId não mexe em mensagem nenhuma', async () => {
+      // Lembretes não têm mensagem gravada na conversa
+      const { processador, prisma } = montar();
+
+      await processador.process(job());
+
+      expect(prisma.message.updateMany).not.toHaveBeenCalled();
+    });
+  });
+
   describe('falha definitiva', () => {
     it('marca a mensagem como FAILED ao esgotar as tentativas', async () => {
       // Sem isso a mensagem ficaria em PENDING e o atendente acharia que
@@ -182,6 +249,20 @@ describe('EnvioWhatsappProcessor', () => {
       const args = (prisma.message.updateMany as ReturnType<typeof vi.fn>).mock
         .calls[0]?.[0] as { data: { status: string } };
       expect(args.data.status).toBe('FAILED');
+    });
+
+    it('com messageId, marca só aquela mensagem', async () => {
+      // Sem o recorte, a falha de uma resposta do advogado marcaria como
+      // falha também a resposta da IA que ainda estava saindo.
+      const { processador, prisma } = montar();
+
+      await processador.onFailed(
+        job({ chatId: 'chat-1', messageId: 'mensagem-1' }),
+      );
+
+      const args = (prisma.message.updateMany as ReturnType<typeof vi.fn>).mock
+        .calls[0]?.[0] as { where: { id?: string } };
+      expect(args.where.id).toBe('mensagem-1');
     });
 
     it('não marca nada enquanto ainda houver tentativa', async () => {

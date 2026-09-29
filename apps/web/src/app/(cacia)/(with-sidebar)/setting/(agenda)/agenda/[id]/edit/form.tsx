@@ -41,6 +41,37 @@ import { TimeInput } from "@/components/ui/custom-timer"
 import { CustomCheckbox } from "@/components/ui/custom-checkbox"
 import { updateCalendar } from "@/http/calendar/update-calendar"
 import { Me } from "@/types/me"
+import { mensagemDeErro } from "@/utils/error-handlers"
+
+type DiaDoFormulario = AgendaDetailFormData["available_days"][number]
+
+/**
+ * Dia vindo da API no formato do formulário.
+ *
+ * A API devolve `null` para turno sem horário, e o schema espera texto: o
+ * `null` reprovava a validação num campo escondido (turno desligado), sem
+ * mensagem nenhuma na tela, e salvar simplesmente não fazia nada. Também
+ * descarta `id` e `calendar_id` do dia, que a API recusaria de volta.
+ */
+function diaParaFormulario(
+  dia: Partial<Record<keyof DiaDoFormulario, unknown>>
+): DiaDoFormulario {
+  const texto = (valor: unknown) => (typeof valor === "string" ? valor : "")
+
+  return {
+    day: dia.day as DiaDoFormulario["day"],
+    available: Boolean(dia.available),
+    start_time: texto(dia.start_time),
+    end_time: texto(dia.end_time),
+    online: Boolean(dia.online),
+    in_person: Boolean(dia.in_person),
+    shift2_available: Boolean(dia.shift2_available),
+    shift2_start_time: texto(dia.shift2_start_time),
+    shift2_end_time: texto(dia.shift2_end_time),
+    shift2_online: Boolean(dia.shift2_online),
+    shift2_in_person: Boolean(dia.shift2_in_person),
+  }
+}
 
 interface FormComponentProps {
   setOpen?: (open: boolean) => void
@@ -91,14 +122,15 @@ export function FormComponent({
 
   useEffect(() => {
     if (calendar) {
+      // `user` na resposta é o objeto { id, name }; o formulário guarda o id
       reset({
         title: calendar?.title,
-        user: calendar?.user || "",
-        general_roles: calendar?.general_roles,
-        available_days: calendar?.available_days,
+        user: calendar?.user_id ?? user?.userId ?? "",
+        general_roles: calendar?.general_roles ?? "",
+        available_days: (calendar?.available_days ?? []).map(diaParaFormulario),
       })
     }
-  }, [calendar, reset])
+  }, [calendar, reset, user?.userId])
 
   useEffect(() => {
     if (calendar) {
@@ -110,13 +142,13 @@ export function FormComponent({
 
   const onSubmit: SubmitHandler<AgendaDetailFormData> = async (data) => {
     try {
-      const { title, general_roles, available_days, user } = data
+      const { title, general_roles, available_days } = data
 
+      // O responsável não vai: a API não permite trocá-lo na edição
       const credentials = {
         title,
         general_roles: general_roles || "",
         available_days,
-        user,
       }
 
       const result = await updateCalendar({
@@ -126,19 +158,31 @@ export function FormComponent({
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(result.error)
+        setErrorMessage(mensagemDeErro(result.error))
         return
       }
 
       setOpen?.(false)
       setOpenSuccess(true)
       handleOpenSuccess?.()
-    } catch {}
+    } catch {
+      setHasError(true)
+      setErrorMessage("Erro inesperado ao salvar a agenda")
+    }
+  }
+
+  // Sem este aviso, um erro de validação num campo fora da vista (ou sem
+  // mensagem própria) fazia o "Salvar" parecer não fazer nada.
+  const onInvalid = () => {
+    setHasError(true)
+    setErrorMessage(
+      "Confira os campos destacados: há horários ausentes ou fora do formato HH:MM."
+    )
   }
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmit, onInvalid)}
       className="p-8 max-md:p-0 pb-4 md:rounded-2xl md:shadow-sm"
     >
       <div className="flex flex-col gap-5">
@@ -232,7 +276,7 @@ export function FormComponent({
                   control={control}
                   render={() => (
                     <Checkbox
-                      id="terms"
+                      id={`dia-${day.day}`}
                       className="w-6 h-6 
              border border-gray-300 
              data-[state=checked]:bg-[#348C98] 
@@ -288,7 +332,7 @@ export function FormComponent({
                 />
 
                 <label
-                  htmlFor="terms"
+                  htmlFor={`dia-${day.day}`}
                   className="text-sm text-[#3D3D3D] font-semibold"
                 >
                   {translateWeekdayToLocale(day.day)}
@@ -384,7 +428,7 @@ export function FormComponent({
               <div className="pl-14 max-[1300px]:flex-col flex items-center justify-between">
                 <div className="w-full flex items-center gap-3">
                   <Checkbox
-                    id="terms"
+                    id={`turno2-${day.day}`}
                     className="w-6 h-6 
              border border-gray-300 
              data-[state=checked]:bg-[#348C98] 
@@ -421,7 +465,7 @@ export function FormComponent({
                   />
 
                   <label
-                    htmlFor="terms"
+                    htmlFor={`turno2-${day.day}`}
                     className="text-sm text-[#3D3D3D] font-semibold"
                   >
                     Dois turnos

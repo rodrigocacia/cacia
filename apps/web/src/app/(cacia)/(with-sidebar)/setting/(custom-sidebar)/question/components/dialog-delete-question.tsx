@@ -13,6 +13,7 @@ import { Toast } from "@/components/ui/toast"
 import { useQuestion, useQuestionById } from "@/http/hooks/question"
 import { deleteQuestion } from "@/http/question/delete-question"
 import { Icon } from "@/components/icone"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 export function DialogDeleteQuestion() {
   const [isOpen, setIsOpen] = useState(false)
@@ -27,7 +28,7 @@ export function DialogDeleteQuestion() {
   const [isLoading, setIsLoading] = useState(false)
 
   const page = Number(searchParams.get("page")) || 1
-  const search = searchParams.get("page") || ""
+  const search = searchParams.get("search") || ""
   const deleteQuestionId = searchParams.get("deleteQuestionId")
 
   const { mutate } = useQuestion(page, search)
@@ -56,7 +57,7 @@ export function DialogDeleteQuestion() {
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
 
         return
       }
@@ -83,9 +84,7 @@ export function DialogDeleteQuestion() {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="px-[30px]">
         <DialogHeader>
-          <DialogTitle className="sr-only">
-            Are you absolutely sure?
-          </DialogTitle>
+          <DialogTitle className="sr-only">Excluir dúvida</DialogTitle>
         </DialogHeader>
 
         <form
@@ -111,7 +110,9 @@ export function DialogDeleteQuestion() {
           </div>
 
           <div className="w-full flex items-center justify-center gap-3.5 mt-[34px]">
-            <Button variant="outline" onClick={onClose}>
+            {/* type="button": sem ele o "Cancelar" enviava o formulário e
+                excluía do mesmo jeito. */}
+            <Button variant="outline" type="button" onClick={onClose}>
               Cancelar
             </Button>
 

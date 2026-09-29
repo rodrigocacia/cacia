@@ -57,7 +57,24 @@ services:
     environment:
       QDRANT__SERVICE__ENABLE_TLS: 'false'
 
+  # Storage compatível com S3 — o mesmo protocolo do Cloudflare R2 usado em
+  # produção. Aceita qualquer credencial e já nasce com o bucket "cacia".
+  # (As imagens públicas do MinIO foram descontinuadas; o S3Mock é feito
+  # justamente para desenvolvimento e teste.)
+  storage:
+    image: adobe/s3mock:latest
+    container_name: cacia-storage
+    restart: unless-stopped
+    environment:
+      COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: cacia
+      COM_ADOBE_TESTING_S3MOCK_STORE_RETAIN_FILES_ON_EXIT: 'true'
+    ports:
+      - '9000:9090'
+    volumes:
+      - storage_data:/s3mockroot
+
 volumes:
+  storage_data:
   postgres_data:
   redis_data:
   qdrant_data:

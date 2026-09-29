@@ -14,6 +14,7 @@ import { EventStatus, EventType } from "./event"
 import { NotificationType } from "./notification"
 import { ReminderStatus, ReminderType } from "./reminder"
 import { AgentStyle } from "./agent"
+import { ServiceArea } from "./service"
 import { isValidLeadStatus } from "./lead-status"
 
 /**
@@ -90,6 +91,9 @@ const PARES: Array<{
     prisma: "NotificationType",
   },
   { nome: "AgentStyle", frontend: AgentStyle, prisma: "AgentStyle" },
+  // Estava de fora, e guardava o valor do banco ("labor"): cadastrar serviço
+  // devolvia 400 e a listagem mostrava a área como "Desconhecido".
+  { nome: "ServiceArea", frontend: ServiceArea, prisma: "ServiceArea" },
 ]
 
 describe("enums da interface contra o schema do banco", () => {
@@ -127,6 +131,7 @@ describe("enums da interface contra o schema do banco", () => {
     EventType: [],
     NotificationType: ["ATTACHMENT_DOC"],
     AgentStyle: [],
+    ServiceArea: [],
   }
 
   for (const { nome, frontend, prisma } of PARES) {

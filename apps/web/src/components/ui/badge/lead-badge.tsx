@@ -30,6 +30,12 @@ const badgeStyles: Record<
     icon: "mdi:message-fast-outline",
     label: "Em contato",
   },
+  LOST: {
+    bg: "bg-[#FEF2F2]",
+    text: "text-[#DC2626]",
+    icon: "mdi:close-circle-outline",
+    label: "Perdido",
+  },
 }
 
 export function LeadBadge({ variant = "NEW" }: LeadBadgeProps) {

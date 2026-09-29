@@ -5,7 +5,9 @@ import {
   AgentStyle,
   AgentType,
   ChatStatus,
+  ConnectionStatus,
   MessageSender,
+  MessageStatus,
 } from '@cacia/database';
 import { PrismaService } from '@/infra/prisma/prisma.service';
 import { RedisService } from '@/infra/redis/redis.service';
@@ -153,7 +155,8 @@ describe('conversa de ponta a ponta (e2e)', () => {
       expect(resposta.status).toBe(200);
 
       const lead = await aplicacao.prisma.lead.findFirst({
-        where: { officeId: ctx.conta.officeId, remotejid: NUMERO },
+        // Mesmo formato que a tela grava: é o que impede o contato duplicado
+        where: { officeId: ctx.conta.officeId, remotejid: `${NUMERO}@c.us` },
         select: { id: true, name: true },
       });
       expect(lead?.name).toBe('Joana');
@@ -313,6 +316,376 @@ describe('conversa de ponta a ponta (e2e)', () => {
       await aplicacao.prisma.chat.update({
         where: { id: chat.id },
         data: { status: ChatStatus.ACTIVE },
+      });
+    });
+  });
+
+  describe('o atendente responde pela plataforma', () => {
+    async function conversa() {
+      return aplicacao.prisma.chat.findFirstOrThrow({
+        where: { officeId: ctx.conta.officeId },
+        select: { id: true },
+      });
+    }
+
+    async function conectar(status: ConnectionStatus) {
+      await aplicacao.prisma.connection.update({
+        where: { id: ctx.connectionId },
+        data: { status },
+      });
+    }
+
+    it('a lista traz a última mensagem e a etapa do lead', async () => {
+      await entregarWebhook(eventoDeMensagem('última da lista'));
+
+      const resposta = await ctx.conta.api.get<{
+        data: {
+          messages: { messageText: string }[];
+          lead: { stage: { name: string } | null } | null;
+        }[];
+      }>('/chats');
+
+      expect(resposta.status).toBe(200);
+      expect(resposta.corpo.data[0]?.messages[0]?.messageText).toBe(
+        'última da lista',
+      );
+      expect(resposta.corpo.data[0]?.lead?.stage?.name).toBeTruthy();
+    });
+
+    it('busca pelo telefone e filtra pelo lead', async () => {
+      const chat = await aplicacao.prisma.chat.findFirstOrThrow({
+        where: { officeId: ctx.conta.officeId },
+        select: { leadId: true },
+      });
+
+      const porTelefone = await ctx.conta.api.get<{ data: unknown[] }>(
+        `/chats?search=${NUMERO.slice(-6)}`,
+      );
+      expect(porTelefone.corpo.data).toHaveLength(1);
+
+      const porLead = await ctx.conta.api.get<{ data: unknown[] }>(
+        `/chats?leadId=${chat.leadId}`,
+      );
+      expect(porLead.corpo.data).toHaveLength(1);
+
+      const nada = await ctx.conta.api.get<{ data: unknown[] }>(
+        '/chats?search=ninguem-com-este-nome',
+      );
+      expect(nada.corpo.data).toHaveLength(0);
+    });
+
+    it('recusa enviar sem WhatsApp conectado', async () => {
+      // Gravar a mensagem aqui faria o advogado achar que ela saiu.
+      await conectar(ConnectionStatus.DISCONNECTED);
+      const { id } = await conversa();
+
+      const resposta = await ctx.conta.api.post(`/chats/${id}/messages`, {
+        text: 'Olá, aqui é a Dra. Helena',
+      });
+
+      expect(resposta.status).toBe(422);
+      expect(
+        await aplicacao.prisma.message.count({
+          where: { chatId: id, sender: MessageSender.USER },
+        }),
+      ).toBe(0);
+    });
+
+    it('grava, enfileira pela conexão e tira a conversa do automático', async () => {
+      await conectar(ConnectionStatus.CONNECTED);
+      const { id } = await conversa();
+
+      const resposta = await ctx.conta.api.post<{
+        id: string;
+        status: string;
+        sender: string;
+      }>(`/chats/${id}/messages`, { text: '  Olá, aqui é a Dra. Helena  ' });
+
+      expect(resposta.status).toBe(201);
+      expect(resposta.corpo).toMatchObject({
+        sender: MessageSender.USER,
+        status: MessageStatus.PENDING,
+      });
+
+      const [envio] = await filaEnvio.getJobs(['waiting', 'delayed']);
+      expect(envio?.data).toMatchObject({
+        connectionId: ctx.connectionId,
+        para: `${NUMERO}@c.us`,
+        texto: 'Olá, aqui é a Dra. Helena',
+        chatId: id,
+        messageId: resposta.corpo.id,
+      });
+
+      // Com a IA ligada, o contato receberia duas respostas
+      const chat = await aplicacao.prisma.chat.findUniqueOrThrow({
+        where: { id },
+        select: { status: true },
+      });
+      expect(chat.status).toBe(ChatStatus.PENDING);
+
+      await entregarWebhook(eventoDeMensagem('obrigada, doutora'));
+      expect(
+        await filaAtendimento.getJobs(['waiting', 'delayed']),
+      ).toHaveLength(0);
+    });
+
+    it('recusa mensagem vazia', async () => {
+      const { id } = await conversa();
+
+      const resposta = await ctx.conta.api.post(`/chats/${id}/messages`, {
+        text: '   ',
+      });
+
+      expect(resposta.status).toBe(400);
+    });
+
+    it('devolve para a IA e assume de novo', async () => {
+      const { id } = await conversa();
+
+      const devolvida = await ctx.conta.api.post<{ status: string }>(
+        `/chats/${id}/release`,
+      );
+      expect(devolvida.corpo.status).toBe(ChatStatus.ACTIVE);
+
+      await entregarWebhook(eventoDeMensagem('ainda está aí?'));
+      expect(
+        await filaAtendimento.getJobs(['waiting', 'delayed']),
+      ).toHaveLength(1);
+
+      const assumida = await ctx.conta.api.post<{ status: string }>(
+        `/chats/${id}/take-over`,
+      );
+      expect(assumida.corpo.status).toBe(ChatStatus.PENDING);
+
+      await ctx.conta.api.post(`/chats/${id}/release`);
+    });
+
+    it('envia arquivo: vai para o storage e sai pela fila com a chave', async () => {
+      await conectar(ConnectionStatus.CONNECTED);
+      const { id } = await conversa();
+
+      const resposta = await ctx.conta.api.postArquivo<{
+        id: string;
+        type: string;
+        messageCaption: string;
+        messageFileUrl: string;
+      }>(
+        `/chats/${id}/attachments`,
+        {
+          nome: 'procuracao.pdf',
+          conteudo: '%PDF-1.4 teste',
+          tipo: 'application/pdf',
+        },
+        { caption: 'Segue a procuração' },
+      );
+
+      expect(resposta.status).toBe(201);
+      expect(resposta.corpo).toMatchObject({
+        type: 'DOCUMENT',
+        messageCaption: 'Segue a procuração',
+      });
+      // A tela recebe link assinado, nunca a chave crua do storage
+      expect(resposta.corpo.messageFileUrl).toMatch(
+        /^https:\/\/storage\.teste\//,
+      );
+
+      const envio = (await filaEnvio.getJobs(['waiting', 'delayed'])).find(
+        (j) => j.data.messageId === resposta.corpo.id,
+      );
+      expect(envio?.data).toMatchObject({
+        tipo: 'DOCUMENT',
+        legenda: 'Segue a procuração',
+        arquivo: {
+          mimetype: 'application/pdf',
+          filename: 'procuracao.pdf',
+        },
+      });
+      expect(envio?.data.arquivo?.chave).toMatch(
+        new RegExp(`^${ctx.conta.officeId}/`),
+      );
+    });
+
+    it('áudio gravado no navegador vira mensagem de áudio', async () => {
+      const { id } = await conversa();
+
+      const resposta = await ctx.conta.api.postArquivo<{ type: string }>(
+        `/chats/${id}/attachments`,
+        {
+          nome: 'audio.webm',
+          conteudo: Buffer.from([1, 2, 3]),
+          tipo: 'audio/webm;codecs=opus',
+        },
+      );
+
+      expect(resposta.status).toBe(201);
+      expect(resposta.corpo.type).toBe('AUDIO');
+    });
+
+    it('recusa anexo sem arquivo', async () => {
+      const { id } = await conversa();
+
+      const resposta = await ctx.conta.api.post(`/chats/${id}/attachments`);
+
+      expect(resposta.status).toBe(400);
+    });
+
+    it('o eco do envio pela tela não duplica a mensagem', async () => {
+      const { id } = await conversa();
+
+      await ctx.conta.api.post(`/chats/${id}/messages`, {
+        text: 'Mensagem com eco',
+      });
+
+      await entregarWebhook({
+        ...eventoDeMensagem('Mensagem com eco', {
+          id: 'true_eco@c.us_ECO123',
+          fromMe: true,
+          from: '5511000000000@c.us',
+          to: `${NUMERO}@c.us`,
+        }),
+        event: 'message.any',
+      });
+
+      const iguais = await aplicacao.prisma.message.findMany({
+        where: { chatId: id, messageText: 'Mensagem com eco' },
+        select: { externalId: true },
+      });
+      expect(iguais).toHaveLength(1);
+      // O eco deixa o id, que é por onde a entrega vai chegar
+      expect(iguais[0]?.externalId).toBe('ECO123');
+    });
+
+    it('entregue e lida chegam na mensagem, e nunca voltam atrás', async () => {
+      const { id } = await conversa();
+
+      async function ack(valor: number) {
+        await entregarWebhook({
+          event: 'message.ack',
+          session: ctx.sessao,
+          payload: {
+            id: 'true_5511@c.us_ECO123',
+            timestamp: Date.now(),
+            from: '5511000000000@c.us',
+            fromMe: true,
+            ack: valor,
+          },
+        });
+
+        const m = await aplicacao.prisma.message.findFirstOrThrow({
+          where: { chatId: id, externalId: 'ECO123' },
+          select: { status: true },
+        });
+        return m.status;
+      }
+
+      expect(await ack(2)).toBe(MessageStatus.DELIVERED);
+      expect(await ack(3)).toBe(MessageStatus.READ);
+      // "Entregue" atrasado não apaga o visto azul
+      expect(await ack(2)).toBe(MessageStatus.READ);
+    });
+
+    it('o que o advogado digita no celular aparece na conversa', async () => {
+      const { id } = await conversa();
+      await ctx.conta.api.post(`/chats/${id}/release`);
+
+      const resposta = await entregarWebhook({
+        ...eventoDeMensagem('Respondi pelo celular', {
+          id: 'true_cel@c.us_CEL999',
+          fromMe: true,
+          from: '5511000000000@c.us',
+          to: `${NUMERO}@c.us`,
+        }),
+        event: 'message.any',
+      });
+      expect(resposta.status).toBe(200);
+
+      const gravada = await aplicacao.prisma.message.findFirst({
+        where: { chatId: id, externalId: 'CEL999' },
+        select: { sender: true, status: true, messageText: true },
+      });
+      expect(gravada).toEqual({
+        sender: MessageSender.USER,
+        status: MessageStatus.SENT,
+        messageText: 'Respondi pelo celular',
+      });
+
+      // Quem respondeu pelo celular assumiu: a IA não responde por cima
+      const chat = await aplicacao.prisma.chat.findUniqueOrThrow({
+        where: { id },
+        select: { status: true },
+      });
+      expect(chat.status).toBe(ChatStatus.PENDING);
+      expect(
+        await filaAtendimento.getJobs(['waiting', 'delayed']),
+      ).toHaveLength(0);
+
+      // Reentregue pelo WAHA, não duplica
+      await entregarWebhook({
+        ...eventoDeMensagem('Respondi pelo celular', {
+          id: 'true_cel@c.us_CEL999',
+          fromMe: true,
+          from: '5511000000000@c.us',
+          to: `${NUMERO}@c.us`,
+        }),
+        event: 'message.any',
+      });
+      expect(
+        await aplicacao.prisma.message.count({
+          where: { chatId: id, externalId: 'CEL999' },
+        }),
+      ).toBe(1);
+
+      await ctx.conta.api.post(`/chats/${id}/release`);
+    });
+
+    it('outro escritório não envia nem assume a conversa', async () => {
+      const outra = await criarConta(aplicacao.url, 'Escritório Intruso');
+      const { id } = await conversa();
+
+      const envio = await outra.api.post(`/chats/${id}/messages`, {
+        text: 'mensagem de intruso',
+      });
+      const assumir = await outra.api.post(`/chats/${id}/take-over`);
+
+      expect(envio.status).toBe(404);
+      expect(assumir.status).toBe(404);
+    });
+  });
+
+  describe('lead convertido em cliente', () => {
+    it('continua na mesma conversa, com o histórico de antes', async () => {
+      const antes = await aplicacao.prisma.chat.findFirstOrThrow({
+        where: { officeId: ctx.conta.officeId },
+        select: { id: true, leadId: true },
+      });
+
+      const conversao = await ctx.conta.api.post<{ customerId: string }>(
+        `/leads/${antes.leadId}/convert`,
+        { document: '52998224725' },
+      );
+      expect(conversao.status).toBe(201);
+
+      await entregarWebhook(eventoDeMensagem('agora sou cliente'));
+
+      const conversas = await aplicacao.prisma.chat.findMany({
+        where: { officeId: ctx.conta.officeId, deletedAt: null },
+        select: { id: true, customerId: true, type: true },
+      });
+      expect(conversas).toHaveLength(1);
+      expect(conversas[0]).toMatchObject({
+        id: antes.id,
+        customerId: conversao.corpo.customerId,
+        type: 'CUSTOMER',
+      });
+
+      const ultima = await aplicacao.prisma.message.findFirstOrThrow({
+        where: { chatId: antes.id },
+        orderBy: { createdAt: 'desc' },
+        select: { messageText: true, sender: true },
+      });
+      expect(ultima).toEqual({
+        messageText: 'agora sou cliente',
+        sender: MessageSender.CUSTOMER,
       });
     });
   });

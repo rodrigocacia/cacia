@@ -20,6 +20,7 @@ import {
 import { useEventById } from "@/http/hooks/event"
 import { TypeEvent } from "./type-event"
 import { StatusEvent } from "./status-event"
+import { BotaoCancelarEvento } from "../button-cancel-event"
 import { useCallback } from "react"
 import Link from "next/link"
 
@@ -182,7 +183,12 @@ export function DialogShowEvent() {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <BotaoCancelarEvento
+                  eventId={eventShowId}
+                  status={event.status}
+                />
+
                 <button
                   type="button"
                   onClick={() => {

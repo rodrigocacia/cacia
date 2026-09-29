@@ -9,7 +9,6 @@ import { AvailableDay } from "@/types/calendar"
 interface UpdateCalendarRequest {
   calendarId: string
   title: string
-  user: string
   general_roles: string
   available_days: AvailableDay[]
 }
@@ -32,7 +31,6 @@ export async function updateCalendar({
   calendarId,
   title,
   general_roles,
-  user,
   available_days,
 }: UpdateCalendarRequest) {
   try {
@@ -41,7 +39,7 @@ export async function updateCalendar({
         json: {
           title,
           general_roles,
-          user,
+          // Sem `user`: o responsável não muda na edição e a API recusa o campo
           available_days,
           general_available: "admin",
           cancel_roles: "admin",

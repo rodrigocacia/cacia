@@ -118,7 +118,9 @@ export function DialogDeleteCustomer() {
           </div>
 
           <div className="w-full flex items-center justify-center gap-3.5 mt-[34px]">
-            <Button variant="outline" onClick={onClose}>
+            {/* type="button": sem ele o "Cancelar" enviava o formulário e
+                excluía do mesmo jeito. */}
+            <Button variant="outline" type="button" onClick={onClose}>
               Cancelar
             </Button>
 

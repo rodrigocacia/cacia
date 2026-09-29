@@ -50,7 +50,13 @@ function alternativasDeBusca(termo: string) {
   return [
     { name: { contains: termo, mode: 'insensitive' as const } },
     { email: { contains: termo, mode: 'insensitive' as const } },
-    ...(digitos ? [{ document: { contains: digitos } }] : []),
+    ...(digitos
+      ? [
+          { document: { contains: digitos } },
+          // A tela promete "buscar por nome ou telefone"
+          { remotejid: { contains: digitos } },
+        ]
+      : []),
   ];
 }
 
@@ -96,12 +102,15 @@ export class CustomersService {
   }
 
   async criar(officeId: string, dto: CriarClienteDto) {
-    const duplicado = await this.prisma.customer.findFirst({
-      where: { officeId, document: dto.document, deletedAt: null },
-      select: { id: true },
+    // A unicidade (escritório, documento) ignora a exclusão lógica, de
+    // propósito. Então a busca também não pode filtrar `deletedAt`: antes, um
+    // CPF de cliente excluído passava pela checagem e morria no índice com 500.
+    const existente = await this.prisma.customer.findFirst({
+      where: { officeId, document: dto.document },
+      select: { id: true, deletedAt: true },
     });
 
-    if (duplicado) {
+    if (existente && !existente.deletedAt) {
       throw new ConflictException(
         'Já existe um cliente com este documento neste escritório',
       );
@@ -109,14 +118,37 @@ export class CustomersService {
 
     const { addresses, ...dados } = dto;
 
+    // Recadastrar quem foi excluído restaura o cadastro, com os dados novos —
+    // o mesmo que o webhook faz com o lead que volta a escrever. Processos e
+    // documentos antigos voltam junto, que é o esperado de um cliente que
+    // retorna.
+    if (existente) {
+      return this.prisma.$transaction(async (tx) => {
+        await tx.customerAddress.deleteMany({
+          where: { customerId: existente.id, officeId },
+        });
+
+        return tx.customer.update({
+          where: { id: existente.id },
+          data: {
+            ...dados,
+            deletedAt: null,
+            ...(addresses?.length && { addresses: { create: addresses } }),
+          },
+          select: CAMPOS,
+        });
+      });
+    }
+
     return this.prisma.customer.create({
       data: {
         ...dados,
         officeId,
         ...(addresses?.length && {
-          addresses: {
-            create: addresses.map((endereco) => ({ ...endereco, officeId })),
-          },
+          // Sem officeId: a chave do endereço para o cliente é composta
+          // (customerId, officeId), e na criação aninhada o Prisma preenche as
+          // duas a partir do pai. Informá-lo derrubava o cadastro com 500.
+          addresses: { create: addresses },
         }),
       },
       select: CAMPOS,

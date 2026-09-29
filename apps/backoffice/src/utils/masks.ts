@@ -15,13 +15,16 @@ export function cpfCnpj(e: React.FormEvent<HTMLInputElement>) {
   let value = e.currentTarget.value;
   value = value.replace(/\D/g, '');
 
+  // O limite é sempre o do CNPJ formatado. Limitar a 14 enquanto o valor tem
+  // cara de CPF travava o campo em "000.000.000-00" — o 12º dígito nunca
+  // entrava, e CNPJ era impossível de digitar.
+  e.currentTarget.maxLength = 18;
+
   if (value.length <= 11) {
-    e.currentTarget.maxLength = 14;
     value = value.replace(/(\d{3})(\d)/, '$1.$2');
     value = value.replace(/(\d{3})(\d)/, '$1.$2');
     value = value.replace(/(\d{3})(\d{2})$/, '$1-$2');
   } else {
-    e.currentTarget.maxLength = 18;
     value = value.replace(/(\d{2})(\d)/, '$1.$2');
     value = value.replace(/(\d{3})(\d)/, '$1.$2');
     value = value.replace(/(\d{3})(\d)/, '$1/$2');

@@ -88,3 +88,24 @@ export function parseAddressValidationError(errorMessages: string[]) {
 
   return errorInfo || null
 }
+
+/**
+ * Texto de erro para exibir, a partir do que a action devolveu.
+ *
+ * As actions devolvem o corpo de erro da API — `{ message, statusCode }` —,
+ * só a `message` (string ou lista de validação) ou uma string própria.
+ * Passar o objeto direto para um componente derruba a página inteira
+ * ("Objects are not valid as a React child").
+ */
+export function mensagemDeErro(erro: unknown): string {
+  if (typeof erro === "string") return erro
+  if (Array.isArray(erro)) return parseValidationError(erro.map(String))
+
+  if (typeof erro === "object" && erro !== null && "message" in erro) {
+    return parseValidationError(
+      (erro as { message: string | string[] }).message
+    )
+  }
+
+  return "Erro ao processar solicitação"
+}

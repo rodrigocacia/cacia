@@ -1,7 +1,11 @@
 import { Module } from '@nestjs/common';
 import { QdrantModule } from '@/integrations/qdrant/qdrant.module';
-import { provedorOpenAI } from './cliente-openai';
+import { LeadsModule } from '@/modules/leads/leads.module';
+import { TagsModule } from '@/modules/tags/tags.module';
+import { provedorDeepSeek, provedorOpenAI } from './cliente-openai';
 import { EmbeddingsService } from './embeddings.service';
+import { LlmService } from './llm.service';
+import { ConsumoDeIaService } from './consumo/consumo-de-ia.service';
 import { MemoriaService } from './memoria/memoria.service';
 import { SumarizacaoService } from './memoria/sumarizacao.service';
 import { ExtracaoDeFatosService } from './memoria/extracao-de-fatos.service';
@@ -17,9 +21,15 @@ import { RagService } from './rag/rag.service';
  * mensagens do sistema anterior — ver memoria.service.ts.
  */
 @Module({
-  imports: [QdrantModule],
+  // LeadsModule e TagsModule porque as ferramentas de funil escrevem pelo
+  // servico, nao pelo Prisma: e la que a projecao do status e o registro no
+  // historico acontecem.
+  imports: [QdrantModule, LeadsModule, TagsModule],
   providers: [
     provedorOpenAI,
+    provedorDeepSeek,
+    ConsumoDeIaService,
+    LlmService,
     EmbeddingsService,
     MemoriaService,
     SumarizacaoService,
@@ -30,6 +40,7 @@ import { RagService } from './rag/rag.service';
     RagService,
   ],
   exports: [
+    ConsumoDeIaService,
     EmbeddingsService,
     MemoriaService,
     SumarizacaoService,

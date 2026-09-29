@@ -17,9 +17,11 @@ import { validateCpf } from "@/utils/validate-cpf"
 interface PersonalData {
   nextStep(): void
   close(): void
+  /** Na edição o documento fica travado: a API não o altera. */
+  editando?: boolean
 }
 
-export function PersonalData({ nextStep, close }: PersonalData) {
+export function PersonalData({ nextStep, close, editando }: PersonalData) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const returnTo = searchParams.get("returnTo")
@@ -143,7 +145,13 @@ export function PersonalData({ nextStep, close }: PersonalData) {
           }
           iconName="contact"
           error={errors?.document}
+          readOnly={editando}
         />
+        {editando && (
+          <p className="-mt-3 text-xs text-gray-500">
+            O CPF/CNPJ identifica o cliente e não pode ser alterado.
+          </p>
+        )}
 
         {typeDocument === "CNPJ" && (
           <Input

@@ -34,6 +34,7 @@ import { useCustomers } from "@/http/hooks/customer"
 import { Customer } from "@/types/customer"
 import { formatName } from "@/utils/formatters"
 import { useProcess } from "@/http/hooks/process"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 export const areasDeAtuacao = [
   { value: "tecnologia", label: "Tecnologia" },
@@ -83,6 +84,7 @@ function FormComponent({
   processId,
 }: FormComponentProps) {
   const [file, setFile] = useState<File | null>(null)
+  const [erro, setErro] = useState<string | null>(null)
 
   const { customers } = useCustomers({ limit: 100 })
   const { processs } = useProcess(1)
@@ -137,7 +139,14 @@ function FormComponent({
         process_id: location === "process" ? processId : process_id,
       }
 
-      await createDocument(documentData)
+      // Sem conferir o resultado, uma falha no envio (storage fora do ar,
+      // arquivo grande demais) aparecia como "adicionado com sucesso".
+      const resultado = await createDocument(documentData)
+
+      if (!resultado.success) {
+        setErro(mensagemDeErro(resultado.error))
+        return
+      }
 
       setOpen(false)
       handleOpenSuccess()
@@ -149,6 +158,15 @@ function FormComponent({
       onSubmit={handleSubmit(onSubmit)}
       className="px-4 pb-6 w-full h-screen overflow-y-scroll"
     >
+      {erro && (
+        <Toast
+          onClose={() => setErro(null)}
+          variant="error"
+          title="Não foi possível salvar"
+          description={erro}
+        />
+      )}
+
       <div className="mt-10 flex flex-col gap-3">
         <div className="flex gap-2">
           <Icon
@@ -160,7 +178,7 @@ function FormComponent({
         </div>
 
         <p className="text-base text-[#BDBDBD]">
-          Preencha os campos abaixo para adicionar um o novo documento
+          Preencha os campos abaixo para adicionar um novo documento
         </p>
       </div>
 
@@ -255,7 +273,7 @@ function FormComponent({
             <input
               id="file"
               type="file"
-              accept=".pdf,.doc,.docx,.txt,.jpeg,.jpg,.png,.ialq"
+              accept=".pdf,.doc,.docx,.txt,.jpeg,.jpg,.png"
               onChange={handleFileChange}
               className="hidden"
             />
@@ -272,7 +290,7 @@ function FormComponent({
                 </h3>
 
                 <p className="text-[12px] text-[#BDBDBD]">
-                  PDF, DOC, DOCX, TXT, JPEG, PNG, IALQ (max. 10MB)
+                  PDF, DOC, DOCX, TXT, JPEG, PNG (máx. 10MB)
                 </p>
               </div>
             </div>

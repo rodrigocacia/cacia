@@ -1,6 +1,8 @@
 import { UnauthorizedRedirectError } from "@/lib/erros"
 import ky from "ky"
 
+import { autenticar } from "./autenticacao"
+
 import { limparCorpo, limparQuery, paginaLegada, paraLegado } from "./adaptador"
 
 /**
@@ -24,36 +26,8 @@ export const api = ky.create({
   prefixUrl: process.env.NEXT_PUBLIC_API_URL,
   hooks: {
     beforeRequest: [
-      async (request) => {
-        let token: string | undefined
-
-        if (typeof window === "undefined") {
-          const { cookies } = await import("next/headers")
-          token = (await cookies()).get("token")?.value
-        } else {
-          const { getCookie } = await import("cookies-next")
-          token = getCookie("token") as string | undefined
-        }
-
-        if (token) {
-          request.headers.set("Authorization", `Bearer ${token}`)
-        }
-        // A API resolve o escritório por este cabeçalho — nunca por query ou
-        // corpo — e recusa a requisição sem ele nas rotas de escritório.
-        let officeId: string | undefined
-
-        if (typeof window === "undefined") {
-          const { cookies } = await import("next/headers")
-          officeId = (await cookies()).get("office_id")?.value
-        } else {
-          const { getCookie } = await import("cookies-next")
-          officeId = getCookie("office_id") as string | undefined
-        }
-
-        if (officeId) {
-          request.headers.set("x-office-id", officeId)
-        }
-      },
+      // Mesma autenticação do cliente de CRM — ver http/autenticacao.ts
+      autenticar,
 
       /**
        * Ajusta a requisição para o contrato da API.
@@ -122,9 +96,14 @@ export const api = ky.create({
 
         const corpo = (await response.clone().json()) as unknown
 
+        // Lista sem paginação (agents, calendars, connections, reminders) vem
+        // como array puro. O frontend sempre leu listas como `{ data: [] }`;
+        // embrulhar aqui evita `result.data[0]` explodir em cada consumidor.
         const traduzido = ehPaginada(corpo)
           ? paginaLegada(corpo)
-          : paraLegado(corpo)
+          : Array.isArray(corpo)
+            ? paginaLegada({ data: corpo })
+            : paraLegado(corpo)
 
         return new Response(JSON.stringify(traduzido), {
           status: response.status,

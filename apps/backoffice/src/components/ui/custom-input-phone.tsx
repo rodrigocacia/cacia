@@ -79,6 +79,9 @@ export function InputPhone<T extends FieldValues>({
                     setIsFocused(false);
                     field.onBlur();
                   }}
+                  // Mantém o +55 fixo, como no app: editável, os primeiros
+                  // dígitos digitados viravam código de país (31 → Holanda)
+                  countryCallingCodeEditable={false}
                   onChange={(value) => field.onChange(value)}
                   className="phone-input-wrapper border-0 w-full text-sm text-gray-700 bg-transparent outline-none border-white"
                 />

@@ -33,7 +33,6 @@ export function Form() {
       const result = await changePassword({
         password: data.password,
         newPassword: data.newPassword,
-        confirmNewPassword: data.confirmNewPassword,
       })
 
       if (!result.success) {

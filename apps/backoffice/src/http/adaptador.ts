@@ -21,10 +21,14 @@
  * `template_variables` guarda as variáveis do documento, com chaves em
  * camelCase por desenho. Os demais vêm crus da Judit — renomear as chaves
  * deles quebraria a leitura do processo.
+ *
+ * `processes_by_type` tem como CHAVES os tipos de processo (`CIVIL`,
+ * `TRABALHISTA`); convertidas, viravam `_c_i_v_i_l`.
  */
 const OPACOS = new Set([
   'template_variables',
   'templateVariables',
+  'processes_by_type',
   'courts',
   'classifications',
   'subjects',

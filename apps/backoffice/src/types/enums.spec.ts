@@ -96,7 +96,9 @@ const PARES: Array<{
     nome: 'EventType',
     frontend: EventType,
     prisma: 'EventType',
-    lacunas: ['COMMITMENT', 'SERVICE'],
+    // CALL e FOLLOW_UP são atividades comerciais da ficha do lead, no
+    // aplicativo do escritório. O painel administrativo não as exibe.
+    lacunas: ['COMMITMENT', 'SERVICE', 'CALL', 'FOLLOW_UP'],
   },
   {
     nome: 'EventStatus',

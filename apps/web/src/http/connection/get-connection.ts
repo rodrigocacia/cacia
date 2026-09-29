@@ -8,6 +8,22 @@ export interface GetConnectionResponse {
   data: Connection[]
 }
 
+/**
+ * A API nova devolve `provider` (WAHA | EVOLUTION | OFICIAL); os componentes
+ * leem `whatsapp_connection` em minúsculas, herdado do sistema anterior.
+ */
+export async function normalizarConexao(
+  bruta: (Connection & { provider?: string }) | undefined
+): Promise<Connection | null> {
+  if (!bruta) return null
+
+  return {
+    ...bruta,
+    whatsapp_connection:
+      bruta.whatsapp_connection ?? bruta.provider?.toLowerCase() ?? "",
+  }
+}
+
 export async function getConnection() {
   const result = await api
     .get("connections", {
@@ -18,7 +34,5 @@ export async function getConnection() {
     })
     .json<GetConnectionResponse>()
 
-  const connection = result.data[0]
-
-  return connection
+  return normalizarConexao(result?.data?.[0])
 }

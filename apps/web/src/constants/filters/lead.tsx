@@ -30,4 +30,15 @@ export const leadFilters = [
       />
     ),
   },
+  {
+    id: "4",
+    name: "Perdidos",
+    status: "LOST",
+    icon: (
+      <Icon
+        icon="mdi:close-circle-outline"
+        className="text-[#BDBDBD] w-4 h-4"
+      />
+    ),
+  },
 ]

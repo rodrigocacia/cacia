@@ -6,18 +6,13 @@ interface Params {
   page?: number;
   search?: string;
   limit?: number;
-  signature_status?: string;
+  status?: string;
 }
 
-export function useOffices({
-  page = 1,
-  search,
-  limit,
-  signature_status,
-}: Params) {
+export function useOffices({ page = 1, search, limit, status }: Params) {
   const { data, error, isLoading, mutate } = useSWR<GetOfficesResponse>(
-    ["office", page, search, limit, signature_status],
-    () => getOffices({ page, search, limit, signature_status }),
+    ["office", page, search, limit, status],
+    () => getOffices({ page, search, limit, status }),
   );
 
   return {

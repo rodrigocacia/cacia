@@ -8,12 +8,12 @@ export interface Office {
   trade_name: string;
   remotejid: string;
   description: string;
-  address: Address[];
-  plan: string;
+  oab_number: string;
+  oab_uf: string;
+  addresses?: Address[];
   created_at: string;
-  updated_at: string;
+  /** Situação do escritório — é o que a API devolve e filtra. */
   status: OfficeStatus;
-  signature_status: OfficeSignatureStatus;
 }
 
 export enum OfficeStatus {

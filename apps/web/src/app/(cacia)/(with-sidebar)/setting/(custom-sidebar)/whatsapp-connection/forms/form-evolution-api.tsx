@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/custom-button"
 import { Plus } from "lucide-react"
 import Image from "next/image"
 import { GetQrCodeResponse, getQrCode } from "@/http/connection/qr-code"
+import { createConnection } from "@/http/connection/create-connection"
 import { disconnect } from "@/http/connection/disconnect"
 import { useConnection } from "@/http/hooks/connection"
 import { CustomAvatar } from "@/components/ui/custom-avatar"
@@ -44,17 +45,27 @@ export function FormEvolutionApi({ qrCode }: FormEvolutionApiProps) {
   }
 
   const handleFetchQr = async () => {
-    if (!connection) return
-
     setIsLoadingQr(true)
     setQrError(null)
 
     try {
-      const result = await getQrCode({ connectionId: connection._id })
+      // Sem conexão cadastrada: cria uma antes de pedir o QR. No sistema
+      // anterior ela nascia com o escritório; na API nova é sob demanda.
+      const alvo = connection ?? (await createConnection())
+      if (!alvo) throw new Error("Conexão não criada")
+
+      const result = await getQrCode({ connectionId: alvo._id })
       setLiveQrCode(result)
+
+      if (!connection) {
+        await mutate()
+        setTypeConnection("CREATING_CONNECTION")
+      }
     } catch {
       setQrError(
-        "Não foi possível gerar o QR agora. Tente de novo em alguns segundos."
+        connection
+          ? "Não foi possível gerar o QR agora. Tente de novo em alguns segundos."
+          : "Não foi possível criar a conexão. Confira se o provedor de WhatsApp está configurado e tente de novo."
       )
       setLiveQrCode(null)
     } finally {
@@ -92,7 +103,7 @@ export function FormEvolutionApi({ qrCode }: FormEvolutionApiProps) {
                   {connection?.evolution_profile_picture_url ? (
                     <Image
                       src={connection.evolution_profile_picture_url}
-                      alt="Evolution API"
+                      alt="Provedor 2"
                       width={60}
                       height={60}
                       className="rounded-full w-15 h-15 object-cover"

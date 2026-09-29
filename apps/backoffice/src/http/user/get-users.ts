@@ -32,8 +32,11 @@ export async function getUsers({ page, search, limit, role }: QueryParams) {
     queryParams.set('limit', limit.toString());
   }
 
-  if (role && role !== '-') {
-    queryParams.set('role', role);
+  // A API só aceita ADMIN e USER e responde 400 ao resto. Um link antigo com
+  // `?role=admin` derrubava a tela inteira; valor desconhecido vira "todos".
+  const papel = role?.toUpperCase();
+  if (papel === 'ADMIN' || papel === 'USER') {
+    queryParams.set('role', papel);
   }
 
   const result = await api

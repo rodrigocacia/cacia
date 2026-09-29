@@ -13,6 +13,7 @@ import { CardNotification } from "./components/card-notification"
 import { useSetting } from "@/http/hooks/setting"
 import { updateSetting } from "@/http/setting/update-setting"
 import { Toast } from "@/components/ui/toast"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 export function AdministratorDetail() {
   const [hasSuccess, setHasSuccess] = useState(false)
@@ -76,7 +77,7 @@ export function AdministratorDetail() {
 
       if (!result.success) {
         setHasError(true)
-        setErrorMessage(JSON.stringify(result.error.message))
+        setErrorMessage(mensagemDeErro(result.error))
 
         return
       }

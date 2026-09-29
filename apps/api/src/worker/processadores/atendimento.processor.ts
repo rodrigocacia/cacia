@@ -122,7 +122,7 @@ export class AtendimentoProcessor extends WorkerHost {
       leadId: chat.leadId ?? undefined,
     });
 
-    await this.chats.registrarMensagem({
+    const registrada = await this.chats.registrarMensagem({
       officeId,
       chatId,
       leadId: chat.leadId ?? undefined,
@@ -141,6 +141,7 @@ export class AtendimentoProcessor extends WorkerHost {
         tipo: MessageType.TEXT,
         texto: resposta.texto,
         chatId,
+        messageId: registrada.id,
       },
       {
         attempts: 3,
@@ -156,17 +157,25 @@ export class AtendimentoProcessor extends WorkerHost {
   }
 
   /**
-   * O que a pessoa disse desde a última resposta do agente.
+   * O que a pessoa disse desde a última resposta do escritório.
    *
    * Sem esse recorte, cada mensagem viraria um turno isolado e o agente
    * responderia "oi" antes de ler a pergunta que veio logo em seguida.
+   *
+   * A resposta de um atendente (pela tela ou pelo celular) também encerra o
+   * turno, e as mensagens dele nunca entram como fala do contato: devolvida a
+   * conversa para a IA, ela responderia ao próprio advogado.
    */
   private async mensagensPendentes(
     officeId: string,
     chatId: string,
   ): Promise<string[]> {
     const ultimaDoAgente = await this.prisma.message.findFirst({
-      where: { officeId, chatId, sender: MessageSender.AGENT },
+      where: {
+        officeId,
+        chatId,
+        sender: { in: [MessageSender.AGENT, MessageSender.USER] },
+      },
       orderBy: { createdAt: 'desc' },
       select: { createdAt: true },
     });
@@ -176,7 +185,7 @@ export class AtendimentoProcessor extends WorkerHost {
         officeId,
         chatId,
         deletedAt: null,
-        sender: { not: MessageSender.AGENT },
+        sender: { in: [MessageSender.LEAD, MessageSender.CUSTOMER] },
         ...(ultimaDoAgente && {
           createdAt: { gt: ultimaDoAgente.createdAt },
         }),

@@ -30,6 +30,7 @@ import { Customer } from "@/types/customer"
 import { updateCustomer } from "@/http/customer/update-customer"
 import { useLeads } from "@/http/hooks/lead"
 import { getCepsByCity } from "@/http/get-city-cep-informations"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 interface AddressProps {
   lastStep(): void
@@ -55,7 +56,7 @@ export function Address({
   const searchParams = useSearchParams()
 
   const page = Number(searchParams.get("page")) || 1
-  const search = searchParams.get("page") || ""
+  const search = searchParams.get("search") || ""
   const leadId = searchParams.get("leadId") || ""
   const returnTo = searchParams.get("returnTo")
 
@@ -179,7 +180,7 @@ export function Address({
 
         if (!result.success) {
           setHasError(true)
-          setErrorMessage(JSON.stringify(result.error.message))
+          setErrorMessage(mensagemDeErro(result.error))
 
           if (result.error === "Customer with this email already exists") {
             setError("email", {
@@ -216,7 +217,7 @@ export function Address({
 
         if (!result.success) {
           setHasError(true)
-          setErrorMessage(JSON.stringify(result.error.message))
+          setErrorMessage(mensagemDeErro(result.error))
 
           if (result.error === "Customer with this email already exists") {
             setError("email", {

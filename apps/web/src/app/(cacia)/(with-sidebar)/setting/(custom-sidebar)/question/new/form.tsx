@@ -30,6 +30,7 @@ import { updateQuestion } from "@/http/question/update-question"
 import { createQuestion } from "@/http/question/create-question"
 import { useQuestion, useQuestionById } from "@/http/hooks/question"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 interface FormComponentProps {
   setOpen(value: boolean): void
@@ -43,7 +44,7 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
   const [errorMessage, setErrorMessage] = useState("")
 
   const page = Number(searchParams.get("page")) || 1
-  const search = searchParams.get("page") || ""
+  const search = searchParams.get("search") || ""
   const editId = searchParams.get("editId")
 
   const router = useRouter()
@@ -91,7 +92,7 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
 
         if (!result.success) {
           setHasError(true)
-          setErrorMessage(JSON.stringify(result.error.message))
+          setErrorMessage(mensagemDeErro(result.error))
 
           return
         }
@@ -110,7 +111,7 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
 
         if (!result.success) {
           setHasError(true)
-          setErrorMessage(JSON.stringify(result.error.message))
+          setErrorMessage(mensagemDeErro(result.error))
 
           return
         }
@@ -150,12 +151,14 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
           />
 
           <h3 className="text-xl text-[#3D3D3D] font-bold">
-            {question ? "Editar dúvida" : "Nova dúvida"}
+            {/* Pelo `editId`, e não pela dúvida carregada: enquanto ela chega,
+                o título dizia "Nova" numa edição. */}
+            {editId ? "Editar dúvida" : "Nova dúvida"}
           </h3>
         </div>
 
         <p className="text-base text-[#BDBDBD]">
-          {question
+          {editId
             ? "Edite os campos para atualizar a dúvida"
             : "Cadastre a pergunta e a resposta."}
         </p>
@@ -203,7 +206,7 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
             variant="primary"
             isLoading={isSubmitting}
           >
-            {question ? "Editar dúvida" : "Salvar dúvida"}
+            {editId ? "Editar dúvida" : "Salvar dúvida"}
           </CustomButton>
         </div>
       </div>
@@ -335,7 +338,9 @@ export function Form({ setting = false }: { setting?: boolean }) {
           </Button>
 
           <SheetContent className="w-full md:min-w-[707px] rounded-tl-[24px] rounded-bl-[24px] max-w-full">
-            <SheetTitle className="sr-only">Nova dúvida</SheetTitle>
+            <SheetTitle className="sr-only">
+              {editId ? "Editar dúvida" : "Nova dúvida"}
+            </SheetTitle>
 
             <FormComponent
               setOpen={setOpenSheet}
@@ -363,7 +368,9 @@ export function Form({ setting = false }: { setting?: boolean }) {
             </DrawerTrigger>
           )}
           <DrawerContent className="h-[90vh] max-h-screen">
-            <DialogTitle className="sr-only">Nova dúvida</DialogTitle>
+            <DialogTitle className="sr-only">
+              {editId ? "Editar dúvida" : "Nova dúvida"}
+            </DialogTitle>
 
             <FormComponent
               setOpen={setOpenDrawer}

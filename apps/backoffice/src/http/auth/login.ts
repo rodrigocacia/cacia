@@ -62,3 +62,22 @@ export async function signIn({
     },
   };
 }
+
+/**
+ * Papel global de quem acabou de entrar.
+ *
+ * O login da API vale para qualquer conta — é o mesmo do painel dos
+ * escritórios. Quem decide se a pessoa pode usar o backoffice é o `role` de
+ * `users/me`, consultado com o token recém-emitido, antes de gravar a sessão.
+ * Também usa `ky` direto: o cookie ainda não existe, e o cliente da aplicação
+ * lê o token dele.
+ */
+export async function buscarPapel(token: string): Promise<string> {
+  const perfil = await ky
+    .get(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    .json<{ role: string }>();
+
+  return perfil.role;
+}

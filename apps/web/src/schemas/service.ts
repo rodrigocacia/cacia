@@ -29,7 +29,7 @@ export const createServiceFormSchema = z
   )
   .refine(
     (data) => {
-      if (data.value_type === "float") {
+      if (data.value_type === "FLOAT") {
         return !!data.value_float?.trim()
       }
       return true

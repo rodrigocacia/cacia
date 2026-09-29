@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { IaModule } from '@/ai/ia.module';
+import { StorageModule } from '@/infra/storage/storage.module';
 import { IntegracoesModule } from '@/integrations/integracoes.module';
 import { ChatsModule } from '@/modules/chats/chats.module';
 import { DocumentsModule } from '@/modules/documents/documents.module';
@@ -10,6 +11,7 @@ import { FilasModule } from './filas/filas.module';
 import { AcompanhamentoProcessoProcessor } from './processadores/acompanhamento-processo.processor';
 import { AtendimentoProcessor } from './processadores/atendimento.processor';
 import { EnvioWhatsappProcessor } from './processadores/envio-whatsapp.processor';
+import { ImportacaoLeadsProcessor } from './processadores/importacao-leads.processor';
 import { IndexacaoDocumentoProcessor } from './processadores/indexacao-documento.processor';
 import { LembretesProcessor } from './processadores/lembretes.processor';
 import { AcompanhamentoTarefa } from './tarefas/acompanhamento.tarefa';
@@ -27,6 +29,10 @@ import { LembretesTarefa } from './tarefas/lembretes.tarefa';
   imports: [
     ScheduleModule.forRoot(),
     FilasModule,
+    // Explicito, ainda que StorageModule seja @Global: o processador de
+    // importacao le o arquivo daqui, e depender de outro modulo te-lo
+    // importado e o tipo de acoplamento que quebra sem aviso.
+    StorageModule,
     IntegracoesModule,
     RemindersModule,
     ChatsModule,
@@ -38,6 +44,7 @@ import { LembretesTarefa } from './tarefas/lembretes.tarefa';
     AtendimentoProcessor,
     EnvioWhatsappProcessor,
     IndexacaoDocumentoProcessor,
+    ImportacaoLeadsProcessor,
     AcompanhamentoProcessoProcessor,
     LembretesProcessor,
     LembretesTarefa,

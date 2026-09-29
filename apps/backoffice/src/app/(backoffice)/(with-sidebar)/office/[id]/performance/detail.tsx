@@ -1,8 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
-import { getOfficePerformance } from "@/http/office/get-office-performance";
+import {
+  getOfficePerformance,
+  type GetOfficePerformanceResponse,
+} from "@/http/office/get-office-performance";
 import { PerformanceFilters } from "../performance-dashboard/PerformanceFilters";
 import { PerformanceIndicators } from "../performance-dashboard/PerformanceIndicators";
 import { PerformanceProgress } from "../performance-dashboard/PerformanceProgress";
@@ -14,18 +16,26 @@ interface OfficeDetailProps {
 }
 
 export function OfficeDetail({ officeId }: OfficeDetailProps) {
-  const [performanceData, setPerformanceData] = useState<any>(null);
+  const [performanceData, setPerformanceData] =
+    useState<GetOfficePerformanceResponse | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState<number>(30);
 
   useEffect(() => {
     async function loadPerformanceData() {
       try {
-        const data = await getOfficePerformance({
+        const resultado = await getOfficePerformance({
           officeId,
           periodInDays: selectedPeriod,
         });
-        setPerformanceData(data);
+
+        if (resultado.success) {
+          setPerformanceData(resultado.data);
+          setErro(null);
+        } else {
+          setErro(resultado.error);
+        }
       } catch (error) {
         console.error("Erro ao carregar dados de performance:", error);
       } finally {
@@ -62,8 +72,16 @@ export function OfficeDetail({ officeId }: OfficeDetailProps) {
           onPeriodChange={setSelectedPeriod}
           selectedPeriod={selectedPeriod}
         />
-        <PerformanceIndicators data={performanceData} />
-        <PerformanceProgress data={performanceData} />
+        {performanceData ? (
+          <>
+            <PerformanceIndicators data={performanceData} />
+            <PerformanceProgress data={performanceData} />
+          </>
+        ) : (
+          <p className="text-sm text-[#707070] py-8 text-center">
+            {erro ?? "Não foi possível carregar o desempenho."}
+          </p>
+        )}
       </div>
     </>
   );

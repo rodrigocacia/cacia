@@ -131,6 +131,9 @@ jobs:
         run: pnpm --filter @cacia/web cf:deploy
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          # Lido pelo painel ao limpar sessão expirada; ausente no build, a
+          # chamada ia para "undefined/api/auth/reset"
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 

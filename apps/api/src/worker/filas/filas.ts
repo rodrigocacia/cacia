@@ -13,6 +13,7 @@ export const FILA = {
   LEMBRETES: 'lembretes',
   INDEXACAO_DOCUMENTO: 'indexacao-documento',
   ACOMPANHAMENTO_PROCESSO: 'acompanhamento-processo',
+  IMPORTACAO_LEADS: 'importacao-leads',
 } as const;
 
 /**
@@ -36,10 +37,24 @@ export interface JobEnvioWhatsapp {
   para: string;
   tipo: MessageType;
   texto?: string;
-  arquivo?: { url: string; mimetype: string; filename: string };
+  /**
+   * `url` pública, ou `chave` do storage: com a chave, o worker gera o link
+   * temporário na hora de enviar (ver EnvioWhatsappProcessor).
+   */
+  arquivo?: {
+    url?: string;
+    chave?: string;
+    mimetype: string;
+    filename: string;
+  };
   legenda?: string;
   /** Preenchido quando o envio é resposta em uma conversa. */
   chatId?: string;
+  /**
+   * A mensagem gravada que este envio materializa. Com ele, o worker marca
+   * exatamente essa mensagem como enviada ou falha.
+   */
+  messageId?: string;
 }
 
 export interface JobLembrete {
@@ -70,4 +85,16 @@ export interface JobAcompanhamentoProcesso {
   officeId: string;
   processId: string;
   numero: string;
+}
+
+/**
+ * Uma planilha confirmada precisa virar leads.
+ *
+ * Só o id viaja: o mapeamento, a etapa de destino e as etiquetas já estão na
+ * linha de `lead_imports`. Mandá-los no job criaria uma segunda cópia do que
+ * foi confirmado, e uma reexecução usaria a cópia velha.
+ */
+export interface JobImportacaoLeads {
+  officeId: string;
+  importId: string;
 }

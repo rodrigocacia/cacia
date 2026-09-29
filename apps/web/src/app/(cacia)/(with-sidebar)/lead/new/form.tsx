@@ -26,6 +26,7 @@ import { Toast } from "@/components/ui/toast"
 import { updateLead } from "@/http/lead/update-lead"
 import { InputPhone } from "@/components/ui/custom-input-phone"
 import { DrawerOrSheet } from "@/components/drawer-or-sheet"
+import { mensagemDeErro } from "@/utils/error-handlers"
 
 const createLeadFormSchema = z.object({
   name: z.string().min(6, { message: "Insira um nome válido" }),
@@ -81,7 +82,7 @@ function FormComponent({ handleOpenSuccess, lead }: FormComponentProps) {
 
         if (!result.success) {
           setHasError(true)
-          setErrorMessage(JSON.stringify(result.error.message))
+          setErrorMessage(mensagemDeErro(result.error))
 
           return
         }
@@ -98,7 +99,7 @@ function FormComponent({ handleOpenSuccess, lead }: FormComponentProps) {
 
         if (!result.success) {
           setHasError(true)
-          setErrorMessage(JSON.stringify(result.error.message))
+          setErrorMessage(mensagemDeErro(result.error))
 
           return
         }
@@ -116,7 +117,13 @@ function FormComponent({ handleOpenSuccess, lead }: FormComponentProps) {
               url.searchParams.set("newProcess", "true")
             }
             router.push(url.pathname + url.search)
+            return
           }
+
+          // Sem isto o painel continuava aberto e preenchido depois de
+          // salvar — e um segundo clique em Salvar esbarrava no telefone
+          // repetido.
+          handleClose()
         }, 100)
       }
     } catch (err: any) {
@@ -171,6 +178,12 @@ function FormComponent({ handleOpenSuccess, lead }: FormComponentProps) {
             label="Telefone (WhatsApp)"
             placeholder="Insira o número de telefone do lead..."
             error={errors?.remotejid}
+            disabled={Boolean(lead)}
+            hint={
+              lead
+                ? "O telefone identifica o contato no WhatsApp e não pode ser alterado."
+                : undefined
+            }
           />
 
           <Input

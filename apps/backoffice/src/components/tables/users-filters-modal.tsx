@@ -31,13 +31,13 @@ export function UsersFiltersModal({
   const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState<FilterState>({
-    role: searchParams.get("role") || "-",
+    role: searchParams.get("role")?.toUpperCase() || "-",
   });
 
   const roleOptions = [
     { value: "", label: "Todos os tipos" },
-    { value: "admin", label: "Administrador" },
-    { value: "user", label: "Usuário" },
+    { value: "ADMIN", label: "Administrador" },
+    { value: "USER", label: "Usuário" },
   ];
 
   const handleFilterChange = (key: keyof FilterState, value: string) => {
@@ -74,8 +74,8 @@ export function UsersFiltersModal({
   };
 
   const getQuickFilterRole = () => {
-    if (filters.role === "admin") return "admin";
-    if (filters.role === "user") return "user";
+    if (filters.role === "ADMIN") return "ADMIN";
+    if (filters.role === "USER") return "USER";
     return "none";
   };
 
@@ -109,9 +109,9 @@ export function UsersFiltersModal({
 
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => handleQuickFilterRole("admin")}
+                  onClick={() => handleQuickFilterRole("ADMIN")}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    getQuickFilterRole() === "admin"
+                    getQuickFilterRole() === "ADMIN"
                       ? "bg-[#348C98] text-white"
                       : "bg-gray-100 text-[#707070] hover:bg-gray-200"
                   }`}
@@ -121,9 +121,9 @@ export function UsersFiltersModal({
                 </button>
 
                 <button
-                  onClick={() => handleQuickFilterRole("user")}
+                  onClick={() => handleQuickFilterRole("USER")}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    getQuickFilterRole() === "user"
+                    getQuickFilterRole() === "USER"
                       ? "bg-[#348C98] text-white"
                       : "bg-gray-100 text-[#707070] hover:bg-gray-200"
                   }`}

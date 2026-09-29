@@ -1,33 +1,32 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use server';
 
+import { HTTPError } from 'ky';
+
 import { api } from '../api-client';
+import { mensagemDeErro } from '../mensagem-de-erro';
 
+/**
+ * A tela pede a confirmação da nova senha, mas ela só serve para a própria
+ * tela: a API recebe `{ currentPassword, newPassword }` e recusa campo a mais.
+ */
 export interface UpdatePasswordRequest {
-  password: string;
+  currentPassword: string;
   newPassword: string;
-  confirmNewPassword: string;
-}
-
-interface UpdatePasswordResponse {
-  message: string;
 }
 
 export async function updatePassword(data: UpdatePasswordRequest) {
   try {
-    const result = await api
-      .put('users/me/password', {
-        json: data,
-      })
-      .json<UpdatePasswordResponse>();
+    // 204 sem corpo: nada a ler da resposta
+    await api.put('users/me/password', { json: data });
 
-    return { success: true, data: result };
-  } catch (err: any) {
-    if (err.response) {
-      const errorBody = await err.response.json();
+    return { success: true };
+  } catch (err) {
+    if (err instanceof HTTPError) {
+      const corpo: unknown = await err.response.json().catch(() => null);
+
       return {
         success: false,
-        error: errorBody?.message || 'Erro ao atualizar senha',
+        error: mensagemDeErro(corpo, 'Erro ao atualizar senha'),
       };
     }
 

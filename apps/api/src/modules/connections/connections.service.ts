@@ -35,6 +35,18 @@ const CAMPOS = {
   createdAt: true,
 } as const;
 
+/**
+ * `message.any` no lugar de `message`: além do que chega, avisa o que SAI do
+ * número, inclusive o que o advogado digita no próprio celular. Sem isso a
+ * tela de conversas mostraria só metade do diálogo. `message.ack` traz a
+ * entrega e a leitura.
+ */
+export const EVENTOS_DO_WEBHOOK = [
+  'message.any',
+  'message.ack',
+  'session.status',
+];
+
 @Injectable()
 export class ConnectionsService {
   private readonly logger = new Logger(ConnectionsService.name);
@@ -101,7 +113,7 @@ export class ConnectionsService {
     const webhookUrl = `${this.config.getOrThrow<string>('APP_WEBHOOK_URL')}/webhooks/waha?office_id=${officeId}`;
 
     await this.waha.criarSessao(nomeSessao, {
-      webhook: { url: webhookUrl, events: ['message', 'session.status'] },
+      webhook: { url: webhookUrl, events: EVENTOS_DO_WEBHOOK },
       proxy: proxy ? this.paraProxyWaha(proxy) : undefined,
     });
 
@@ -251,7 +263,7 @@ export class ConnectionsService {
     if (!conexao) throw new NotFoundException('Conexão não encontrada');
 
     if (!conexao.wahaSession || !conexao.wahaApiHost || !conexao.wahaApiKey) {
-      throw new NotFoundException('Conexão sem configuração WAHA');
+      throw new NotFoundException('Conexão sem configuração do Provedor 1');
     }
 
     return conexao;
