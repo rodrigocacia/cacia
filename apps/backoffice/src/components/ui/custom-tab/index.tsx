@@ -26,9 +26,9 @@ export function CustomTab({ tabs }: CustomTabProps) {
   const isActive = (path: string) => !!pathname.includes(path);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto [scrollbar-width:none]">
       <Tabs.Root onValueChange={handleChangeLink}>
-        <Tabs.List className="flex w-full whitespace-nowrap items-center gap-4 border-b border-zinc-200">
+        <Tabs.List className="flex w-full items-center gap-[22px] border-b border-filete whitespace-nowrap">
           {tabs.map((tab) => (
             <Link key={tab.id} href={tab.path}>
               <TabItem

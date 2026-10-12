@@ -1,11 +1,10 @@
 import { Header } from "@/components/header";
-import { FinancialCard } from "./cards/financial";
-import { COBRANCA_INDISPONIVEL } from "@/constants/cobranca";
+import { PageHeader } from "@/components/ui/page-header";
+import { FaixaDeIndicadores } from "./cards/kpi";
 import { RecentSubscriptions } from "./tables/recent-subscriptions";
 import { CustomPieChart } from "./charts/pie-chart";
 import { CustomLineChart } from "./charts/line-chart";
 import { DashboardData } from "./types/dashboard";
-import { StatisticCard } from "./cards/statistic";
 import { getDashboardData } from "@/http/dashboard/get-dashboard-data";
 import { DashboardFilters } from "./components/dashboard-filters";
 import { PlanFilter } from "./components/plan-filter";
@@ -51,13 +50,12 @@ export default async function Dashboard({
 
   if (!dashboardResponse.success) {
     return (
-      <div className="w-full h-full">
+      <div className="w-full">
         <Header title="Dashboard" />
-        <main className="pt-4 px-4 sm:pt-6 sm:pl-6 sm:pr-6 xs:pt-6 xs:pl-6 xs:pr-6 md:pt-8 md:pl-0 md:pr-0">
-          <div className="text-center text-red-500">
-            Erro ao carregar dados do dashboard. Tente novamente mais tarde.
-          </div>
-        </main>
+        <PageHeader title="Dashboard" />
+        <p className="mt-6 rounded-[14px] border border-filete bg-white px-5 py-8 text-center text-[13.5px] text-tinta-2">
+          Erro ao carregar dados do dashboard. Tente novamente mais tarde.
+        </p>
       </div>
     );
   }
@@ -76,15 +74,15 @@ export default async function Dashboard({
   const data: DashboardData = {
     users: apiData.users,
     offices: apiData.offices,
-    // "Indisponível", e não R$ 0,00: zero se confunde com "nenhuma venda no
-    // período", que é outra coisa. A cobrança não foi reimplementada — ver
+    // `null` ("—" na tela), e não R$ 0,00: zero se confunde com "nenhuma
+    // venda no período", que é outra coisa. A cobrança não foi reimplementada — ver
     // docs/ESTADO.md.
     revenue: apiData.faturamentoDisponivel
       ? formatCurrency(apiData.revenue)
-      : COBRANCA_INDISPONIVEL,
+      : null,
     averageTicket: apiData.faturamentoDisponivel
       ? formatCurrency(apiData.averageTicket)
-      : COBRANCA_INDISPONIVEL,
+      : null,
     plans: apiData.plans,
     subscriptionsByMonth: apiData.subscriptionsByMonth,
     recentSubscriptions: apiData.recentSubscriptions.map((sub) => ({
@@ -109,79 +107,122 @@ export default async function Dashboard({
     }
   }
 
+  const totalDeAssinaturas = data.plans.reduce(
+    (soma, item) => soma + item.value,
+    0,
+  );
+  const temSerie = planSpecificData.some((mes) => mes.value > 0);
+
   return (
-    <div className="w-full h-full max-lg:px-4">
+    <div className="w-full">
       <Header title="Dashboard" />
 
-      <DashboardFilters selectedPeriod={period} selectedStatus={status} />
+      <div className="flex flex-col gap-6">
+        <PageHeader
+          title="Dashboard"
+          description="Usuários, escritórios e assinaturas da plataforma."
+          action={
+            <DashboardFilters selectedPeriod={period} selectedStatus={status} />
+          }
+        />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6 gap-4 md:mb-8">
-        <FinancialCard
-          label="Faturamento total"
-          value={data.revenue}
-          icon="mdi:attach-money"
+        <FaixaDeIndicadores
+          itens={[
+            {
+              rotulo: "Faturamento total",
+              valor: data.revenue,
+              nota:
+                data.revenue === null
+                  ? "Cobrança ainda não ativada"
+                  : "No período",
+            },
+            {
+              rotulo: "Ticket médio",
+              valor: data.averageTicket,
+              nota:
+                data.averageTicket === null
+                  ? "Cobrança ainda não ativada"
+                  : "Por assinatura",
+            },
+            {
+              rotulo: "Usuários",
+              valor: String(data.users),
+              nota: "Cadastrados na plataforma",
+            },
+            {
+              rotulo: "Escritórios",
+              valor: String(data.offices),
+              nota: "Cadastrados na plataforma",
+            },
+          ]}
         />
-        <FinancialCard
-          label="Ticket médio"
-          value={data.averageTicket}
-          icon="mdi:chart-finance"
-        />
-        <div className="md:ml-10">
-          <StatisticCard
-            label="Usuários"
-            value={`${data.users} `}
-            icon="mdi:account-group"
-          />
-        </div>
-        <StatisticCard
-          label="Escritórios"
-          value={`${data.offices}`}
-          icon="mdi:handshake"
-        />
-      </div>
 
-      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-        <div className="flex-1 space-y-4 md:space-y-6">
-          <div className="grid grid-cols-1 xl:grid-cols-1 gap-4 md:gap-6">
-            <div className="rounded-2xl bg-white shadow-md p-4 md:p-6 flex flex-col h-full min-h-[320px]">
-              <h3 className="text-base text-[#3D3D3D] font-semibold text-lg mb-3">
+        <div className="grid items-start gap-4 lg:grid-cols-2">
+          <section className="rounded-[14px] border border-filete bg-white p-5">
+            <div className="mb-4 flex items-baseline justify-between gap-3">
+              <h2 className="text-[14.5px] font-semibold text-tinta">
                 Assinaturas por plano
-              </h3>
-              <div className="flex-1 flex flex-col justify-center">
-                <CustomPieChart
-                  data={data.plans.map((plan) => ({
-                    name: plan.name,
-                    id: plan.id,
-                    total: plan.value,
-                  }))}
-                />
-              </div>
+              </h2>
+              {totalDeAssinaturas > 0 && (
+                <span className="font-mono text-xs text-tinta-3 tabular">
+                  {totalDeAssinaturas}
+                </span>
+              )}
             </div>
-          </div>
-          <div className="rounded-2xl bg-white shadow-md p-4 md:p-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-              <h3 className="text-base text-[#3D3D3D] font-medium">
+            {totalDeAssinaturas > 0 ? (
+              <CustomPieChart
+                data={data.plans.map((plan) => ({
+                  name: plan.name,
+                  id: plan.id,
+                  total: plan.value,
+                }))}
+              />
+            ) : (
+              <SemDados texto="Nenhuma assinatura no período." />
+            )}
+          </section>
+
+          <section className="rounded-[14px] border border-filete bg-white p-5">
+            <RecentSubscriptions data={data.recentSubscriptions} />
+          </section>
+        </div>
+
+        <section className="rounded-[14px] border border-filete bg-white p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-[14.5px] font-semibold text-tinta">
                 Assinaturas por período
-              </h3>
-              <PlanFilter selectedPlan={selectedPlan} plans={data.plans} />
+              </h2>
+              <p className="text-[13px] text-tinta-3">
+                Novas assinaturas mês a mês.
+              </p>
             </div>
-            <p className="text-sm font-light text-[#707070] mb-2">
-              Acompanhe os detalhes de suas vendas por assinaturas.
-            </p>
+            {data.plans.length > 0 && (
+              <PlanFilter selectedPlan={selectedPlan} plans={data.plans} />
+            )}
+          </div>
+          {temSerie ? (
             <CustomLineChart
               data={planSpecificData.map((month) => ({
                 date: month.month,
                 total: month.value,
               }))}
             />
-          </div>
-        </div>
-        <div className="w-full md:w-80">
-          <div className="rounded-2xl bg-white shadow-md p-4 md:p-6 h-full min-h-[320px]">
-            <RecentSubscriptions data={data.recentSubscriptions} />
-          </div>
-        </div>
+          ) : (
+            <div className="mt-4">
+              <SemDados texto="Ainda não há assinaturas para mostrar no gráfico." />
+            </div>
+          )}
+        </section>
       </div>
     </div>
+  );
+}
+
+function SemDados({ texto }: { texto: string }) {
+  return (
+    <p className="rounded-[10px] bg-papel-2 px-4 py-6 text-center text-[13.5px] text-tinta-3">
+      {texto}
+    </p>
   );
 }

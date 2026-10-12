@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Icon } from "@/components/icone";
-import { MdTune, MdCheck, MdDelete } from "react-icons/md";
+import { Eraser, SlidersHorizontal } from "lucide-react";
 
 import {
   Dialog,
@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/custom-button";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { RecurrenceStatus } from "@/types/recurrence";
 
@@ -95,33 +95,29 @@ export function FinancialFiltersModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md p-6">
-        <DialogHeader className="flex flex-row items-center gap-3 mb-6">
-          <div className="flex items-center justify-center w-8 h-8 bg-[#ECF7F8] rounded-lg">
-            <MdTune size={16} className="text-[#348C98]" />
+        <DialogHeader className="mb-1 flex flex-row items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-papel-2 text-tinta-2">
+            <SlidersHorizontal size={16} strokeWidth={1.7} />
           </div>
-          <DialogTitle className="text-lg font-semibold text-[#3D3D3D]">
-            Filtros avançados
-          </DialogTitle>
+          <DialogTitle>Filtros avançados</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          <p className="text-sm text-[#707070] leading-relaxed">
+        <div className="space-y-5">
+          <p className="text-[13.5px] leading-relaxed text-tinta-2">
             Selecione filtros para uma busca mais específica.
           </p>
 
           <div className="space-y-4">
             <div>
-              <h4 className="text-xs font-bold text-[#707070] uppercase tracking-wider mb-3">
-                FILTRAGEM RÁPIDA
-              </h4>
+              <h4 className="rotulo mb-2.5">FILTRAGEM RÁPIDA</h4>
 
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => handleQuickFilter(RecurrenceStatus.ACTIVE)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex h-9 cursor-pointer items-center gap-2 rounded-[9px] border px-3 text-[13.5px] font-medium transition-colors ${
                     getQuickFilterStatus() === RecurrenceStatus.ACTIVE
-                      ? "bg-[#348C98] text-white"
-                      : "bg-gray-100 text-[#707070] hover:bg-gray-200"
+                      ? "border-acao bg-nevoa text-turquesa-profundo"
+                      : "border-filete-forte bg-white text-tinta-2 hover:bg-gray-100"
                   }`}
                 >
                   <Icon icon="mdi:check-circle" className="w-4 h-4" />
@@ -130,10 +126,10 @@ export function FinancialFiltersModal({
 
                 <button
                   onClick={() => handleQuickFilter(RecurrenceStatus.PENDING)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex h-9 cursor-pointer items-center gap-2 rounded-[9px] border px-3 text-[13.5px] font-medium transition-colors ${
                     getQuickFilterStatus() === RecurrenceStatus.PENDING
-                      ? "bg-[#348C98] text-white"
-                      : "bg-gray-100 text-[#707070] hover:bg-gray-200"
+                      ? "border-acao bg-nevoa text-turquesa-profundo"
+                      : "border-filete-forte bg-white text-tinta-2 hover:bg-gray-100"
                   }`}
                 >
                   <Icon icon="mdi:file-document-check" className="w-4 h-4" />
@@ -142,10 +138,10 @@ export function FinancialFiltersModal({
 
                 <button
                   onClick={() => handleQuickFilter(RecurrenceStatus.CANCELLED)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex h-9 cursor-pointer items-center gap-2 rounded-[9px] border px-3 text-[13.5px] font-medium transition-colors ${
                     getQuickFilterStatus() === RecurrenceStatus.CANCELLED
-                      ? "bg-[#348C98] text-white"
-                      : "bg-gray-100 text-[#707070] hover:bg-gray-200"
+                      ? "border-acao bg-nevoa text-turquesa-profundo"
+                      : "border-filete-forte bg-white text-tinta-2 hover:bg-gray-100"
                   }`}
                 >
                   <Icon icon="mdi:archive" className="w-4 h-4" />
@@ -166,22 +162,17 @@ export function FinancialFiltersModal({
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-3 mt-8 pt-6 border-t border-gray-200">
+        <div className="mt-6 flex items-center justify-between gap-3 border-t border-filete pt-5">
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={handleClear}
-            className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
+            iconLeft={<Eraser size={16} strokeWidth={1.7} />}
           >
-            <MdDelete size={16} />
-            Limpar Filtros
+            Limpar filtros
           </Button>
 
-          <Button
-            onClick={handleSave}
-            className="flex items-center gap-2 bg-[#348C98] hover:bg-[#348C98]/90"
-          >
-            <MdCheck size={16} />
-            Salvar
+          <Button variant="primary" onClick={handleSave}>
+            Aplicar filtros
           </Button>
         </div>
       </DialogContent>

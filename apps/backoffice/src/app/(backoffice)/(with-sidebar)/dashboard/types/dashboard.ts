@@ -11,8 +11,9 @@ export interface Subscription {
 export interface DashboardData {
   users: number;
   offices: number;
-  revenue: string;
-  averageTicket: string;
+  /** `null` enquanto a cobrança não existe. */
+  revenue: string | null;
+  averageTicket: string | null;
   plans: DashboardPlan[];
   subscriptionsByMonth: { month: string; value: number }[];
   recentSubscriptions: Subscription[];

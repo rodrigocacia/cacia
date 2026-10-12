@@ -1,13 +1,19 @@
-import { Icon } from "@/components/icone";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 
 import { getUserById } from "@/http/user/get-user-by-id";
 import { CustomTab } from "@/components/ui/custom-tab";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { nomeParaExibir } from "@/utils/formatters";
+
 import { tabs } from "../components/tabs";
-import { CustomAvatar } from "@/components/ui/custom-avatar";
-import { formatName } from "@/utils/formatters";
 
 interface Address {
   city: string;
@@ -29,6 +35,27 @@ interface Office {
   addresses?: Address[];
 }
 
+function enderecoDe(office: Office): string | null {
+  const endereco = office.addresses?.[0];
+
+  if (!endereco) return null;
+
+  return `${endereco.street}, ${endereco.number}${
+    endereco.complement ? ` - ${endereco.complement}` : ""
+  }`;
+}
+
+function Inicial({ nome }: { nome: string }) {
+  return (
+    <span
+      aria-hidden
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-nevoa text-[13px] font-semibold text-turquesa-profundo"
+    >
+      {nome.trim()[0]?.toUpperCase() ?? "?"}
+    </span>
+  );
+}
+
 export default async function ProccessDetail({
   params,
 }: {
@@ -37,212 +64,111 @@ export default async function ProccessDetail({
   const { id: userId } = await params;
   const { data } = await getUserById({ id: userId });
 
-  let formattedCreatedAtDate = null;
-  if (data) {
-    if (data?.created_at !== null) {
-      formattedCreatedAtDate = format(
-        new Date(data?.created_at),
-        "MMMM, yyyy",
-        {
-          locale: ptBR,
-        },
-      );
-    }
-  }
+  const offices: Office[] = data?.offices ?? [];
 
   return (
-    <div className="w-full h-full">
-      <div className="h-full max-md:hidden">
-        <div className="mb-8">
-          <div className="bg-white rounded-2xl shadow-sm p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Icon
-                icon="mdi:office-building-outline"
-                className="w-6 h-6 text-[#348C98]"
-              />
-              <h2 className="text-2xl font-semibold text-[#3D3D3D]">
-                Escritórios
-              </h2>
-            </div>
-            <table className="w-full">
-              <thead>
-                <tr className="bg-[#F8FAFB] text-[#707070] text-sm">
-                  <th className="px-4 py-3 text-left font-semibold rounded-l-xl">
-                    <div className="flex items-center gap-1">
-                      Nome
-                      <Icon
-                        icon="mdi:arrow-up-down"
-                        className="w-4 h-4 text-[#BDBDBD]"
-                      />
-                    </div>
-                  </th>
-                  <th className="px-4 py-3 text-left font-semibold">
-                    Endereço
-                  </th>
-                  <th className="px-4 py-3 text-left font-semibold">Cidade</th>
-                  <th className="px-4 py-3 text-left font-semibold rounded-r-xl">
-                    Estado
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {data?.offices?.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="text-center text-[#BDBDBD] py-6">
-                      Nenhum escritório cadastrado
-                    </td>
-                  </tr>
-                )}
-                {data?.offices?.map((office: Office, idx) => (
-                  <tr
-                    key={idx}
-                    className={`transition-all ${idx !== data.offices.length - 1 ? "border-b border-[#F1F1F1]" : ""}`}
-                  >
-                    <td className="px-4 py-3 text-[#3D3D3D] bg-[#F9FBFC] rounded-l-xl">
-                      <div className="flex items-center gap-2">
-                        <Icon
-                          icon="mdi:office-building"
-                          className="w-5 h-5 text-[#BDBDBD]"
-                        />
-                        <Link
-                          href={`/office/${office._id}/information`}
-                          className="hover:text-[#348C98] transition-colors"
-                        >
-                          {formatName(office.name)}
-                        </Link>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-[#348C98] bg-[#F9FBFC]">
-                      {office.addresses?.[0]
-                        ? `${office.addresses[0].street}, ${office.addresses[0].number}${
-                            office.addresses[0].complement
-                              ? ` - ${office.addresses[0].complement}`
-                              : ""
-                          }`
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-[#348C98] bg-[#F9FBFC]">
-                      {office.addresses?.[0]?.city ?? "—"}
-                    </td>
-                    <td className="px-4 py-3 text-[#348C98] bg-[#F9FBFC] rounded-r-xl">
-                      {office.addresses?.[0]?.state ?? "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+    <div className="w-full">
+      <div className="mb-6 md:hidden">
+        <CustomTab tabs={tabs(userId)} />
       </div>
 
-      <main className="w-full bg-red-100 h-fit max-lg:h-full pb-6 max-lg:pb-0 grid grid-cols-[2fr_3fr] max-lg:flex max-lg:flex-col max-lg:justify-between md:hidden">
-        <div className="relative flex flex-1 flex-col px-4 pt-2 pb-10 bg-[#ECF7F8] bg-cover bg-center h-[160px] w-full lg:hidden -mb-6 z-0"></div>
-        <div className="bg-white relative z-10 w-full max-lg:h-fit flex flex-col rounded-t-4xl px-4 py-10 max-lg:pb-0">
-          <div className="w-full max-h-[360px]">
-            <div className="flex flex-col items-center gap-[17px] relative -top-14">
-              <CustomAvatar
-                name={data?.name ?? ""}
-                size="lg"
-                className="w-[86px] h-[86px] rounded-full object-cover"
-              />
-              <div className="flex flex-col items-center gap-2">
-                <h2 className="text-[18px] text-[#3D3D3D] font-semibold">
-                  {data?.name}
-                </h2>
-                <h3 className="text-sm text-[#707070]">
-                  Usuário desde {formattedCreatedAtDate}
-                </h3>
-              </div>
-            </div>
-            <CustomTab tabs={tabs(userId)} />
-            <div className="mt-6">
-              <div className="flex items-center gap-2 mb-2">
-                <Icon
-                  icon="mdi:office-building-outline"
-                  className="w-5 h-5 text-[#348C98]"
-                />
-                <h2 className="text-xl font-semibold text-[#3D3D3D]">
-                  Escritórios
-                </h2>
-              </div>
-              <div className="bg-white rounded-2xl shadow-sm p-2">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-[#F8FAFB] text-[#707070] text-xs">
-                      <th className="px-2 py-2 text-left font-semibold rounded-l-xl">
-                        <div className="flex items-center gap-1">
-                          Nome
-                          <Icon
-                            icon="mdi:arrow-up-down"
-                            className="w-4 h-4 text-[#BDBDBD]"
-                          />
-                        </div>
-                      </th>
-                      <th className="px-2 py-2 text-left font-semibold">
-                        Endereço
-                      </th>
-                      <th className="px-2 py-2 text-left font-semibold">
-                        Cidade
-                      </th>
-                      <th className="px-2 py-2 text-left font-semibold rounded-r-xl">
-                        Estado
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data?.offices?.length === 0 && (
-                      <tr>
-                        <td
-                          colSpan={4}
-                          className="text-center text-[#BDBDBD] py-4"
+      <section className="w-full overflow-hidden rounded-[14px] border border-filete bg-white">
+        <header className="flex items-baseline gap-2.5 border-b border-filete px-5 py-4">
+          <h2 className="text-[14.5px] font-semibold text-tinta">
+            Escritórios
+          </h2>
+          <span className="tabular font-mono text-xs text-tinta-3">
+            {offices.length}
+          </span>
+        </header>
+
+        {offices.length === 0 ? (
+          <p className="px-5 py-10 text-center text-[13.5px] text-tinta-3">
+            Nenhum escritório cadastrado.
+          </p>
+        ) : (
+          <>
+            {/* Tabela a partir do tablet */}
+            <div className="max-md:hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Endereço</TableHead>
+                    <TableHead>Cidade</TableHead>
+                    <TableHead>Estado</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {offices.map((office, idx) => (
+                    <TableRow key={office._id ?? idx}>
+                      <TableCell>
+                        <Link
+                          href={`/office/${office._id}/information`}
+                          className="flex items-center gap-3 font-medium text-tinta hover:text-turquesa-profundo"
                         >
-                          Nenhum escritório cadastrado
-                        </td>
-                      </tr>
-                    )}
-                    {data?.offices?.map((office: Office, idx) => (
-                      <tr
-                        key={idx}
-                        className={`transition-all ${idx !== data.offices.length - 1 ? "border-b border-[#F1F1F1]" : ""}`}
-                      >
-                        <td className="px-2 py-2 text-[#3D3D3D] bg-[#F9FBFC] rounded-l-xl">
-                          <div className="flex items-center gap-2">
-                            <Icon
-                              icon="mdi:office-building"
-                              className="w-4 h-4 text-[#BDBDBD]"
-                            />
-                            <Link
-                              href={`/office/${office._id}/information`}
-                              className="hover:text-[#348C98] transition-colors"
-                            >
-                              {formatName(office.name)}
-                            </Link>
-                          </div>
-                        </td>
-                        <td className="px-2 py-2 text-[#348C98] bg-[#F9FBFC]">
-                          {office.addresses?.[0]
-                            ? `${office.addresses[0].street}, ${office.addresses[0].number}${
-                                office.addresses[0].complement
-                                  ? ` - ${office.addresses[0].complement}`
-                                  : ""
-                              }`
-                            : "—"}
-                        </td>
-                        <td className="px-2 py-2 text-[#348C98] bg-[#F9FBFC]">
-                          {office.addresses?.[0]?.city ?? "—"}
-                        </td>
-                        <td className="px-2 py-2 text-[#348C98] bg-[#F9FBFC] rounded-r-xl">
-                          {office.addresses?.[0]?.state ?? "—"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                          <Inicial nome={office.name} />
+                          {nomeParaExibir(office.name)}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="whitespace-normal">
+                        {enderecoDe(office) ?? "—"}
+                      </TableCell>
+                      <TableCell>
+                        {office.addresses?.[0]?.city ?? "—"}
+                      </TableCell>
+                      <TableCell>
+                        {office.addresses?.[0]?.state ?? "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-          </div>
-        </div>
-      </main>
+
+            {/* Lista no celular */}
+            <ul className="md:hidden">
+              {offices.map((office, idx) => {
+                const endereco = enderecoDe(office);
+                const cidade = office.addresses?.[0]
+                  ? `${office.addresses[0].city} - ${office.addresses[0].state}`
+                  : null;
+
+                return (
+                  <li
+                    key={office._id ?? idx}
+                    className="border-b border-[#F1EEE8] last:border-b-0"
+                  >
+                    <Link
+                      href={`/office/${office._id}/information`}
+                      className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-papel"
+                    >
+                      <Inicial nome={office.name} />
+
+                      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                        <span className="truncate text-[13.5px] font-medium text-tinta">
+                          {nomeParaExibir(office.name)}
+                        </span>
+                        <span className="truncate text-[12.5px] text-tinta-3">
+                          {[endereco, cidade].filter(Boolean).join(" · ") ||
+                            "Sem endereço cadastrado"}
+                        </span>
+                      </div>
+
+                      <ChevronRight
+                        size={16}
+                        strokeWidth={1.7}
+                        aria-hidden
+                        className="shrink-0 text-tinta-3"
+                      />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
+      </section>
     </div>
   );
 }

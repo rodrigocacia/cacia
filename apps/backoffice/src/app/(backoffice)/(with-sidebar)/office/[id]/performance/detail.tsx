@@ -8,7 +8,6 @@ import {
 import { PerformanceFilters } from "../performance-dashboard/PerformanceFilters";
 import { PerformanceIndicators } from "../performance-dashboard/PerformanceIndicators";
 import { PerformanceProgress } from "../performance-dashboard/PerformanceProgress";
-import { Icon } from "@/components/icone";
 import { Spinner } from "@/components/ui/sppiner";
 
 interface OfficeDetailProps {
@@ -46,43 +45,38 @@ export function OfficeDetail({ officeId }: OfficeDetailProps) {
     loadPerformanceData();
   }, [officeId, selectedPeriod]);
 
-  if (loading) {
-    return (
-      <div className="w-full bg-white rounded-2xl shadow p-4 mb-8">
-        <Spinner size="md" className="h-40" />
-      </div>
-    );
-  }
-
   return (
-    <>
-      <div className="w-full bg-white rounded-2xl shadow p-4 mb-8">
-        <div className="w-full flex items-center justify-between gap-3 max-md:hidden">
-          <div className="flex items-center gap-3">
-            <Icon icon="mdi:bar-chart" className="text-[#BDBDBD] w-8 h-8" />
-
-            <h3 className="text-[20px] text-[#707070] font-bold">
-              Performance
-            </h3>
-          </div>
+    <section className="flex w-full flex-col gap-5">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-[14.5px] font-semibold text-tinta">
+            Performance
+          </h2>
+          <p className="text-[13px] text-tinta-3">
+            Documentos, leads, clientes e processos do escritório no período.
+          </p>
         </div>
 
-        <hr className="w-full my-6 max-md:my-2 h-px border-t-0 bg-gray-200 max-md:hidden" />
         <PerformanceFilters
           onPeriodChange={setSelectedPeriod}
           selectedPeriod={selectedPeriod}
         />
-        {performanceData ? (
-          <>
-            <PerformanceIndicators data={performanceData} />
-            <PerformanceProgress data={performanceData} />
-          </>
-        ) : (
-          <p className="text-sm text-[#707070] py-8 text-center">
-            {erro ?? "Não foi possível carregar o desempenho."}
-          </p>
-        )}
       </div>
-    </>
+
+      {loading ? (
+        <div className="rounded-[14px] border border-filete bg-white">
+          <Spinner size="md" className="h-40" />
+        </div>
+      ) : performanceData ? (
+        <>
+          <PerformanceIndicators data={performanceData} />
+          <PerformanceProgress data={performanceData} />
+        </>
+      ) : (
+        <p className="rounded-[14px] border border-filete bg-white px-5 py-10 text-center text-[13.5px] text-tinta-3">
+          {erro ?? "Não foi possível carregar o desempenho."}
+        </p>
+      )}
+    </section>
   );
 }

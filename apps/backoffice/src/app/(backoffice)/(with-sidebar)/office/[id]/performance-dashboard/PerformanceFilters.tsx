@@ -1,6 +1,6 @@
+import { FileSpreadsheet, Table2 } from "lucide-react";
+
 import { CustomSelect } from "@/components/ui/custom-select";
-import { Button } from "@/components/ui/button";
-import { Icon } from "@/components/icone";
 
 const periodOptions = [
   { value: "1", label: "Últimas 24 horas" },
@@ -14,13 +14,16 @@ interface PerformanceFiltersProps {
   selectedPeriod: number;
 }
 
+const BOTAO_DE_EXPORTAR =
+  "flex h-9 w-9 cursor-pointer items-center justify-center rounded-[9px] border border-filete-forte bg-white text-tinta-2 transition-colors hover:bg-gray-100 hover:text-tinta focus-visible:ring-[3px] focus-visible:ring-nevoa-2 focus-visible:outline-none";
+
 export function PerformanceFilters({
   onPeriodChange,
   selectedPeriod,
 }: PerformanceFiltersProps) {
   return (
-    <div className="flex flex-col md:flex-row items-center justify-between mb-6 w-full pb-4">
-      <div className="flex items-center bg-white rounded-full gap-2 px-4 py-2 min-w-[170px]">
+    <div className="flex items-center gap-2 max-sm:w-full">
+      <div className="min-w-0 flex-1 sm:w-[193px]">
         <CustomSelect
           options={periodOptions}
           value={selectedPeriod.toString()}
@@ -30,25 +33,25 @@ export function PerformanceFilters({
         />
       </div>
 
-      <div className="flex items-center gap-4">
-        <span className="hidden sm:inline text-xs text-[#BDBDBD] font-medium flex items-center">
-          EXPORTAR COMO:
-        </span>
-        <Button
-          variant="secondary"
-          size="icon"
-          className="border-[#F6F6F9] bg-[#fff] text-[#348C98] rounded-sm w-10 h-10 flex items-center justify-center cursor-pointer"
-        >
-          <Icon icon="mdi:table" width={20} height={20} />
-        </Button>
-        <Button
-          variant="secondary"
-          size="icon"
-          className="border-[#F6F6F9] bg-[#fff] text-[#348C98] rounded-sm w-10 h-10 flex items-center justify-center cursor-pointer"
-        >
-          <Icon icon="mdi:file-excel" width={20} height={20} />
-        </Button>
-      </div>
+      <span aria-hidden className="mx-1 h-5 w-px bg-filete-forte" />
+
+      <button
+        type="button"
+        aria-label="Exportar como tabela"
+        title="Exportar como tabela"
+        className={BOTAO_DE_EXPORTAR}
+      >
+        <Table2 size={16} strokeWidth={1.7} aria-hidden />
+      </button>
+
+      <button
+        type="button"
+        aria-label="Exportar como planilha do Excel"
+        title="Exportar como planilha do Excel"
+        className={BOTAO_DE_EXPORTAR}
+      >
+        <FileSpreadsheet size={16} strokeWidth={1.7} aria-hidden />
+      </button>
     </div>
   );
 }

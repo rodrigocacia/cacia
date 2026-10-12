@@ -1,4 +1,4 @@
-import { Icon } from "@/components/icone";
+import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 
 import type { GetOfficePerformanceResponse } from "@/http/office/get-office-performance";
 
@@ -8,8 +8,8 @@ interface PerformanceIndicatorsProps {
 
 function destaque(variacao: number) {
   return {
-    highlight: `${variacao > 0 ? "+" : ""}${variacao}% vs. período anterior`,
-    highlightColor: variacao >= 0 ? "text-green-500" : "text-red-500",
+    highlight: `${variacao > 0 ? "+" : ""}${variacao}%`,
+    variacao,
   };
 }
 
@@ -17,76 +17,82 @@ function destaque(variacao: number) {
  * Os indicadores que a API fornece. "Serviços", "avaliação média" e a
  * variação de processos existiam na tela sem existir na resposta, e a tela
  * quebrava ao lê-los.
+ *
+ * Uma faixa única dividida por filetes, como os números do Início do app.
  */
 export function PerformanceIndicators({ data }: PerformanceIndicatorsProps) {
-  const indicators = [
+  const indicators: {
+    label: string;
+    value: number;
+    highlight: string;
+    variacao: number | null;
+  }[] = [
     {
       label: "Documentos",
       value: data.documents,
-      icon: "mdi:file-document-outline",
       ...destaque(data.documents_variation),
     },
     {
       label: "Leads",
       value: data.leads,
-      icon: "mdi:wallet-outline",
       ...destaque(data.leads_variation),
     },
     {
       label: "Clientes",
       value: data.customers,
-      icon: "mdi:account-group-outline",
       ...destaque(data.customers_variation),
     },
     {
       label: "Processos",
       value: data.total_processes,
-      icon: "mdi:briefcase-outline",
       highlight: "",
-      highlightColor: "",
+      variacao: null,
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 w-full">
-      {indicators.map((item, idx) => (
-        <div
-          key={idx}
-          className="bg-white rounded-xl p-5 flex items-center gap-4 min-w-[220px] shadow-sm"
-        >
-          <div className="flex items-center justify-center w-12 h-12 rounded-md bg-[#ECF7F8]">
-            <Icon
-              icon={item.icon}
-              className="text-[#348C98]"
-              width={28}
-              height={28}
-            />
-          </div>
-          <div className="flex flex-col flex-1 min-w-0">
-            <span className="text-xl font-medium text-[#707070] leading-6">
+    <section
+      aria-label="Números do período"
+      className="grid w-full grid-cols-2 gap-px overflow-hidden rounded-[14px] border border-filete bg-filete lg:grid-cols-4"
+    >
+      {indicators.map((item) => {
+        const Seta = (item.variacao ?? 0) < 0 ? ArrowDownRight : ArrowUpRight;
+
+        return (
+          <div
+            key={item.label}
+            className="flex min-w-0 flex-col gap-2 bg-white px-5 py-5 max-sm:px-4"
+          >
+            <span className="text-[12.5px] text-tinta-3">{item.label}</span>
+
+            <span className="tabular text-[30px] leading-none font-medium tracking-[-0.03em] text-tinta max-sm:text-[26px]">
               {item.value}
             </span>
-            <span className="text-sm text-[#BDBDBD] font-medium leading-5">
-              {item.label}
-            </span>
-          </div>
-          <div className="flex flex-col items-end min-w-[80px]">
-            {item.highlight && (
-              <div className="flex items-center gap-1">
-                <Icon
-                  icon={`mdi:arrow-drop-${item.highlightColor === "text-green-500" ? "up" : "down"}`}
-                  className={`${item.highlightColor}`}
-                  width={16}
-                  height={16}
-                />
-                <span className={`text-xs font-medium text-[#BDBDBD]`}>
+
+            {item.variacao === null ? (
+              <span className="text-[12px] text-tinta-3">no total</span>
+            ) : (
+              <span className="flex flex-wrap items-center gap-x-1 text-[12px] text-tinta-3">
+                <span
+                  className={`tabular inline-flex items-center gap-0.5 font-semibold ${
+                    item.variacao > 0
+                      ? "text-turquesa-profundo"
+                      : item.variacao < 0
+                        ? "text-[#A23B2A]"
+                        : "text-tinta-2"
+                  }`}
+                >
+                  {item.variacao !== 0 && (
+                    <Seta size={13} strokeWidth={2} aria-hidden />
+                  )}
                   {item.highlight}
                 </span>
-              </div>
+                vs. período anterior
+              </span>
             )}
           </div>
-        </div>
-      ))}
-    </div>
+        );
+      })}
+    </section>
   );
 }

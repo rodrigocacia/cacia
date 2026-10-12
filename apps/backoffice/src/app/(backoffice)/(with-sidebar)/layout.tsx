@@ -2,7 +2,7 @@ import { PropsWithChildren } from "react";
 
 import { redirect } from "next/navigation";
 
-import { isAuthenticated } from "@/auth/auth";
+import { getCurrentUser, isAuthenticated } from "@/auth/auth";
 
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -14,11 +14,23 @@ export default async function DashboardLayout({ children }: PropsWithChildren) {
     redirect("/signin");
   }
 
-  return (
-    <SidebarProvider>
-      <AppSidebar />
+  const usuario = (await getCurrentUser()) as {
+    name?: string;
+    email?: string;
+  } | null;
 
-      <main className="px-8 w-full pb-12 max-lg:pb-0 pt-8 bg-[#FCFCFD] lg:px-8 max-lg:px-0 max-lg:pt-0">
+  return (
+    <SidebarProvider className="bg-ink">
+      <AppSidebar
+        usuario={usuario ? { name: usuario.name, email: usuario.email } : null}
+      />
+
+      {/*
+        O painel de papel encaixado na moldura nanquim (direção visual 02).
+        `min-w-0` impede que uma tabela larga estique a página inteira: ela
+        rola dentro do próprio contêiner.
+      */}
+      <main className="relative w-full min-w-0 bg-papel px-8 pb-12 max-lg:px-4 max-lg:pb-8 md:my-2 md:mr-2 md:min-h-[calc(100svh-16px)] md:rounded-[14px]">
         {children}
       </main>
     </SidebarProvider>

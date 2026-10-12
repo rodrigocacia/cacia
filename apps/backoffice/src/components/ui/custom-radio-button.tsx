@@ -4,6 +4,7 @@ interface CustomRadioButtonProps {
   label: string;
   checked?: boolean;
   onChange: (value: string) => void;
+  disabled?: boolean;
 }
 
 export const CustomRadioButton = ({
@@ -11,25 +12,32 @@ export const CustomRadioButton = ({
   label,
   checked = false,
   onChange,
+  disabled = false,
 }: CustomRadioButtonProps) => {
   return (
     <div
-      className="flex items-center space-x-2 cursor-pointer"
+      className={`flex items-center space-x-2 ${
+        disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+      }`}
       onClick={() => onChange(value)}
     >
-      <div className="relative w-6 h-6 flex items-center justify-center">
+      <div className="relative flex h-[18px] w-[18px] shrink-0 items-center justify-center">
+        {/* Anel: filete quando livre, turquesa quando marcado */}
         <div
-          className={`w-6 h-6 rounded-full border-4 ${
-            checked ? "border-[#C3E8EE]" : "border-gray-300"
+          className={`h-[18px] w-[18px] rounded-full border bg-white transition-colors ${
+            checked ? "border-acao" : "border-filete-forte"
           }`}
         ></div>
 
-        {checked && (
-          <div className="absolute w-3 h-3 rounded-full bg-[#348C98]" />
-        )}
+        {checked && <div className="absolute h-2 w-2 rounded-full bg-acao" />}
       </div>
 
-      <label htmlFor={value} className="text-sm text-[#3D3D3D] cursor-pointer">
+      <label
+        htmlFor={value}
+        className={`text-[14px] text-tinta ${
+          disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer "
+        }`}
+      >
         {label}
       </label>
     </div>

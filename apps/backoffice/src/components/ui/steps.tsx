@@ -8,23 +8,24 @@ interface Step {
 interface StepsProps {
   steps: Step[];
   currentStep: number;
-  title?: string;
+  customTitle?: string;
 }
 
-export function Steps({ steps, currentStep }: StepsProps) {
+export function Steps({ steps, currentStep, customTitle }: StepsProps) {
   return (
     <div className="w-full">
-      <div className="flex justify-between items-center mb-4">
-        <div className="text-[#348C98] font-medium">
-          Etapa {String(currentStep + 1).padStart(2, "0")} de{" "}
-          {String(steps.length).padStart(2, "0")}
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <div className="text-[14.5px] font-semibold text-tinta">
+          {customTitle || steps[currentStep].title}
         </div>
-        <div className="text-[#348C98] font-medium">
-          {steps[currentStep].title}
+
+        <div className="font-mono text-[11px] tracking-[0.08em] text-tinta-3 tabular max-md:hidden">
+          {String(currentStep + 1).padStart(2, "0")} /{" "}
+          {String(steps.length).padStart(2, "0")}
         </div>
       </div>
 
-      <div className="flex w-full gap-2">
+      <div className="flex w-full gap-1.5">
         {steps.map((step, index) => {
           const isCompleted = index < currentStep;
           const isCurrent = index === currentStep;
@@ -32,8 +33,8 @@ export function Steps({ steps, currentStep }: StepsProps) {
           return (
             <div
               key={step.id}
-              className={`h-2 rounded-full flex-1 transition-colors duration-300 ${
-                isCompleted || isCurrent ? "bg-[#348C98]" : "bg-[#E5F2F3]"
+              className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
+                isCompleted || isCurrent ? "bg-acao" : "bg-filete"
               }`}
             />
           );

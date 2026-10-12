@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MdTune } from "react-icons/md";
+import { SlidersHorizontal } from "lucide-react";
 import { FinancialFiltersModal } from "./financial-filters-modal";
 
 export function FinancialFiltersButton() {
@@ -11,12 +11,14 @@ export function FinancialFiltersButton() {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="flex items-center p-2 gap-2 bg-[#ECF7F8] rounded-2xl max-md:hidden hover:bg-[#ECF7F8]/80 transition-colors cursor-pointer"
+        className="flex h-11 cursor-pointer items-center gap-2 rounded-[10px] border border-filete-forte bg-white px-3.5 text-[13.5px] font-medium text-tinta transition-colors hover:bg-gray-100"
       >
-        <MdTune size={16} className="text-[#348C98]" />
-        <span className="text-xs text-brand font-plus-jakarta font-bold">
-          Filtros
-        </span>
+        <SlidersHorizontal
+          size={16}
+          strokeWidth={1.7}
+          className="text-tinta-3"
+        />
+        Filtros
       </button>
 
       <FinancialFiltersModal open={isModalOpen} onOpenChange={setIsModalOpen} />

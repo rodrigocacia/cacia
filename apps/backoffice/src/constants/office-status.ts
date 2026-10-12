@@ -6,25 +6,29 @@ import { OfficeStatus } from '@/types/office';
  *
  * O painel lia `signature_status` em minúsculas — campo que a API não tem —
  * e todo escritório aparecia sem situação. Rótulo e cor ficam aqui para que
- * tabela, filtro e detalhe não voltem a divergir.
+ * tabela, filtro e detalhe não voltem a divergir. `cor` é o preenchimento
+ * suave; `ponto`, a bolinha do selo contornado (StatusChip).
  */
 export const SITUACOES_DO_ESCRITORIO: Record<
   OfficeStatus,
-  { rotulo: string; cor: string; icon: string }
+  { rotulo: string; cor: string; ponto: string; icon: string }
 > = {
   [OfficeStatus.PENDING]: {
     rotulo: 'Pendente',
-    cor: 'bg-[#FEF7D7] text-[#F7CB08]',
+    cor: 'bg-ambar-fundo text-ambar',
+    ponto: 'bg-ambar-ponto',
     icon: 'mdi:clock-outline',
   },
   [OfficeStatus.ACTIVE]: {
     rotulo: 'Ativo',
-    cor: 'bg-[#EDFDEE] text-[#16A31B]',
+    cor: 'bg-nevoa text-turquesa-profundo',
+    ponto: 'bg-[#4FB3C0]',
     icon: 'mdi:check-circle',
   },
   [OfficeStatus.DEACTIVATE]: {
     rotulo: 'Desativado',
-    cor: 'bg-[#FEF2F2] text-[#DC2626]',
+    cor: 'bg-gray-100 text-tinta-3',
+    ponto: 'bg-gray-400',
     icon: 'mdi:archive',
   },
 };

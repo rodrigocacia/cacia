@@ -4,7 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
-import { Icon } from "@/components/icone";
+const ABAS = [
+  { nome: "Consumo por escritório", path: "/ai-usage" },
+  { nome: "Parâmetros de cobrança", path: "/ai-usage/billing" },
+];
 
 /**
  * Abas de "Consumo de IA". Não usa o CustomTab: ele marca a aba pelo prefixo
@@ -14,40 +17,27 @@ import { Icon } from "@/components/icone";
 export function NavDoConsumo() {
   const pathname = usePathname();
 
-  const abas = [
-    {
-      nome: "Consumo por escritório",
-      path: "/ai-usage",
-      icon: <Icon icon="mdi:robot-outline" className="w-5 h-5" />,
-    },
-    {
-      nome: "Parâmetros de cobrança",
-      path: "/ai-usage/billing",
-      icon: <Icon icon="mdi:cog-outline" className="w-5 h-5" />,
-    },
-  ];
-
   return (
-    <nav className="w-full flex items-center gap-6 border-b border-zinc-200 mt-8 overflow-x-auto whitespace-nowrap">
-      {abas.map((aba) => {
+    <nav
+      aria-label="Seções de Consumo de IA"
+      className="flex w-full gap-[22px] overflow-x-auto border-b border-filete text-[13.5px] whitespace-nowrap [scrollbar-width:none]"
+    >
+      {ABAS.map((aba) => {
         const ativa = pathname === aba.path;
 
         return (
           <Link
             key={aba.path}
             href={aba.path}
+            aria-current={ativa ? "page" : undefined}
             className={clsx(
-              "relative flex items-center gap-1.5 px-1 pb-4 text-sm font-medium hover:text-[#348C98]",
-              ativa ? "text-[#348C98]" : "text-zinc-500",
+              "-mb-px shrink-0 border-b-2 pb-2.5 transition-colors",
+              ativa
+                ? "border-tinta font-semibold text-tinta"
+                : "border-transparent text-tinta-3 hover:text-tinta",
             )}
           >
-            <span className={ativa ? "text-[#348C98]" : "text-[#BDBDBD]"}>
-              {aba.icon}
-            </span>
             {aba.nome}
-            {ativa && (
-              <span className="absolute -bottom-px left-0 right-0 h-0.5 rounded-t-full bg-[#348C98]" />
-            )}
           </Link>
         );
       })}

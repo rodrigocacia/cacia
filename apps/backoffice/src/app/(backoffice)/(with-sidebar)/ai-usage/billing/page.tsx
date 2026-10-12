@@ -1,9 +1,8 @@
-import { Icon } from "@/components/icone";
 import { Header } from "@/components/header";
-import { Breadcrumbs } from "@/components/ui/custom-breadcrumb";
+import { PageHeader } from "@/components/ui/page-header";
+import { AvisoDeErro } from "@/components/consumo-ia/aviso-de-erro";
 import { NavDoConsumo } from "@/components/consumo-ia/nav-do-consumo";
 
-import { aiBillingCrumbs } from "@/constants/breadcrumbs";
 import { getAiBilling } from "@/http/ai-usage/ai-billing";
 
 import { ParametrosDeCobranca } from "./parametros-de-cobranca";
@@ -12,22 +11,23 @@ export default async function ParametrosDeCobrancaPage() {
   const resultado = await getAiBilling();
 
   return (
-    <div className="w-full h-full max-lg:px-4">
-      <Header title="Consumo de IA" />
+    <div className="flex w-full flex-col pb-10">
+      <Header title="Consumo de IA" name="Parâmetros de cobrança" />
 
-      <Breadcrumbs crumbs={aiBillingCrumbs} />
+      <PageHeader
+        eyebrow="Consumo de IA"
+        title="Cobrança"
+        description="Margem, câmbio e preço de cada modelo: a base do custo e do valor a cobrar."
+      />
 
-      <NavDoConsumo />
+      <div className="mt-6">
+        <NavDoConsumo />
+      </div>
 
       {resultado.success ? (
         <ParametrosDeCobranca inicial={resultado.data} />
       ) : (
-        <div className="w-full mt-6 p-8 bg-white rounded-2xl shadow-sm flex items-center gap-3">
-          <Icon icon="mdi:alert-outline" className="text-[#BDBDBD] w-8 h-8" />
-          <p className="text-base text-[#707070] font-medium">
-            {resultado.error}
-          </p>
-        </div>
+        <AvisoDeErro mensagem={resultado.error} />
       )}
     </div>
   );

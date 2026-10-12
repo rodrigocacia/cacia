@@ -1,19 +1,19 @@
 "use client";
 
-import { Icon } from "@/components/icone";
+import { Building2, UserRound } from "lucide-react";
 
 export function navLinks(userId: string) {
   return [
     {
       id: 1,
       name: "Informações pessoais",
-      icon: <Icon icon="mdi:user-circle" className="w-5 h-5" />,
+      icon: <UserRound size={16} strokeWidth={1.7} aria-hidden />,
       path: `/user/${userId}/personal-information`,
     },
     {
       id: 2,
       name: "Escritórios",
-      icon: <Icon icon="mdi:office-building" className="w-5 h-5" />,
+      icon: <Building2 size={16} strokeWidth={1.7} aria-hidden />,
       path: `/user/${userId}/offices`,
     },
   ];

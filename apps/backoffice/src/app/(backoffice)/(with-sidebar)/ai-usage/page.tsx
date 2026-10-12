@@ -1,15 +1,17 @@
 import { Suspense } from "react";
 import Link from "next/link";
 
-import { Icon } from "@/components/icone";
 import { Header } from "@/components/header";
-import { Breadcrumbs } from "@/components/ui/custom-breadcrumb";
+import { PageHeader } from "@/components/ui/page-header";
 import { LoadingText } from "@/components/ui/sppiner";
-import { CartaoDeValor } from "@/components/consumo-ia/cartao-de-valor";
+import { AvisoDeErro } from "@/components/consumo-ia/aviso-de-erro";
+import {
+  CartaoDeValor,
+  FaixaDeIndicadores,
+} from "@/components/consumo-ia/cartao-de-valor";
 import { NavDoConsumo } from "@/components/consumo-ia/nav-do-consumo";
 import { SeletorDePeriodo } from "@/components/consumo-ia/seletor-de-periodo";
 
-import { aiUsageCrumbs } from "@/constants/breadcrumbs";
 import { getAiUsage } from "@/http/ai-usage/get-ai-usage";
 import {
   formatarPercentual,
@@ -43,22 +45,22 @@ export default async function ConsumoDeIa({
   );
 
   return (
-    <div className="w-full h-full max-lg:px-4">
+    <div className="flex w-full flex-col pb-10">
       <Header title="Consumo de IA" />
 
-      <Breadcrumbs crumbs={aiUsageCrumbs} />
+      <PageHeader
+        title="Consumo de IA"
+        description="Quanto a IA custou no período e quanto cobrar de cada escritório."
+      />
 
-      <NavDoConsumo />
+      <div className="mt-6">
+        <NavDoConsumo />
+      </div>
 
       {!resultado.success ? (
-        <div className="w-full mt-6 p-8 bg-white rounded-2xl shadow-sm flex items-center gap-3">
-          <Icon icon="mdi:alert-outline" className="text-[#BDBDBD] w-8 h-8" />
-          <p className="text-base text-[#707070] font-medium">
-            {resultado.error}
-          </p>
-        </div>
+        <AvisoDeErro mensagem={resultado.error} />
       ) : (
-        <div className="w-full flex flex-col gap-6 mt-6 pb-8">
+        <div className="mt-6 flex w-full flex-col gap-6">
           <Suspense fallback={<LoadingText />}>
             <SeletorDePeriodo
               key={`${resultado.data.periodo.de}-${resultado.data.periodo.ate}`}
@@ -66,33 +68,33 @@ export default async function ConsumoDeIa({
             />
           </Suspense>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FaixaDeIndicadores
+            rotulo="Totais do período"
+            className="grid-cols-1 md:grid-cols-3"
+          >
             <CartaoDeValor
-              icon="mdi:cash-minus"
               rotulo="Custo total"
               valor={formatarReais(resultado.data.total.custo)}
               detalhe="Pago aos provedores de IA"
             />
             <CartaoDeValor
-              icon="mdi:cash-plus"
               rotulo="Valor a cobrar"
               valor={formatarReais(resultado.data.total.cobrado)}
               detalhe="Custo + margem, somando todos os escritórios"
             />
             <CartaoDeValor
-              icon="mdi:percent-outline"
               rotulo="Margem"
               valor={formatarPercentual(resultado.data.margem_percentual)}
               detalhe={
                 <Link
                   href="/ai-usage/billing"
-                  className="text-[#348C98] hover:underline"
+                  className="font-medium text-turquesa-profundo hover:underline"
                 >
                   Alterar em Parâmetros de cobrança
                 </Link>
               }
             />
-          </div>
+          </FaixaDeIndicadores>
 
           <TabelaDeConsumo
             periodo={resultado.data.periodo}

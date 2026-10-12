@@ -1,18 +1,18 @@
 "use client";
 
-import { Icon } from "@/components/icone";
+import { KeyRound, UserRound } from "lucide-react";
 
 export const NavLinks = [
   {
     id: 1,
     name: "Meus dados",
-    icon: <Icon icon="mdi:user-circle" className="w-5 h-5" />,
+    icon: <UserRound size={16} strokeWidth={1.7} aria-hidden />,
     path: "/profile/my-data",
   },
   {
     id: 2,
     name: "Dados de acesso",
-    icon: <Icon icon="mdi:password-outline" className="w-5 h-5" />,
+    icon: <KeyRound size={16} strokeWidth={1.7} aria-hidden />,
     path: "/profile/password",
   },
 ];

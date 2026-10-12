@@ -1,35 +1,55 @@
 "use client";
 
+import { cn } from "@/lib/utils";
+
 interface SpinnerProps {
+  /**
+   * Mantido por compatibilidade: o anel tem um tamanho só na direção
+   * visual 02.
+   */
   size?: "sm" | "md" | "lg";
+  /**
+   * Só o anel, sem a área em volta — para usar dentro de botões e linhas.
+   */
+  inline?: boolean;
   className?: string;
 }
 
-export function Spinner({ size = "md", className = "" }: SpinnerProps) {
-  const sizeClasses = {
-    sm: "w-6 h-6 border-2",
-    md: "w-10 h-10 border-4",
-    lg: "w-16 h-16 border-4",
-  };
+const ANEL =
+  "block h-5 w-5 animate-spin rounded-full border-2 border-nevoa-2 border-t-acao";
+
+export function Spinner({ inline = false, className }: SpinnerProps = {}) {
+  if (inline) {
+    return (
+      <span role="status" className={cn("inline-flex", className)}>
+        <span aria-hidden className={ANEL} />
+        <span className="sr-only">Carregando</span>
+      </span>
+    );
+  }
 
   return (
     <div
-      className={`flex items-center justify-center w-full h-80 ${className}`}
+      role="status"
+      className={cn(
+        "flex min-h-40 w-full items-center justify-center py-12",
+        className,
+      )}
     >
-      <div
-        className={`${sizeClasses[size]} border-t-transparent border-blue-500 rounded-full animate-spin`}
-      />
+      <span aria-hidden className={ANEL} />
+      <span className="sr-only">Carregando</span>
     </div>
   );
 }
 
 export function LoadingText() {
   return (
-    <div className="flex items-center justify-center w-full h-20">
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 border-2 border-t-transparent border-blue-500 rounded-full animate-spin" />
-        <span className="text-gray-500 text-sm">Carregando...</span>
-      </div>
+    <div
+      role="status"
+      className="flex h-20 w-full items-center justify-center gap-2.5"
+    >
+      <span aria-hidden className={ANEL} />
+      <span className="text-[13px] text-tinta-3">Carregando…</span>
     </div>
   );
 }

@@ -31,29 +31,29 @@ export function Textarea({
   return (
     <div className="w-full space-y-1">
       <div className="w-full">
-        <label className="block text-gray-600 text-base mb-2 font-semibold">
+        <label className="mb-[7px] block text-[13px] font-medium text-tinta-2">
           {label}
         </label>
         <div
-          className={`flex items-start w-full rounded-2xl border-1 transition-colors duration-200 px-4 py-3
-    ${isFocused ? "border-[#348C98] ring-1 ring-[#348C98]" : "border-gray-200"}
+          className={`flex w-full items-start rounded-[10px] border px-3.5 py-3 transition-[border-color,box-shadow] duration-150
+    ${isFocused ? "border-acao shadow-[0_0_0_3px_#D7EBEE]" : "border-filete-forte"}
     ${
       rest.disabled
-        ? "bg-[#F0F0F0] cursor-not-allowed opacity-70"
-        : "bg-[#FCFCFD] cursor-text"
+        ? "bg-gray-100 cursor-not-allowed opacity-70"
+        : "bg-white cursor-text"
     }`}
         >
           {Icon && (
             <Icon
-              className={`mr-2 h-5 w-5 mt-2 ${
-                isFocused ? "text-[#348C98]" : "text-gray-400"
+              className={`mt-[3px] mr-2 h-[17px] w-[17px] shrink-0 ${
+                isFocused ? "text-acao" : "text-gray-400"
               }`}
             />
           )}
           <textarea
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            className="w-full bg-transparent outline-0 border-0 placeholder-gray-400 text-gray-600 resize-none min-h-[120px]"
+            className="min-h-[120px] w-full resize-none border-0 bg-transparent text-[15px] leading-relaxed text-tinta outline-0 placeholder-gray-400"
             {...rest}
           />
         </div>

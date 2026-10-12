@@ -6,7 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 
-import { Icon } from "@/components/icone";
+import { Pencil, Plus, Save, Trash2 } from "lucide-react";
+
 import { Button } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/custom-input";
 import { Toast } from "@/components/ui/toast";
@@ -17,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { TableCard } from "@/components/ui/table-card";
 import {
   Table,
   TableBody,
@@ -112,130 +114,127 @@ export function ParametrosDeCobranca({ inicial }: { inicial: AiBilling }) {
   }
 
   return (
-    <div className="w-full flex flex-col gap-6 mt-6 pb-8">
+    <div className="mt-6 flex w-full flex-col gap-6">
       <FormularioDeParametros
         billing={billing}
         onSalvo={(novo) => setBilling(novo)}
         onResultado={avisar}
       />
 
-      <section className="w-full bg-white rounded-2xl shadow-sm p-6 max-md:p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Icon
-              icon="mdi:tag-text-outline"
-              className="w-8 h-8 text-[#BDBDBD]"
-            />
-            <h3 className="text-[20px] text-[#707070] font-bold">
-              Preços dos modelos
-            </h3>
+      <section className="w-full overflow-hidden rounded-[14px] border border-filete bg-white">
+        <div className="flex flex-col gap-4 p-6 max-md:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-baseline gap-2.5">
+              <h2 className="text-[14.5px] font-semibold tracking-[-0.01em] text-tinta">
+                Preços dos modelos
+              </h2>
+              <span className="font-mono text-[11px] text-tinta-3 tabular">
+                {billing.precos.length}
+              </span>
+            </div>
+
+            <Button
+              type="button"
+              onClick={() => setEditando("novo")}
+              iconLeft={<Plus size={16} strokeWidth={1.9} aria-hidden />}
+            >
+              Adicionar modelo
+            </Button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setEditando("novo")}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#348C98] text-white text-sm font-medium cursor-pointer"
-          >
-            <Icon icon="mdi:plus" className="w-5 h-5" />
-            Adicionar modelo
-          </button>
-        </div>
-
-        <hr className="w-full my-4 h-px border-t-0 bg-gray-200" />
-
-        <div className="text-sm text-[#707070] flex flex-col gap-1.5 mb-4">
-          <p>
-            Preço em dólar por 1 milhão de tokens, do jeito que os provedores
-            publicam. Confira os valores na página de preços de cada provedor
-            antes de cadastrar ou alterar.
-          </p>
-          <p>
-            <strong>Entrada em cache</strong> é o texto de entrada que o
-            provedor reaproveita de chamadas anteriores e cobra mais barato.
-          </p>
-          <p>
-            Novos preços valem só para as chamadas feitas a partir de agora: o
-            custo de cada chamada é fixado no momento em que ela acontece.
-            Chamadas de um modelo sem preço entram com custo zero.
-          </p>
+          <ul className="flex max-w-[760px] list-disc flex-col gap-1.5 pl-4 text-[13px] leading-relaxed text-tinta-2 marker:text-gray-400">
+            <li>
+              Preço em dólar por 1 milhão de tokens, do jeito que os provedores
+              publicam. Confira os valores na página de preços de cada provedor
+              antes de cadastrar ou alterar.
+            </li>
+            <li>
+              <strong className="font-semibold text-tinta">
+                Entrada em cache
+              </strong>{" "}
+              é o texto de entrada que o provedor reaproveita de chamadas
+              anteriores e cobra mais barato.
+            </li>
+            <li>
+              Novos preços valem só para as chamadas feitas a partir de agora: o
+              custo de cada chamada é fixado no momento em que ela acontece.
+              Chamadas de um modelo sem preço entram com custo zero.
+            </li>
+          </ul>
         </div>
 
         {billing.precos.length === 0 ? (
-          <p className="text-sm text-[#BDBDBD] py-6 text-center">
+          <p className="border-t border-filete px-6 py-10 text-center text-[13.5px] text-tinta-3">
             Nenhum preço cadastrado.
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-sm font-medium text-[#707070]">
-                    Modelo
-                  </TableHead>
-                  <TableHead className="text-sm font-medium text-[#707070] text-right">
-                    Entrada (US$/1M)
-                  </TableHead>
-                  <TableHead className="text-sm font-medium text-[#707070] text-right">
-                    Entrada em cache (US$/1M)
-                  </TableHead>
-                  <TableHead className="text-sm font-medium text-[#707070] text-right">
-                    Saída (US$/1M)
-                  </TableHead>
-                  <TableHead className="text-sm font-medium text-[#707070]">
-                    Atualizado em
-                  </TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {billing.precos.map((preco) => (
-                  <TableRow key={preco.modelo}>
-                    <TableCell className="text-sm font-medium text-[#3D3D3D]">
-                      {preco.modelo}
-                    </TableCell>
-                    <TableCell className="text-sm text-[#707070] text-right tabular-nums">
-                      {formatarDolares(preco.entrada_usd_por_milhao)}
-                    </TableCell>
-                    <TableCell className="text-sm text-[#707070] text-right tabular-nums">
-                      {formatarDolares(preco.entrada_em_cache_usd_por_milhao)}
-                    </TableCell>
-                    <TableCell className="text-sm text-[#707070] text-right tabular-nums">
-                      {formatarDolares(preco.saida_usd_por_milhao)}
-                    </TableCell>
-                    <TableCell className="text-sm text-[#707070]">
-                      {format(
-                        new Date(preco.atualizado_em),
-                        "dd/MM/yyyy HH:mm",
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right whitespace-nowrap">
-                      <button
-                        type="button"
-                        aria-label={`Editar ${preco.modelo}`}
-                        onClick={() => setEditando(preco)}
-                        className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
-                      >
-                        <Icon
-                          icon="mdi:pencil"
-                          className="w-4 h-4 text-[#348C98]"
-                        />
-                      </button>
-                      <button
-                        type="button"
-                        aria-label={`Remover ${preco.modelo}`}
-                        onClick={() => setRemovendo(preco)}
-                        className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
-                      >
-                        <Icon
-                          icon="mdi:trash-can-outline"
-                          className="w-4 h-4 text-[#DC2626]"
-                        />
-                      </button>
-                    </TableCell>
+          <div className="border-t border-filete">
+            <TableCard semMoldura>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Modelo</TableHead>
+                    <TableHead className="text-right">
+                      Entrada (US$/1M)
+                    </TableHead>
+                    <TableHead className="text-right">
+                      Entrada em cache (US$/1M)
+                    </TableHead>
+                    <TableHead className="text-right">Saída (US$/1M)</TableHead>
+                    <TableHead>Atualizado em</TableHead>
+                    <TableHead>
+                      <span className="sr-only">Ações</span>
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {billing.precos.map((preco) => (
+                    <TableRow key={preco.modelo}>
+                      <TableCell className="font-mono text-[13px] text-tinta">
+                        {preco.modelo}
+                      </TableCell>
+                      <TableCell className="tabular text-right">
+                        {formatarDolares(preco.entrada_usd_por_milhao)}
+                      </TableCell>
+                      <TableCell className="tabular text-right">
+                        {formatarDolares(preco.entrada_em_cache_usd_por_milhao)}
+                      </TableCell>
+                      <TableCell className="tabular text-right">
+                        {formatarDolares(preco.saida_usd_por_milhao)}
+                      </TableCell>
+                      <TableCell className="tabular text-tinta-3">
+                        {format(
+                          new Date(preco.atualizado_em),
+                          "dd/MM/yyyy HH:mm",
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="inline-flex items-center gap-0.5">
+                          <button
+                            type="button"
+                            aria-label={`Editar ${preco.modelo}`}
+                            title="Editar"
+                            onClick={() => setEditando(preco)}
+                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-tinta-2 transition-colors hover:bg-gray-100 hover:text-tinta"
+                          >
+                            <Pencil size={15} strokeWidth={1.7} aria-hidden />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`Remover ${preco.modelo}`}
+                            title="Remover"
+                            onClick={() => setRemovendo(preco)}
+                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-[#A23B2A] transition-colors hover:bg-[#FBEDEA]"
+                          >
+                            <Trash2 size={15} strokeWidth={1.7} aria-hidden />
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableCard>
           </div>
         )}
       </section>
@@ -286,7 +285,6 @@ export function ParametrosDeCobranca({ inicial }: { inicial: AiBilling }) {
             </Button>
             <Button
               variant="danger"
-              className="h-[56px]"
               onClick={remover}
               disabled={removendoAgora}
             >
@@ -350,21 +348,24 @@ function FormularioDeParametros({
   };
 
   return (
-    <section className="w-full bg-white rounded-2xl shadow-sm p-6 max-md:p-4">
-      <div className="flex items-center gap-3">
-        <Icon icon="mdi:cash-multiple" className="w-8 h-8 text-[#BDBDBD]" />
-        <h3 className="text-[20px] text-[#707070] font-bold">
+    <section className="w-full rounded-[14px] border border-filete bg-white p-6 max-md:p-5">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-[14.5px] font-semibold tracking-[-0.01em] text-tinta">
           Margem e câmbio
-        </h3>
+        </h2>
+        <p className="text-[13px] text-tinta-3">
+          Margem atual:{" "}
+          <span className="tabular font-medium text-tinta-2">
+            {formatarPercentual(billing.margem_percentual)}
+          </span>
+        </p>
       </div>
-
-      <hr className="w-full my-4 h-px border-t-0 bg-gray-200" />
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full flex flex-col gap-6"
+        className="mt-5 flex w-full flex-col gap-5"
       >
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid w-full grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
           <div className="flex flex-col gap-2">
             <Input
               type="text"
@@ -375,11 +376,11 @@ function FormularioDeParametros({
               {...register("margemPercentual")}
               error={errors?.margemPercentual}
             />
-            <p className="text-xs text-[#707070]">
+            <p className="text-[12.5px] leading-relaxed text-tinta-3">
               É o preço de venda: o percentual somado ao custo para chegar ao
               valor a cobrar. Vale para qualquer período, inclusive meses já
               fechados — alterar a margem muda o valor a cobrar de todo o
-              histórico. Hoje: {formatarPercentual(billing.margem_percentual)}.
+              histórico.
             </p>
           </div>
 
@@ -393,7 +394,7 @@ function FormularioDeParametros({
               {...register("cambio")}
               error={errors?.cambio}
             />
-            <p className="text-xs text-[#707070]">
+            <p className="text-[12.5px] leading-relaxed text-tinta-3">
               Converte o preço dos modelos, cobrado em dólar, para real. Vale só
               para as chamadas feitas a partir de agora: o custo de cada chamada
               é fixado no momento em que ela acontece.
@@ -401,15 +402,13 @@ function FormularioDeParametros({
           </div>
         </div>
 
-        <div className="w-full flex justify-end">
+        <div className="flex w-full justify-end border-t border-filete pt-5">
           <Button
             type="submit"
             disabled={isSubmitting || !isDirty}
             isLoading={isSubmitting}
-            iconLeft={
-              <Icon icon="mdi:content-save" className="w-6 h-6 text-white" />
-            }
-            className="px-10 cursor-pointer max-md:w-full disabled:opacity-60 disabled:cursor-not-allowed"
+            iconLeft={<Save size={16} strokeWidth={1.7} aria-hidden />}
+            className="px-6 max-md:w-full"
           >
             Salvar
           </Button>
@@ -549,7 +548,7 @@ function FormularioDePreco({
             type="submit"
             disabled={isSubmitting}
             isLoading={isSubmitting}
-            className="px-8 cursor-pointer"
+            className="px-6"
           >
             Salvar
           </Button>

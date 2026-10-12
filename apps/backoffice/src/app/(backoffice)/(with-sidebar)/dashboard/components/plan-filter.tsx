@@ -26,7 +26,7 @@ export function PlanFilter({ selectedPlan, plans }: PlanFilterProps) {
   };
 
   return (
-    <div className="flex items-center px-3 py-1.5 rounded-xl gap-2">
+    <div className="flex items-center max-sm:w-full">
       <CustomSelect
         options={plans.map((plan) => ({
           label: plan.name,

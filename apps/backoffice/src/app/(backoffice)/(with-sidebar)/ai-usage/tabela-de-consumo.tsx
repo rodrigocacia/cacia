@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 
-import { Icon } from "@/components/icone";
+import { ChevronRight, Download } from "lucide-react";
+
 import { EmptySearch } from "@/components/empty-search";
 import { CustomAvatar } from "@/components/ui/custom-avatar";
 import { SeloSemPreco } from "@/components/consumo-ia/selo-sem-preco";
+import { StatusChip } from "@/components/ui/status-chip";
+import { TableCard } from "@/components/ui/table-card";
 import {
   Table,
   TableBody,
@@ -21,7 +24,7 @@ import {
   formatarReais,
   gerarCsvDeConsumo,
 } from "@/utils/consumo-ia";
-import { formatName } from "@/utils/formatters";
+import { nomeParaExibir } from "@/utils/formatters";
 
 interface TabelaDeConsumoProps {
   periodo: GetAiUsageResponse["periodo"];
@@ -59,96 +62,75 @@ export function TabelaDeConsumo({
   }
 
   return (
-    <div className="w-full flex flex-col gap-3">
-      <div className="w-full flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Icon
-            icon="mdi:office-building-outline"
-            className="text-[#BDBDBD] w-7 h-7"
-          />
-          <h3 className="text-[18px] text-[#3D3D3D] font-bold">
-            Escritórios no período
-          </h3>
-          <div className="w-7 h-7 flex items-center justify-center bg-[#E0E6EB] rounded-full">
-            <span className="text-base text-[#707070] font-bold">
-              {escritorios.length}
-            </span>
-          </div>
-        </div>
-
+    <TableCard>
+      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2 border-b border-filete px-5 py-3.5">
+        <h2 className="text-[14.5px] font-semibold tracking-[-0.01em] text-tinta">
+          Escritórios no período
+        </h2>
+        <span className="font-mono text-[11px] text-tinta-3 tabular">
+          {escritorios.length}
+        </span>
+        <span className="flex-grow" />
         <button
           type="button"
           onClick={exportar}
           disabled={escritorios.length === 0}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm text-sm font-medium text-[#348C98] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex h-9 cursor-pointer items-center gap-2 rounded-[9px] border border-filete-forte bg-white px-3 text-[13px] font-medium text-tinta transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <Icon icon="mdi:file-excel" className="w-5 h-5" />
+          <Download size={15} strokeWidth={1.7} aria-hidden />
           Exportar CSV
         </button>
       </div>
 
       {escritorios.length === 0 ? (
-        <EmptySearch
-          title="Nenhum consumo no período"
-          subtitle="Nenhum escritório usou a IA entre as datas escolhidas."
-        />
+        <div className="px-5 pt-2 pb-12">
+          <EmptySearch
+            title="Nenhum consumo no período"
+            subtitle="Nenhum escritório usou a IA entre as datas escolhidas."
+          />
+        </div>
       ) : (
-        <Table className="border-spacing-y-1 border-separate">
-          <TableHeader className="bg-white shadow-sm rounded-2xl">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableHead className="text-sm font-medium text-[#707070]">
-                Escritório
+              <TableHead>Escritório</TableHead>
+              <TableHead className="text-right">Chamadas</TableHead>
+              <TableHead className="text-right">Tokens</TableHead>
+              <TableHead className="text-right">Custo</TableHead>
+              <TableHead className="text-right">Valor a cobrar</TableHead>
+              <TableHead>
+                <span className="sr-only">Ações</span>
               </TableHead>
-              <TableHead className="text-sm font-medium text-[#707070] text-right">
-                Chamadas
-              </TableHead>
-              <TableHead className="text-sm font-medium text-[#707070] text-right">
-                Tokens
-              </TableHead>
-              <TableHead className="text-sm font-medium text-[#707070] text-right">
-                Custo
-              </TableHead>
-              <TableHead className="text-sm font-medium text-[#707070] text-right">
-                Valor a cobrar
-              </TableHead>
-              <TableHead />
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {escritorios.map((escritorio) => (
-              <TableRow
-                key={escritorio.office_id}
-                className="shadow border-0 rounded-2xl bg-white"
-              >
+              <TableRow key={escritorio.office_id}>
                 <TableCell>
-                  <div className="flex gap-2.5 items-center">
-                    <CustomAvatar name={escritorio.nome} size="md" />
-                    <div className="flex flex-col gap-1 items-start">
-                      <span className="text-sm text-[#707070] font-medium">
-                        {formatName(escritorio.nome)}
+                  <div className="flex items-center gap-3">
+                    <CustomAvatar name={escritorio.nome} size="sm" />
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                      <span className="font-medium text-tinta">
+                        {nomeParaExibir(escritorio.nome)}
                       </span>
-                      <div className="flex flex-wrap gap-1">
-                        {escritorio.removido && (
-                          <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-[11px] font-semibold">
-                            removido
-                          </span>
-                        )}
-                        {escritorio.sem_preco && <SeloSemPreco />}
-                      </div>
+                      {escritorio.removido && (
+                        <StatusChip ponto="bg-gray-400">removido</StatusChip>
+                      )}
+                      {escritorio.sem_preco && <SeloSemPreco />}
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-sm font-medium text-[#707070] text-right tabular-nums">
+                <TableCell className="tabular text-right">
                   {formatarInteiro(escritorio.chamadas)}
                 </TableCell>
-                <TableCell className="text-sm font-medium text-[#707070] text-right tabular-nums">
+                <TableCell className="tabular text-right">
                   {formatarInteiro(escritorio.tokens)}
                 </TableCell>
-                <TableCell className="text-sm font-medium text-[#707070] text-right tabular-nums">
+                <TableCell className="tabular text-right">
                   {formatarReais(escritorio.custo)}
                 </TableCell>
-                <TableCell className="text-sm font-bold text-[#3D3D3D] text-right tabular-nums">
+                <TableCell className="tabular text-right font-semibold text-tinta">
                   {formatarReais(escritorio.cobrado)}
                 </TableCell>
                 <TableCell className="text-right">
@@ -156,10 +138,11 @@ export function TabelaDeConsumo({
                   {!escritorio.removido && (
                     <Link
                       href={`/office/${escritorio.office_id}/ai-usage${query}`}
-                      className="inline-flex items-center gap-1 text-sm font-medium text-[#348C98] hover:underline whitespace-nowrap"
+                      aria-label={`Detalhes do consumo de ${nomeParaExibir(escritorio.nome)}`}
+                      className="inline-flex items-center gap-1 text-[13px] font-medium text-turquesa-profundo hover:underline"
                     >
                       Detalhes
-                      <Icon icon="mdi:chevron-right" className="w-4 h-4" />
+                      <ChevronRight size={15} strokeWidth={1.7} aria-hidden />
                     </Link>
                   )}
                 </TableCell>
@@ -168,6 +151,6 @@ export function TabelaDeConsumo({
           </TableBody>
         </Table>
       )}
-    </div>
+    </TableCard>
   );
 }

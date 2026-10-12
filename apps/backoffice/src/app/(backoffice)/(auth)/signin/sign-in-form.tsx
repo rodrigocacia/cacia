@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-
 import { useRouter } from "next/navigation";
 
 import { useFormState } from "@/hooks/use-form-state";
@@ -25,23 +23,28 @@ export function SignInForm() {
 
   return (
     <form
+      method="post"
       onSubmit={handleSubmit}
-      className="bg-white relative z-10 w-full h-full max-lg:h-fit flex flex-col gap-8 shadow-md rounded-4xl px-8 pt-[28px] max-lg:pb-4"
+      className="flex w-full flex-col gap-8"
     >
-      <div className="w-full flex items-center max-lg:hidden">
-        <Image src="/logo-cacia.png" alt="mockup" width={200} height={61} />
-
-        <div className="w-px h-12 bg-gray-300 mx-4" />
-
-        <h3 className="text-2xl">Backoffice</h3>
+      <div className="flex flex-col gap-2.5">
+        <span className="rotulo">Backoffice</span>
+        <h2 className="font-display text-[46px] leading-none text-tinta max-lg:text-[34px]">
+          Entrar
+        </h2>
+        <p className="text-[15px] text-tinta-2">
+          Acesse o painel de administração da CacIA.
+        </p>
       </div>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4">
         <Input
+          type="email"
           name="email"
           label="E-mail"
-          placeholder="seu@email"
-          iconName="mail"
+          placeholder="voce@cacia.com.br"
+          iconName={null}
+          autoComplete="email"
           error={errors?.email[0]}
         />
 
@@ -49,34 +52,32 @@ export function SignInForm() {
           type="password"
           name="password"
           label="Senha"
-          placeholder="Insira a sua senha de acesso..."
-          iconName="lock"
+          placeholder="Sua senha"
+          iconName={null}
+          autoComplete="current-password"
           error={errors?.password[0]}
         />
 
-        <div className="flex items-center justify-between">
-          <span>
-            <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike" />{" "}
-            Lembra de mim
-          </span>
-        </div>
+        <label
+          htmlFor="lembrar"
+          className="flex w-fit cursor-pointer items-center gap-2.5 text-[13.5px] text-tinta-2"
+        >
+          <input
+            type="checkbox"
+            id="lembrar"
+            name="lembrar"
+            className="h-4 w-4 cursor-pointer rounded-[5px] border-filete-forte accent-acao"
+          />
+          Lembrar de mim
+        </label>
       </div>
 
       <Button
         type="submit"
-        className="w-[251px] max-lg:w-full cursor-pointer"
+        className="h-[46px] w-full"
         variant="primary"
-        iconLeft={
-          !isPending ? (
-            <Image
-              src="/icons/welcome-button.svg"
-              alt=""
-              width={24}
-              height={24}
-            />
-          ) : null
-        }
         isLoading={isPending}
+        disabled={isPending}
       >
         Entrar
       </Button>

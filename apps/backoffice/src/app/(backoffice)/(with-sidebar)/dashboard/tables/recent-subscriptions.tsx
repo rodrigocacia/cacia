@@ -1,6 +1,7 @@
-import { CustomAvatar } from "@/components/ui/custom-avatar";
-import { Icon } from "@/components/icone";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+
+import { CustomAvatar } from "@/components/ui/custom-avatar";
 
 interface Subscription {
   plan: string;
@@ -12,46 +13,47 @@ interface Subscription {
 
 export function RecentSubscriptions({ data }: { data: Subscription[] }) {
   return (
-    <div className="bg-white rounded-2xl w-full">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-[#3D3D3D] font-semibold text-lg">
+    <div className="w-full">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="text-[14.5px] font-semibold text-tinta">
           Novas assinaturas
-        </h3>
+        </h2>
         <Link
           href="/financial"
-          className="flex items-center gap-1 px-3 py-1.5 border border-[#E0E6EB] rounded-xl text-[#707070] text-sm font-medium bg-white hover:bg-gray-50 transition"
+          className="flex items-center gap-1 text-[13px] font-medium text-turquesa-profundo hover:underline"
         >
           Ver todas
-          <Icon icon="mdi:arrow-right" className="w-4 h-4 ml-1" />
+          <ArrowRight size={14} strokeWidth={1.8} />
         </Link>
       </div>
-      <ul className="flex flex-col gap-3">
-        {data.map((sub, index) => (
-          <li
-            key={index}
-            className="flex items-center justify-between bg-white rounded-xl shadow-sm px-4 py-3 gap-3"
-          >
-            <CustomAvatar
-              name={sub.name || sub.office}
-              size="sm"
-              className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden"
-            />
-            <div className="flex flex-col flex-1 ml-2">
-              <span className="text-[#348C98] font-semibold text-base leading-tight">
-                {sub.plan}
+
+      {data.length === 0 ? (
+        <p className="rounded-[10px] bg-papel-2 px-4 py-6 text-center text-[13.5px] text-tinta-3">
+          Nenhuma assinatura recente.
+        </p>
+      ) : (
+        <ul className="flex flex-col">
+          {data.map((sub, index) => (
+            <li
+              key={index}
+              className="flex items-center gap-3 border-b border-filete py-3 last:border-b-0"
+            >
+              <CustomAvatar name={sub.name || sub.office} size="sm" />
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="truncate text-[13.5px] font-medium text-tinta">
+                  {sub.office}
+                </span>
+                <span className="truncate text-xs text-tinta-3">
+                  {sub.plan} · {sub.date}
+                </span>
+              </div>
+              <span className="text-[13.5px] font-medium whitespace-nowrap text-tinta tabular">
+                + {sub.value}
               </span>
-              <span className="text-[#707070] text-sm font-semibold leading-tight uppercase">
-                {sub.office.length > 15
-                  ? sub.office.slice(0, 15) + "..."
-                  : sub.office}
-              </span>
-            </div>
-            <span className="text-[#707070] font-semibold text-base ml-2 whitespace-nowrap">
-              + {sub.value}
-            </span>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

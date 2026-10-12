@@ -4,26 +4,13 @@ import Link from "next/link";
 
 import { useParams, usePathname } from "next/navigation";
 
-import { DialogDeleteOffice } from "./components/dialog-delete-office";
-import { CustomAvatar } from "@/components/ui/custom-avatar";
-import { Button } from "@/components/ui/custom-button";
-import { FaEdit } from "react-icons/fa";
-
 import { navLinks } from "./navs";
-import { formatName } from "@/utils/formatters";
-import { OfficeStatus } from "@/types/office";
-import { SITUACOES_DO_ESCRITORIO } from "@/constants/office-status";
-import { AlternarSituacao } from "./components/alternar-situacao";
 
-export function Sidebar({
-  name,
-  createdAt,
-  status,
-}: {
-  name: string;
-  createdAt: string;
-  status: OfficeStatus;
-}) {
+/**
+ * Seções da ficha do escritório, na coluna da esquerda. No celular a coluna
+ * some e cada página mostra as mesmas seções em abas sublinhadas.
+ */
+export function Sidebar() {
   const pathname = usePathname();
   const params = useParams();
 
@@ -32,70 +19,31 @@ export function Sidebar({
   const isActive = (path: string) => !!pathname.includes(path);
 
   return (
-    <aside className="w-[280px] h-full shadow-md rounded-2xl py-4 px-5 space-y-6 md:space-y-0 max-md:hidden">
-      <div className="flex flex-col items-center">
-        <CustomAvatar name={name} size="lg" />
+    <nav aria-label="Seções do escritório" className="max-md:hidden">
+      <ul className="sticky top-[76px] flex flex-col gap-1">
+        {navLinks(String(officeId)).map((link) => {
+          const ativo = isActive(link.path);
 
-        <div className="mt-3 w-full flex flex-col gap-2 items-center justify-center">
-          <h3 className="text-xl text-[#707070]">{formatName(name)}</h3>
-          <p className="text-sm text-[#707070]">Cadastrado desde {createdAt}</p>
-          <div className="w-full flex items-center justify-center">
-            <p
-              className={`font-medium px-4 py-2 rounded-full text-sm ${SITUACOES_DO_ESCRITORIO[status].cor}`}
-            >
-              {SITUACOES_DO_ESCRITORIO[status].rotulo}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <hr className="my-6 max-md:my-2 h-px border-t-0 bg-gray-200" />
-
-      <ul className="flex flex-col gap-4 max-md:hidden">
-        {navLinks(String(officeId)).map((link) => (
-          <Link key={link.id} href={link.path}>
-            <li
-              className={
-                isActive(String(link.path))
-                  ? "w-[full] max-md:w-[150px] list-none flex pl-3 py-2.5 bg-[#ECF7F8] rounded-full cursor-pointer items-center gap-4"
-                  : "w-full max-md:w-[150px] list-none flex pl-3 py-2.5 rounded-md cursor-pointer items-center gap-4"
-              }
-            >
-              {link.icon && (
-                <span
-                  className={
-                    isActive(link.path) ? "text-[#348C98]" : "text-[#BDBDBD]"
-                  }
-                >
+          return (
+            <li key={link.id}>
+              <Link
+                href={link.path}
+                aria-current={ativo ? "page" : undefined}
+                className={`flex h-9 items-center gap-2.5 rounded-lg border px-3 text-[13.5px] transition-colors ${
+                  ativo
+                    ? "border-filete bg-white font-medium text-tinta"
+                    : "border-transparent text-tinta-2 hover:bg-gray-100 hover:text-tinta"
+                }`}
+              >
+                <span className={ativo ? "text-tinta" : "text-tinta-3"}>
                   {link.icon}
                 </span>
-              )}
-
-              <span className="text-base text-[#3D3D3D]">{link.name}</span>
+                {link.name}
+              </Link>
             </li>
-          </Link>
-        ))}
+          );
+        })}
       </ul>
-
-      <hr className="w-full my-6 max-md:my-2 h-px border-t-0 bg-gray-200" />
-
-      <div className="flex flex-row gap-1 justify-between w-full">
-        <Link href={`/office/${officeId}/information?editId=${officeId}`}>
-          <Button
-            className="cursor-pointer"
-            variant="outline"
-            iconLeft={<FaEdit size={16} className="text-[#348C98]" />}
-          >
-            Editar
-          </Button>
-        </Link>
-
-        <DialogDeleteOffice officeId={String(officeId)} officeName={name} />
-      </div>
-
-      <div className="flex justify-center w-full mt-4">
-        <AlternarSituacao officeId={String(officeId)} status={status} />
-      </div>
-    </aside>
+    </nav>
   );
 }

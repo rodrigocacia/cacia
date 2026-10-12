@@ -1,25 +1,25 @@
 "use client";
 
-import { Icon } from "@/components/icone";
+import { Bot, ChartColumn, Info } from "lucide-react";
 
 export function navLinks(officeId: string) {
   return [
     {
       id: 1,
       name: "Informações",
-      icon: <Icon icon="mdi:user-circle" className="w-5 h-5" />,
+      icon: <Info size={16} strokeWidth={1.7} aria-hidden />,
       path: `/office/${officeId}/information`,
     },
     {
       id: 2,
       name: "Performance",
-      icon: <Icon icon="mdi:chart-box-outline" className="w-5 h-5" />,
+      icon: <ChartColumn size={16} strokeWidth={1.7} aria-hidden />,
       path: `/office/${officeId}/performance`,
     },
     {
       id: 3,
       name: "Consumo de IA",
-      icon: <Icon icon="mdi:robot-outline" className="w-5 h-5" />,
+      icon: <Bot size={16} strokeWidth={1.7} aria-hidden />,
       path: `/office/${officeId}/ai-usage`,
     },
   ];

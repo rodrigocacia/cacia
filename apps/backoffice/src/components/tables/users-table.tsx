@@ -4,11 +4,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-import { MoreVertical } from "lucide-react";
-import { Icon } from "@/components/icone";
+import { Eye, MoreHorizontal, Pencil } from "lucide-react";
 
 import { useUsers } from "@/http/hooks/user";
-import { formatName } from "@/utils/formatters";
+import { nomeParaExibir } from "@/utils/formatters";
 
 import {
   DropdownMenu,
@@ -29,7 +28,8 @@ import {
 } from "../ui/table";
 
 import { CustomPagination } from "../ui/custom-pagination";
-import { Button } from "../ui/button";
+import { TableCard, TableCardFooter } from "../ui/table-card";
+import { StatusChip } from "../ui/status-chip";
 import { CustomAvatar } from "../ui/custom-avatar";
 import { Spinner } from "../ui/sppiner";
 import { Toast } from "../ui/toast";
@@ -100,137 +100,107 @@ export function UsersTable() {
 
   return (
     <>
-      <div className="w-full flex items-start justify-between mt-6 md:hidden">
-        <div className="flex gap-2">
-          <Icon
-            icon="mdi:account-group-outline"
-            className="text-[#BDBDBD] max-md:w-5 max-md:h-5"
-          />
+      <div className="mt-5 w-full">
+        <TableCard>
+          <Table>
+            <TableHeader className="max-md:hidden">
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead className="hidden md:table-cell">E-mail</TableHead>
+                <TableHead className="hidden md:table-cell">Tipo</TableHead>
+                <TableHead className="hidden md:table-cell">
+                  Escritórios
+                </TableHead>
+                <TableHead>
+                  <span className="sr-only">Ações</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
 
-          <h3 className="text-sm text-[#3D3D3D] font-bold">
-            Todos os usuários ({totalItems})
-          </h3>
-        </div>
-      </div>
+            <TableBody>
+              {users?.map((user) => (
+                <TableRow key={user._id}>
+                  <TableCell className="max-md:pr-2">
+                    <Link
+                      href={`/user/${user?._id}/personal-information`}
+                      className="flex items-center gap-3"
+                    >
+                      <CustomAvatar name={user?.name} size="sm" />
 
-      <div className="w-full h-full mt-6 flex flex-col gap-[22px]">
-        <Table className="border-spacing-y-1 border-separate">
-          <TableHeader className="max-md:hidden bg-white shadow-sm rounded-2xl">
-            <TableRow>
-              <TableHead className="text-sm font-medium text-[#707070]">
-                Nome
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-sm font-medium text-[#707070]">
-                Email
-              </TableHead>
-              <TableHead className="text-sm font-medium text-[#707070]">
-                Tipo
-              </TableHead>
-              <TableHead className="text-sm font-medium text-[#707070]">
-                Escritórios
-              </TableHead>
-              <TableHead></TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody className="mt-2">
-            {users?.map((user) => (
-              <TableRow
-                key={user._id}
-                className="shadow border-0 rounded-2xl bg-white"
-              >
-                <TableCell className="font-medium">
-                  <Link href={`/user/${user?._id}/personal-information`}>
-                    <div className="flex gap-2.5 items-center">
-                      <CustomAvatar name={user?.name} size="md" />
-
-                      <div className="flex flex-col gap-2">
-                        <span className="text-sm text-[#707070] font-medium inline-flex items-center gap-2">
-                          {formatName(user.name)}
+                      <div className="flex min-w-0 flex-col">
+                        <span className="max-w-[260px] truncate text-[13.5px] font-medium text-tinta max-md:max-w-[200px]">
+                          {nomeParaExibir(user.name)}
                         </span>
 
-                        <p className="text-[10px] text-[#707070] font-medium md:hidden">
+                        <span className="max-w-[200px] truncate text-xs text-tinta-3 md:hidden">
                           {user.email}
-                        </p>
+                        </span>
                       </div>
-                    </div>
-                  </Link>
-                </TableCell>
+                    </Link>
+                  </TableCell>
 
-                <TableCell className="hidden md:table-cell text-sm font-medium text-[#707070]">
-                  {user.email}
-                </TableCell>
-                <TableCell className="hidden md:table-cell text-sm font-medium text-[#707070]">
-                  {user.role === "ADMIN" ? "Administrador" : "Usuário"}
-                </TableCell>
-                <TableCell className="hidden md:table-cell text-sm font-medium text-[#707070]">
-                  {user.offices?.length ?? 0}
-                </TableCell>
+                  <TableCell className="hidden max-w-[280px] truncate md:table-cell">
+                    {user.email}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {user.role === "ADMIN" ? (
+                      <StatusChip ponto="bg-acao">Administrador</StatusChip>
+                    ) : (
+                      "Usuário"
+                    )}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell tabular">
+                    {user.offices?.length ?? 0}
+                  </TableCell>
 
-                <TableCell className="text-right max-md:hidden">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Abrir menu</span>
-                        <MoreVertical />
-                      </Button>
-                    </DropdownMenuTrigger>
+                  <TableCell className="text-right max-md:pl-0">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label="Ações"
+                          className="ml-auto flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-tinta-3 transition-colors hover:bg-gray-100 hover:text-tinta"
+                        >
+                          <MoreHorizontal size={16} strokeWidth={1.7} />
+                        </button>
+                      </DropdownMenuTrigger>
 
-                    <DropdownMenuContent align="end">
-                      <Link href={`/user/${user?._id}/personal-information`}>
-                        <DropdownMenuItem>
-                          <Icon
-                            icon="mdi:eye"
-                            className="w-4 h-4 mr-2 text-[#348C98]"
-                          />
-                          Ver
-                        </DropdownMenuItem>
-                      </Link>
-                      <Link href={`/user?editId=${user?._id}`}>
-                        <DropdownMenuItem>
-                          <Icon
-                            icon="mdi:pencil"
-                            className="w-4 h-4 mr-2 text-[#348C98]"
-                          />
-                          Editar
-                        </DropdownMenuItem>
-                      </Link>
-                      <DialogDeleteUserTable
-                        userId={user._id}
-                        userName={formatName(user.name)}
-                        onSuccess={handleDeleteSuccess}
-                        onError={handleDeleteError}
-                      />
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+                      <DropdownMenuContent align="end">
+                        <Link href={`/user/${user?._id}/personal-information`}>
+                          <DropdownMenuItem>
+                            <Eye strokeWidth={1.7} />
+                            Ver
+                          </DropdownMenuItem>
+                        </Link>
+                        <Link href={`/user?editId=${user?._id}`}>
+                          <DropdownMenuItem>
+                            <Pencil strokeWidth={1.7} />
+                            Editar
+                          </DropdownMenuItem>
+                        </Link>
+                        <DialogDeleteUserTable
+                          userId={user._id}
+                          userName={nomeParaExibir(user.name)}
+                          onSuccess={handleDeleteSuccess}
+                          onError={handleDeleteError}
+                        />
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-                <TableCell className="md:hidden">
-                  <div className="w-fit flex flex-1 items-end flex-col gap-2.5">
-                    <div className="w-fit px-2 py-1 bg-[#ECF7F8] rounded-full flex items-center gap-1">
-                      <div className="w-1 h-1 rounded-full bg-[#348C98]"></div>
-
-                      <span className="text-[#348C98] text-[10px] font-semibold">
-                        Novo
-                      </span>
-                    </div>
-
-                    <h3 className="text-[10px] text-[#707070] font-semibold">
-                      Último contato: <span className="">1h atrás</span>
-                    </h3>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        <CustomPagination
-          totalItems={totalItems}
-          totalPages={totalPages}
-          currentPage={currentPage}
-          perPage={perPage}
-        />
+          <TableCardFooter>
+            <CustomPagination
+              totalItems={totalItems}
+              totalPages={totalPages}
+              currentPage={currentPage}
+              perPage={perPage}
+            />
+          </TableCardFooter>
+        </TableCard>
       </div>
 
       {showToast && (

@@ -28,8 +28,8 @@ export function CustomSearchFilter(props: CustomSearchFilterProps) {
   }, [value, router]);
 
   return (
-    <div className="bg-white rounded-[10px] px-3 flex items-center gap-3 border border-[#F6F6F9] min-w-[340px] max-md:w-full max-md:h-[52px] h-auto py-2">
-      <IoMdSearch size={20} className="text-[#BDBDBD]" />
+    <div className="flex h-11 w-full max-w-[360px] items-center gap-2 rounded-[10px] border border-filete-forte bg-white px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-acao focus-within:shadow-[0_0_0_3px_#D7EBEE] max-md:max-w-none">
+      <IoMdSearch size={18} className="shrink-0 text-gray-400" />
       <input
         {...props}
         value={value}
@@ -37,7 +37,7 @@ export function CustomSearchFilter(props: CustomSearchFilterProps) {
           setValue(e.target.value);
           props.onChange?.(e);
         }}
-        className={`w-full bg-transparent text-sm text-[#333] placeholder-[#BDBDBD] outline-none ${
+        className={`w-full bg-transparent text-[14.5px] text-tinta placeholder-gray-400 outline-none ${
           props.className || ""
         }`}
       />

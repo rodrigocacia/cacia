@@ -23,18 +23,19 @@ export function Button({
   isLoading,
   ...props
 }: ButtonProps) {
+  // Direção visual 02: cantos de 10 px, altura de 44 px, turquesa só na
+  // ação principal. O relevo interno discreto é o que dá acabamento ao
+  // botão sem recorrer a sombra.
   const base =
-    "px-4 py-2 rounded-full font-medium transition-colors duration-200 focus:outline-none focus:ring-2 flex items-center justify-center space-x-2";
+    "h-11 px-4 rounded-[10px] text-[14px] font-semibold transition-colors duration-150 cursor-pointer focus:outline-none focus-visible:ring-[3px] focus-visible:ring-nevoa-2 flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-60";
 
   const variants = {
     primary:
-      "h-[56px] bg-[#348C98] text-white hover:bg-primary-700 focus:ring-primary-400",
-    secondary:
-      "bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-secondary-400",
-    outline:
-      "h-[56px] max-w-[120px] shadow-sm text-gray-700 hover:bg-gray-100 focus:ring-gray-300",
-    ghost: "bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-200",
-    danger: "bg-[#FEF2F2] text-[#DC2626]",
+      "bg-acao text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_1px_2px_rgba(21,19,17,0.18)] hover:bg-acao-escura",
+    secondary: "bg-tinta text-papel hover:bg-grafite",
+    outline: "border border-filete-forte bg-white text-tinta hover:bg-gray-100",
+    ghost: "bg-transparent font-medium text-tinta-2 hover:bg-gray-100",
+    danger: "bg-[#FBEDEA] text-[#A23B2A] hover:bg-[#F6DDD7]",
   };
 
   return (

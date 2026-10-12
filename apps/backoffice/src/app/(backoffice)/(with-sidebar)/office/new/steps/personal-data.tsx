@@ -1,6 +1,7 @@
 "use client";
 
-import Image from "next/image";
+import { ArrowRight } from "lucide-react";
+import { RodapeDoFormulario } from "@/components/drawer-or-sheet/partes";
 import { Controller, useFormContext } from "react-hook-form";
 
 import { Button as CustomButton } from "@/components/ui/custom-button";
@@ -137,13 +138,16 @@ export function PersonalData({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="pb-6 w-full h-screen">
-      <div className="flex flex-col gap-5 mt-10">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex w-full flex-grow flex-col"
+    >
+      <div className="flex flex-grow flex-col gap-5">
         <Input
           {...register("name")}
           label="Nome"
           iconName="person"
-          placeholder="Insira o nome do cliente..."
+          placeholder="Insira o nome do escritório..."
           error={errors?.name}
         />
 
@@ -165,7 +169,7 @@ export function PersonalData({
           {...register("legal_name")}
           label="Nome legal"
           iconName="person"
-          placeholder="Insira o nome legal do cliente..."
+          placeholder="Insira o nome legal do escritório..."
           error={errors?.legal_name}
         />
 
@@ -173,7 +177,7 @@ export function PersonalData({
           {...register("trade_name")}
           label="Nome comercial"
           iconName="person"
-          placeholder="Insira o nome comercial do cliente..."
+          placeholder="Insira o nome comercial do escritório..."
           error={errors?.trade_name}
         />
 
@@ -250,7 +254,7 @@ export function PersonalData({
         />
 
         <div className="flex flex-col gap-2">
-          <h3 className="text-lg font-semibold text-[#3D3D3D]">Endereço</h3>
+          <h3 className="rotulo mt-2">Endereço</h3>
         </div>
 
         <Input
@@ -316,13 +320,15 @@ export function PersonalData({
         </div>
 
         {errors?.state && (
-          <span className="text-red-500 text-sm">{errors?.state?.message}</span>
+          <span className="text-xs font-medium text-red-500">
+            {errors?.state?.message}
+          </span>
         )}
 
-        <div className="flex items-center justify-between mb-6">
+        <RodapeDoFormulario>
           <CustomButton
             type="button"
-            className="w-[251px] cursor-pointer"
+
             variant="outline"
             onClick={onClose}
           >
@@ -331,20 +337,13 @@ export function PersonalData({
 
           <CustomButton
             type="submit"
-            className="px-10 cursor-pointer"
+            className="px-6"
             variant="primary"
-            iconRight={
-              <Image
-                src="/icons/arrow-right.svg"
-                alt=""
-                width={24}
-                height={24}
-              />
-            }
+            iconRight={<ArrowRight size={16} strokeWidth={1.8} />}
           >
             {isEditing ? "Salvar" : "Criar escritório"}
           </CustomButton>
-        </div>
+        </RodapeDoFormulario>
       </div>
 
       {showToast && (

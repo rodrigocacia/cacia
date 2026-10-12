@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Icon } from "@/components/icone";
+import { BadgeCheck } from "lucide-react";
 import { Button } from "@/components/ui/custom-button";
 import {
   Dialog,
@@ -65,26 +65,27 @@ export function DialogActivateBetaFree({
         </DialogHeader>
 
         <div className="w-full flex flex-col items-center">
-          <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full bg-[#F6F6F9]">
-            <Icon
-              icon="mdi:check-circle"
-              className="w-[56px] h-[56px] text-[#348C98]"
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-nevoa">
+            <BadgeCheck
+              size={22}
+              strokeWidth={1.7}
+              className="text-turquesa-profundo"
             />
           </div>
 
-          <div className="flex flex-col items-center justify-center gap-3.5 mt-[30px]">
-            <h4 className="text-xl text-center text-[#33454C] font-semibold">
+          <div className="mt-5 flex flex-col items-center justify-center gap-2">
+            <h4 className="text-center font-display text-[26px] leading-tight text-tinta">
               Ativar plano Beta FREE
             </h4>
 
-            <p className="text-[18px] leading-[24px] text-[#4D5D63] text-center">
+            <p className="text-center text-[14.5px] leading-[1.5] text-tinta-2">
               Deseja ativar o plano Beta FREE para o escritório{" "}
               <strong>{officeName}</strong>? Esta ação irá modificar o status da
               recorrência.
             </p>
           </div>
 
-          <div className="w-full flex items-center justify-center gap-3.5 mt-[34px]">
+          <div className="mt-7 flex w-full items-center justify-center gap-2.5">
             <Button
               variant="outline"
               onClick={() => setIsOpen(false)}

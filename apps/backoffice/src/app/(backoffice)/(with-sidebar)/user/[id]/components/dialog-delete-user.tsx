@@ -1,6 +1,6 @@
 "use client";
-import { FaTrash } from "react-icons/fa";
 import { useState } from "react";
+import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Toast } from "@/components/ui/toast";
 import { mutate } from "swr";
@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/custom-button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Icon } from "@/components/icone";
 import { deleteUserAction } from "../../actions";
 
 interface DialogDeleteUserProps {
@@ -70,59 +71,42 @@ export function DialogDeleteUser({ userId, userName }: DialogDeleteUserProps) {
     <>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button
-            className="cursor-pointer"
-            variant="danger"
-            iconLeft={<FaTrash size={16} className="text-[#DC2626]" />}
+          <button
+            type="button"
+            className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-[9px] border border-filete-forte bg-white px-3.5 text-[13.5px] font-medium text-[#A23B2A] transition-colors hover:border-[#F0CFC7] hover:bg-[#FBEDEA] focus-visible:ring-[3px] focus-visible:ring-nevoa-2 focus-visible:outline-none"
           >
+            <Trash2 size={15} strokeWidth={1.7} aria-hidden />
             Excluir
-          </Button>
+          </button>
         </DialogTrigger>
 
-        <DialogContent className="px-[30px]">
+        <DialogContent className="sm:max-w-[460px]">
           <DialogHeader>
-            <DialogTitle className="sr-only">
-              Tem certeza que deseja excluir este usuário?
-            </DialogTitle>
+            <DialogTitle>Excluir o usuário {userName}?</DialogTitle>
           </DialogHeader>
 
-          <div className="w-full flex flex-col items-center">
-            <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full bg-[#F6F6F9]">
-              <Icon
-                icon="mdi:help-circle"
-                className="w-[56px] h-[56px] text-[#BDBDBD]"
-              />
-            </div>
+          <DialogDescription className="text-[14px] leading-[1.55]">
+            Todos os dados do usuário serão perdidos. Essa ação não poderá ser
+            desfeita.
+          </DialogDescription>
 
-            <div className="flex flex-col items-center justify-center gap-3.5 mt-[30px]">
-              <h4 className="text-xl text-center text-[#33454C] font-semibold">
-                Deseja mesmo excluir o usuário {userName}?
-              </h4>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              disabled={isLoading}
+            >
+              Cancelar
+            </Button>
 
-              <p className="text-[18px] leading-[24px] text-[#4D5D63] text-center">
-                Caso prossiga com esta solicitação, todos os dados do usuário
-                serão perdidos, e essa ação não poderá ser desfeita.
-              </p>
-            </div>
-
-            <div className="w-full flex items-center justify-center gap-3.5 mt-[34px]">
-              <Button
-                variant="outline"
-                onClick={() => setIsOpen(false)}
-                disabled={isLoading}
-              >
-                Cancelar
-              </Button>
-
-              <Button
-                variant="danger"
-                onClick={handleDeleteUser}
-                disabled={isLoading}
-              >
-                {isLoading ? "Excluindo..." : "Excluir mesmo assim"}
-              </Button>
-            </div>
-          </div>
+            <Button
+              variant="danger"
+              onClick={handleDeleteUser}
+              disabled={isLoading}
+            >
+              {isLoading ? "Excluindo..." : "Excluir mesmo assim"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

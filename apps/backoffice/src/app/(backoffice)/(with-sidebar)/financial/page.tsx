@@ -2,18 +2,16 @@ import { Suspense } from "react";
 
 import { SWRConfig } from "swr";
 
-import { Icon } from "@/components/icone";
+import { Landmark } from "lucide-react";
 
 import { getRecurrences } from "@/http/recurrence/get-recurrences";
 
 import { Header } from "@/components/header";
-import { Breadcrumbs } from "@/components/ui/custom-breadcrumb";
+import { PageHeader } from "@/components/ui/page-header";
 import { CustomSearchFilter } from "@/components/ui/custom-search-filter";
 import { FinancialFiltersButton } from "@/components/tables/financial-filters-button";
 import { LoadingText } from "@/components/ui/sppiner";
 
-import { financialCrumbs } from "@/constants/breadcrumbs";
-import { COBRANCA_INDISPONIVEL } from "@/constants/cobranca";
 import { FinancialTable } from "@/components/tables/financial-table";
 
 export default async function Financial({
@@ -30,26 +28,14 @@ export default async function Financial({
   });
 
   return (
-    <div className="w-full h-full max-lg:px-4">
+    <div className="w-full">
       <Header title="Financeiro" />
 
-      <Breadcrumbs crumbs={financialCrumbs} />
-
-      <div className="w-full flex items-start justify-between mt-8 max-md:hidden">
-        <div className="flex gap-2 mb-4">
-          <Icon icon="mdi:bank-outline" className="text-[#BDBDBD] w-8 h-8" />
-
-          <h3 className="text-[18px] text-[#3D3D3D] font-bold">
-            Histórico de pagamentos
-          </h3>
-
-          <div className="w-7 h-7 flex items-center justify-center bg-[#E0E6EB] rounded-full">
-            <span className="text-base text-[#707070] font-bold">
-              {recurrences?.totalItems}
-            </span>
-          </div>
-        </div>
-      </div>
+      <PageHeader
+        title="Financeiro"
+        count={recurrences.disponivel ? recurrences?.totalItems : undefined}
+        description="Histórico de pagamentos das assinaturas."
+      />
 
       {/*
         Sem cobrança, busca e filtros não têm o que filtrar, e a tabela vazia
@@ -57,15 +43,23 @@ export default async function Financial({
         batesse com a pesquisa.
       */}
       {!recurrences.disponivel ? (
-        <div className="w-full mt-6 p-8 bg-white rounded-2xl shadow-sm flex items-center gap-3">
-          <Icon icon="mdi:bank-outline" className="text-[#BDBDBD] w-8 h-8" />
-          <p className="text-base text-[#707070] font-medium">
-            {COBRANCA_INDISPONIVEL}
-          </p>
+        <div className="mt-6 flex w-full items-start gap-3.5 rounded-[14px] border border-filete bg-white p-6">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-papel-2 text-tinta-3">
+            <Landmark size={18} strokeWidth={1.7} aria-hidden />
+          </span>
+          <div className="flex flex-col gap-1">
+            <p className="text-[14.5px] font-semibold text-tinta">
+              Cobrança ainda não ativada
+            </p>
+            <p className="text-[13.5px] text-tinta-3">
+              Os pagamentos das assinaturas aparecem aqui assim que a cobrança
+              for ligada.
+            </p>
+          </div>
         </div>
       ) : (
         <>
-          <div className="w-full flex items-center gap-3 max-md:mt-3.5">
+          <div className="mt-5 flex w-full items-center gap-2.5">
             <Suspense fallback={<LoadingText />}>
               <CustomSearchFilter placeholder="Buscar por cliente ou valor..." />
             </Suspense>

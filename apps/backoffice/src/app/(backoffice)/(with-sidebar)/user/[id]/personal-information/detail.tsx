@@ -1,6 +1,7 @@
 "use client";
 
-import { Icon } from "@/components/icone";
+import { ReactNode } from "react";
+
 import { formatDocument, formatPhone } from "@/utils/formatters";
 
 interface UserDetailProps {
@@ -10,6 +11,24 @@ interface UserDetailProps {
   userName: string;
 }
 
+/** Linha da lista de detalhes: rótulo à esquerda, valor à direita. */
+function Detalhe({
+  rotulo,
+  children,
+}: {
+  rotulo: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="grid gap-x-6 gap-y-1 border-b border-[#F1EEE8] py-3 text-[13.5px] last:border-b-0 sm:grid-cols-[150px_minmax(0,1fr)]">
+      <dt className="text-tinta-3">{rotulo}</dt>
+      <dd className="min-w-0 font-medium break-words text-tinta">
+        {children || <span className="font-normal text-tinta-3">—</span>}
+      </dd>
+    </div>
+  );
+}
+
 export function UserDetail({
   document,
   email,
@@ -17,50 +36,34 @@ export function UserDetail({
   userName,
 }: UserDetailProps) {
   return (
-    <div className="w-full p-8 max-md:p-0 md:rounded-2xl md:shadow-sm">
-      <div className="w-full flex items-center justify-between gap-3 max-md:hidden">
-        <div className="flex items-center gap-3">
-          <Icon
-            icon="mdi:person-circle-outline"
-            className="text-[#BDBDBD] w-8 h-8"
-          />
+    <section className="w-full rounded-[14px] border border-filete bg-white">
+      <header className="border-b border-filete px-5 py-4">
+        <h2 className="text-[14.5px] font-semibold text-tinta">
+          Informações do usuário
+        </h2>
+      </header>
 
-          <h3 className="text-[20px] text-[#707070] font-bold">
-            Informações do usuário
-          </h3>
-        </div>
-      </div>
-
-      <hr className="w-full my-6 max-md:my-2 h-px border-t-0 bg-gray-200 max-md:hidden" />
-
-      <div className="w-full flex flex-col p-3 gap-3 bg-[#FCFCFD] mt-8">
-        <div className="flex flex-col gap-1.5 pb-3 border-b border-[#F6F6F9]">
-          <h3 className="text-sm text-[#707070] font-semibold">Nome</h3>
-
-          <p className="text-base text-[#3D3D3D]">{userName}</p>
-        </div>
-        <div className="flex flex-col gap-1.5 pb-3 border-b border-[#F6F6F9]">
-          <h3 className="text-sm text-[#707070] font-semibold">CPF /CNPJ</h3>
-
-          <p className="text-base text-[#3D3D3D]">{formatDocument(document)}</p>
-        </div>
-
-        <div className="flex flex-col gap-1.5 pb-3 border-b border-[#F6F6F9]">
-          <h3 className="text-sm text-[#707070] font-semibold">E-mail</h3>
-
-          <p className="text-base text-[#348C98] underline font-semibold">
-            {email}
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-1.5 pb-3 border-b border-[#F6F6F9]">
-          <h3 className="text-sm text-[#707070] font-semibold">Telefone</h3>
-
-          <p className="text-base text-[#348C98] underline font-semibold">
-            {formatPhone(phone)}
-          </p>
-        </div>
-      </div>
-    </div>
+      <dl className="px-5 py-1">
+        <Detalhe rotulo="Nome">{userName}</Detalhe>
+        <Detalhe rotulo="CPF / CNPJ">
+          {document && (
+            <span className="tabular">{formatDocument(document)}</span>
+          )}
+        </Detalhe>
+        <Detalhe rotulo="E-mail">
+          {email && (
+            <a
+              href={`mailto:${email}`}
+              className="break-all text-turquesa-profundo underline-offset-2 hover:underline"
+            >
+              {email}
+            </a>
+          )}
+        </Detalhe>
+        <Detalhe rotulo="Telefone">
+          {phone && <span className="tabular">{formatPhone(phone)}</span>}
+        </Detalhe>
+      </dl>
+    </section>
   );
 }

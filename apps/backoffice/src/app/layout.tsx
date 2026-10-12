@@ -1,18 +1,30 @@
 import "./globals.css";
 
-import { Montserrat, Plus_Jakarta_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 
-const montserrat = Montserrat({
+/**
+ * Tipografia da CacIA (direção visual 02), a mesma do app do escritório.
+ *
+ * Geist na interface e nos dados; Newsreader, serifa editorial, nos títulos;
+ * Geist Mono nos rótulos.
+ */
+const geist = Geist({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-montserrat",
+  variable: "--font-geist",
   display: "swap",
 });
 
-const plusJakarta = Plus_Jakarta_Sans({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-plus-jakarta",
+  variable: "--font-geist-mono",
+  display: "swap",
+});
+
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+  variable: "--font-newsreader",
   display: "swap",
 });
 
@@ -30,9 +42,11 @@ export default function RootLayout({
   return (
     <html
       lang="pt-br"
-      className={`${montserrat.variable} ${plusJakarta.variable}`}
+      className={`${geist.variable} ${geistMono.variable} ${newsreader.variable}`}
     >
-      <body className="bg-[#FCFCFD]">{children}</body>
+      <body className="bg-ink font-sans text-tinta antialiased">
+        {children}
+      </body>
     </html>
   );
 }

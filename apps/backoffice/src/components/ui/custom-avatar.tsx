@@ -23,42 +23,17 @@ export function CustomAvatar({
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
-  const getBackgroundColor = (name: string) => {
-    const colors = [
-      "bg-red-500",
-      "bg-green-500",
-      "bg-blue-500",
-      "bg-yellow-500",
-      "bg-purple-500",
-      "bg-pink-500",
-      "bg-indigo-500",
-      "bg-teal-500",
-    ];
-    const hash = Array.from(name).reduce(
-      (acc, char) => acc + char.charCodeAt(0),
-      0,
-    );
-    return colors[hash % colors.length];
-  };
-
-  const backgroundColor = getBackgroundColor(name);
-
   const sizeClasses = {
-    sm: "w-8 h-8 text-sm",
-    md: "w-12 h-12 text-base",
+    sm: "w-8 h-8 text-xs",
+    md: "w-10 h-10 text-[13.5px]",
     xs: "w-[100px] h-[100px] text-2xl",
     lg: "w-[140px] h-[140px] text-3xl",
   };
 
   return (
     <Avatar className={cn(sizeClasses[size], className)}>
-      <AvatarFallback
-        className={cn(
-          "flex items-center justify-center font-semibold text-white",
-          backgroundColor,
-        )}
-      >
-        {getInitials(name)}
+      <AvatarFallback className="flex items-center justify-center bg-nevoa font-semibold text-turquesa-profundo uppercase">
+        {getInitials(name ?? "")}
       </AvatarFallback>
     </Avatar>
   );

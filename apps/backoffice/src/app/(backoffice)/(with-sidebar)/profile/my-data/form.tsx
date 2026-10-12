@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Icon } from "@/components/icone";
+import { Save } from "lucide-react";
 
 import { Button } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/custom-input";
@@ -88,39 +88,32 @@ export function Form({ name, document, phone }: FormProps) {
   };
 
   return (
-    <div className="h-full w-full p-8 max-md:p-0 pb-6 md:rounded-2xl md:shadow-sm md:pb-0">
-      <div className="flex items-center gap-3">
-        <Icon
-          icon="mdi:person-circle-outline"
-          className="w-8 h-8 text-[#BDBDBD]"
-        />
+    <section className="w-full rounded-[14px] border border-filete bg-white">
+      <header className="flex flex-col gap-1 border-b border-filete px-6 py-4 max-sm:px-4">
+        <h2 className="text-[14.5px] font-semibold text-tinta">Meus dados</h2>
+        <p className="text-[13px] text-tinta-3">
+          Nome, documento e telefone que aparecem no painel.
+        </p>
+      </header>
 
-        <h3 className="text-[20px] text-[#707070] font-bold">Meus dados</h3>
-      </div>
-
-      <hr className="w-full my-4 max-md:my-2 h-px border-t-0 bg-gray-200" />
-
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full mt-6 flex flex-col justify-between gap-8 pb-10"
-      >
-        <div className="w-full flex flex-col gap-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col">
+        <div className="flex w-full flex-col gap-4 px-6 py-6 max-sm:px-4">
           <Input
             iconName="person"
-            label="Nome Completo"
+            label="Nome completo"
             aria-label="Nome"
             autoComplete="name"
             {...register("name")}
             error={errors?.name}
           />
 
-          <div className="w-full flex gap-6 items-center justify-between max-md:flex-col max-md:gap-4">
+          <div className="flex w-full items-start justify-between gap-6 max-md:flex-col max-md:gap-4">
             <div className="w-full">
               <Input
                 iconName="contact"
                 label="CPF / CNPJ"
                 mask="cpfCnpj"
-                aria-label="Nome"
+                aria-label="CPF / CNPJ"
                 {...register("document")}
                 error={errors?.document}
               />
@@ -137,15 +130,13 @@ export function Form({ name, document, phone }: FormProps) {
           </div>
         </div>
 
-        <div className="w-full flex items-center justify-end max-md:flex-col max-md:gap-4 mt-8 max-md:pb-10">
+        <div className="flex w-full items-center justify-end border-t border-filete px-6 py-4 max-sm:px-4">
           <Button
             type="submit"
             disabled={isSubmitting}
-            iconLeft={
-              <Icon icon="mdi:content-save" className="w-6 h-6 text-white" />
-            }
+            iconLeft={<Save size={16} strokeWidth={1.7} aria-hidden />}
             isLoading={isSubmitting}
-            className="px-10 cursor-pointer max-md:w-full"
+            className="px-6 max-sm:w-full"
             variant="primary"
           >
             Salvar
@@ -170,6 +161,6 @@ export function Form({ name, document, phone }: FormProps) {
           description={errorMessage}
         />
       )}
-    </div>
+    </section>
   );
 }

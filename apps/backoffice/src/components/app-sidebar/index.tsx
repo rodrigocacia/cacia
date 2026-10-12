@@ -1,127 +1,188 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-
 import { usePathname } from "next/navigation";
-
-import { Icon } from "@/components/icone";
+import clsx from "clsx";
+import {
+  Bot,
+  Building2,
+  Landmark,
+  LayoutDashboard,
+  LogOut,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
 import { sairAction } from "@/auth/sair";
 
-const items = [
+interface ItemDoMenu {
+  titulo: string;
+  url: string;
+  /** Primeiro segmento da rota que acende o item. */
+  segmento: string;
+  icone: LucideIcon;
+}
+
+const ITENS: ItemDoMenu[] = [
   {
-    title: "Dashboard",
+    titulo: "Dashboard",
     url: "/dashboard",
-    icon: (props: any) => <Icon icon="mdi:chart-box" {...props} />,
+    segmento: "dashboard",
+    icone: LayoutDashboard,
   },
+  { titulo: "Usuários", url: "/user", segmento: "user", icone: Users },
   {
-    title: "Usuários",
-    url: "/user",
-    icon: (props: any) => <Icon icon="mdi:user-group-outline" {...props} />,
-  },
-  {
-    title: "Escritórios",
+    titulo: "Escritórios",
     url: "/office",
-    icon: (props: any) => (
-      <Icon icon="mdi:office-building-outline" {...props} />
-    ),
+    segmento: "office",
+    icone: Building2,
   },
   {
-    title: "Consumo de IA",
+    titulo: "Consumo de IA",
     url: "/ai-usage",
-    icon: (props: any) => <Icon icon="mdi:robot-outline" {...props} />,
+    segmento: "ai-usage",
+    icone: Bot,
   },
   {
-    title: "Financeiro ",
+    titulo: "Financeiro",
     url: "/financial",
-    icon: (props: any) => <Icon icon="mdi:bank-outline" {...props} />,
+    segmento: "financial",
+    icone: Landmark,
   },
 ];
 
-export function AppSidebar() {
+function iniciais(nome?: string): string {
+  return (nome ?? "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("");
+}
+
+/** O símbolo da marca: o anel com o ponto, sobre o turquesa. */
+export function SimboloCacia({ tamanho = 28 }: { tamanho?: number }) {
+  return (
+    <span
+      className="flex shrink-0 items-center justify-center rounded-lg bg-acao"
+      style={{ width: tamanho, height: tamanho }}
+    >
+      <svg
+        width={tamanho * 0.54}
+        height={tamanho * 0.54}
+        viewBox="0 0 16 16"
+        fill="none"
+        aria-hidden
+      >
+        <circle cx="8" cy="8" r="5.5" stroke="#FFFFFF" strokeWidth="2" />
+        <circle cx="8" cy="8" r="2" fill="#FFFFFF" />
+      </svg>
+    </span>
+  );
+}
+
+interface AppSidebarProps {
+  /** Quem está logado — vem do cookie da sessão, lido no layout. */
+  usuario?: { name?: string; email?: string } | null;
+}
+
+/**
+ * Menu lateral do backoffice: a moldura nanquim da direção visual 02, a
+ * mesma do app do escritório. O usuário e o "Sair" ficam no rodapé.
+ */
+export function AppSidebar({ usuario }: AppSidebarProps) {
   const pathname = usePathname();
-  const currentSegment = pathname.split("/")[1];
+  const segmentoAtual = pathname.split("/")[1] || "dashboard";
 
   return (
-    <Sidebar className="p-4">
-      <SidebarContent className="bg-[#24211E] rounded-tl-3xl rounded-tr-3xl max-md:rounded-none">
-        <SidebarGroup>
-          <SidebarGroupLabel className="mt-6 text-2xl font-bold text-blue-500">
-            <Image
-              src="/cacia-sidebar.png"
-              alt="mockup"
-              width={110}
-              height={32}
-            />
-          </SidebarGroupLabel>
+    <Sidebar className="border-none">
+      <SidebarHeader className="gap-4 px-3 pt-3.5 pb-0">
+        <Link
+          href="/dashboard"
+          className="flex h-11 items-center gap-2.5 rounded-[10px] px-2 transition-colors hover:bg-ink-2"
+        >
+          <SimboloCacia />
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate text-[13.5px] font-semibold text-[#F5F2ED]">
+              CacIA
+            </span>
+            <span className="truncate text-[11.5px] text-gray-500">
+              Backoffice
+            </span>
+          </span>
+        </Link>
+      </SidebarHeader>
 
-          <SidebarGroupContent className="mt-8">
-            <SidebarMenu>
-              {items.map((item) => {
-                const itemSegment = item.url.split("/")[1];
-                const isActive = currentSegment === itemSegment;
+      <SidebarContent className="px-3 py-4">
+        <span className="px-2.5 pb-2 font-mono text-[10.5px] tracking-[0.08em] text-gray-600 uppercase">
+          Administração
+        </span>
+        <nav className="flex flex-col gap-px" aria-label="Menu principal">
+          {ITENS.map((item) => {
+            const ativo = segmentoAtual === item.segmento;
+            const Icone = item.icone;
 
-                const IconComponent = item.icon;
-
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      size="lg"
-                      className={`flex items-center gap-3 rounded-full px-3 py-3 hover:bg-[#3D3D3D] data-[state=active]:bg-transparent active:bg-transparent ${
-                        isActive ? "bg-[#3D3D3D]" : ""
-                      }`}
-                      asChild
-                    >
-                      <Link className="" href={item.url}>
-                        <IconComponent
-                          className={`${
-                            isActive ? "text-[#348C98]" : "text-[#707070]"
-                          }`}
-                        />
-
-                        <span
-                          className={`${
-                            isActive ? "font-bold" : ""
-                          } text-[#EFEFEF]`}
-                        >
-                          {item.title}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+            return (
+              <Link
+                key={item.url}
+                href={item.url}
+                aria-current={ativo ? "page" : undefined}
+                className={clsx(
+                  "flex h-[34px] items-center gap-2.5 rounded-lg px-2.5 text-[13.5px] font-medium transition-colors",
+                  ativo
+                    ? "bg-grafite text-[#F5F2ED]"
+                    : "text-gray-400 hover:bg-ink-2 hover:text-[#F5F2ED]",
+                )}
+              >
+                <Icone
+                  size={16}
+                  strokeWidth={1.7}
+                  className={ativo ? "text-turquesa-claro" : undefined}
+                />
+                <span className="flex-grow">{item.titulo}</span>
+              </Link>
+            );
+          })}
+        </nav>
       </SidebarContent>
 
-      <SidebarFooter className="bg-[#24211E] rounded-bl-3xl rounded-br-3xl max-md:rounded-none">
-        <div className="w-full flex flex-col gap-2 pb-8 px-2.5">
+      <SidebarFooter className="gap-3 px-3 pt-0 pb-3.5">
+        <div className="flex items-center gap-2.5 border-t border-ink-line px-1 pt-3">
+          <Link
+            href="/profile/my-data"
+            className={clsx(
+              "-mx-1 flex min-w-0 flex-grow items-center gap-2.5 rounded-lg px-1 py-1 transition-colors hover:bg-ink-2",
+              segmentoAtual === "profile" && "bg-grafite",
+            )}
+          >
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#2E2A26] text-[11px] font-semibold text-[#E8E3DB]">
+              {iniciais(usuario?.name)}
+            </span>
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-[13px] text-[#E8E3DB]">
+                {usuario?.name ?? "Minha conta"}
+              </span>
+              {usuario?.email && (
+                <span className="truncate text-[11px] text-gray-500">
+                  {usuario.email}
+                </span>
+              )}
+            </span>
+          </Link>
           <form action={sairAction}>
             <button
               type="submit"
-              className="w-full py-[7px] flex items-center justify-start gap-2 cursor-pointer"
+              aria-label="Sair"
+              title="Sair"
+              className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-ink-2 hover:text-[#F87171]"
             >
-              <Icon
-                icon="mdi:logout"
-                className="text-[#DC2626] w-[22px] h-[22px]"
-              />
-
-              <span className="text-[#BDBDBD] text-sm">Sair</span>
+              <LogOut size={16} strokeWidth={1.7} />
             </button>
           </form>
         </div>

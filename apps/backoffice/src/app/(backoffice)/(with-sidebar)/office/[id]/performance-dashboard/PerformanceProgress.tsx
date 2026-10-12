@@ -1,5 +1,3 @@
-import { Icon } from "@/components/icone";
-
 import type { GetOfficePerformanceResponse } from "@/http/office/get-office-performance";
 import { processTypeConfig, type ProcessType } from "@/types/process";
 
@@ -66,117 +64,112 @@ export function PerformanceProgress({ data }: PerformanceProgressProps) {
   const concluidoAngle = andamentoAngle - 180 * concluidoPercent;
 
   return (
-    <div className="bg-[#FCFCFD] rounded-xl p-4 sm:p-6 mb-8 w-full">
-      <h4 className="font-semibold text-[#3D3D3D] mb-4">Andamento geral</h4>
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 w-full">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-4">
-              <div className="relative w-[140px] sm:w-[180px] h-[80px] sm:h-[100px] flex items-center justify-center">
-                <svg
-                  width="100%"
-                  height="100%"
-                  viewBox="0 0 180 100"
-                  preserveAspectRatio="xMidYMid meet"
-                >
-                  <path
-                    d={describeGaugeArc(cx, cy, r, 90, -90)}
-                    fill="none"
-                    stroke="#E6E6E6"
-                    strokeWidth="14"
-                    strokeLinecap="round"
-                  />
-                  {hasCompleted && (
-                    <path
-                      d={describeGaugeArc(
-                        cx,
-                        cy,
-                        r,
-                        andamentoAngle,
-                        concluidoAngle,
-                      )}
-                      fill="none"
-                      stroke="#73D076"
-                      strokeWidth="14"
-                      strokeLinecap="round"
-                    />
-                  )}
-                  {hasOngoing && (
-                    <path
-                      d={describeGaugeArc(cx, cy, r, 90, andamentoAngle)}
-                      fill="none"
-                      stroke="#EDD361"
-                      strokeWidth="14"
-                      strokeLinecap="round"
-                    />
-                  )}
-                </svg>
-                <div className="absolute left-1/2 top-[54px] -translate-x-1/2 -translate-y-1/2 text-center w-full pointer-events-none">
-                  <span className="text-lg sm:text-xl font-bold text-[#707070] flex items-center justify-center gap-1">
-                    <Icon
-                      icon="mdi:file-document"
-                      className="text-[#BDBDBD]"
-                      width={20}
-                      height={20}
-                    />
-                    {data.total_processes}
-                  </span>
-                  <div className="text-xs text-[#BDBDBD] font-semibold">
-                    Processos
-                  </div>
-                </div>
-              </div>
+    <section className="grid w-full rounded-[14px] border border-filete bg-white md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="flex flex-col gap-5 border-filete p-5 sm:p-6 md:border-r max-md:border-b">
+        <h3 className="text-[14.5px] font-semibold text-tinta">
+          Andamento dos processos
+        </h3>
 
-              <div className="flex flex-col gap-2 sm:ml-8 min-w-[160px]">
-                <span className="text-xs text-[#BDBDBD] font-semibold mb-1">
-                  STATUS
-                </span>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="inline-block w-3 h-3 rounded-full bg-[#6DD07A]"></span>
-                  <span className="text-sm text-[#707070] font-medium">
-                    Concluídos{" "}
-                    <b className="text-[#BDBDBD] font-medium">
-                      {data.completed_processes}
-                    </b>
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="inline-block w-3 h-3 rounded-full bg-[#FFD600]"></span>
-                  <span className="text-sm text-[#707070] font-medium">
-                    Em andamento{" "}
-                    <b className="text-[#BDBDBD] font-medium">
-                      {data.ongoing_processes}
-                    </b>
-                  </span>
-                </div>
-              </div>
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-5">
+          <div className="relative h-[100px] w-[180px] shrink-0">
+            <svg
+              width="100%"
+              height="100%"
+              viewBox="0 0 180 100"
+              preserveAspectRatio="xMidYMid meet"
+              aria-hidden
+            >
+              <path
+                d={describeGaugeArc(cx, cy, r, 90, -90)}
+                fill="none"
+                stroke="#ECE8E1"
+                strokeWidth="12"
+                strokeLinecap="round"
+              />
+              {hasCompleted && (
+                <path
+                  d={describeGaugeArc(
+                    cx,
+                    cy,
+                    r,
+                    andamentoAngle,
+                    concluidoAngle,
+                  )}
+                  fill="none"
+                  stroke="#2C7D88"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                />
+              )}
+              {hasOngoing && (
+                <path
+                  d={describeGaugeArc(cx, cy, r, 90, andamentoAngle)}
+                  fill="none"
+                  stroke="#6CC1CC"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                />
+              )}
+            </svg>
+
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center">
+              <span className="tabular text-[28px] leading-none font-medium tracking-[-0.03em] text-tinta">
+                {data.total_processes}
+              </span>
+              <span className="mt-1 text-[12px] text-tinta-3">processos</span>
             </div>
           </div>
-        </div>
 
-        <div className="mt-4">
-          <span className="block text-xs text-[#BDBDBD] font-semibold mb-2">
-            TIPO DE PROCESSO
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {porTipo.length === 0 && (
-              <span className="text-sm text-[#BDBDBD]">
-                Nenhum processo com tipo informado
-              </span>
-            )}
-
-            {porTipo.map(([tipo, quantidade]) => (
+          <dl className="flex min-w-[180px] flex-1 flex-col">
+            <div className="flex items-center gap-2.5 border-b border-[#F1EEE8] py-2.5 text-[13.5px]">
               <span
-                key={tipo}
-                className="bg-[#ECF7F8] text-[#707070] rounded-sm px-3 sm:px-4 py-1 text-sm font-semibold flex items-center gap-1"
-              >
-                {processTypeConfig[tipo as ProcessType] ?? tipo}
-                <span className="text-[#348C98] font-medium">{quantidade}</span>
-              </span>
-            ))}
-          </div>
+                aria-hidden
+                className="h-2 w-2 shrink-0 rounded-[2px] bg-[#2C7D88]"
+              />
+              <dt className="flex-1 text-tinta-2">Concluídos</dt>
+              <dd className="tabular font-semibold text-tinta">
+                {data.completed_processes}
+              </dd>
+            </div>
+            <div className="flex items-center gap-2.5 py-2.5 text-[13.5px]">
+              <span
+                aria-hidden
+                className="h-2 w-2 shrink-0 rounded-[2px] bg-[#6CC1CC]"
+              />
+              <dt className="flex-1 text-tinta-2">Em andamento</dt>
+              <dd className="tabular font-semibold text-tinta">
+                {data.ongoing_processes}
+              </dd>
+            </div>
+          </dl>
         </div>
       </div>
-    </div>
+
+      <div className="flex flex-col gap-4 p-5 sm:p-6">
+        <h3 className="text-[14.5px] font-semibold text-tinta">
+          Por tipo de processo
+        </h3>
+
+        {porTipo.length === 0 ? (
+          <p className="text-[13.5px] text-tinta-3">
+            Nenhum processo com tipo informado.
+          </p>
+        ) : (
+          <ul className="flex flex-wrap gap-2">
+            {porTipo.map(([tipo, quantidade]) => (
+              <li
+                key={tipo}
+                className="inline-flex h-8 items-center gap-2 rounded-lg border border-filete bg-papel px-2.5 text-[13px] text-tinta-2"
+              >
+                {processTypeConfig[tipo as ProcessType] ?? tipo}
+                <span className="tabular font-semibold text-tinta">
+                  {quantidade}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
   );
 }

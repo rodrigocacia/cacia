@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Icon } from "@/components/icone";
+import { Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/custom-button";
 import {
@@ -58,12 +58,13 @@ export function DialogDeleteOfficeTable({
   return (
     <>
       <DropdownMenuItem
+        variant="destructive"
         onSelect={(event) => {
           event.preventDefault();
           setIsOpen(true);
         }}
       >
-        <Icon icon="mdi:trash-can" className="w-4 h-4 mr-2 text-[#DC2626]" />
+        <Trash2 strokeWidth={1.7} />
         Excluir
       </DropdownMenuItem>
 
@@ -76,25 +77,22 @@ export function DialogDeleteOfficeTable({
           </DialogHeader>
 
           <div className="w-full flex flex-col items-center">
-            <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full bg-[#F6F6F9]">
-              <Icon
-                icon="mdi:help-circle"
-                className="w-[56px] h-[56px] text-[#BDBDBD]"
-              />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FBEDEA]">
+              <Trash2 size={22} strokeWidth={1.7} className="text-[#A23B2A]" />
             </div>
 
-            <div className="flex flex-col items-center justify-center gap-3.5 mt-[30px]">
-              <h4 className="text-xl text-center text-[#33454C] font-semibold">
+            <div className="mt-5 flex flex-col items-center justify-center gap-2">
+              <h4 className="text-center font-display text-[26px] leading-tight text-tinta">
                 Deseja mesmo excluir o escritório {officeName}?
               </h4>
 
-              <p className="text-[18px] leading-[24px] text-[#4D5D63] text-center">
+              <p className="text-center text-[14.5px] leading-[1.5] text-tinta-2">
                 Caso prossiga com esta solicitação, todos os dados do escritório
                 serão perdidos, e essa ação não poderá ser desfeita.
               </p>
             </div>
 
-            <div className="w-full flex items-center justify-center gap-3.5 mt-[34px]">
+            <div className="mt-7 flex w-full items-center justify-center gap-2.5">
               <Button
                 variant="outline"
                 onClick={() => setIsOpen(false)}

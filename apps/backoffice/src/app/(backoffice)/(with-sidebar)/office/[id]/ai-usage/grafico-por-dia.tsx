@@ -20,6 +20,13 @@ interface Dia {
   cobrado: number;
 }
 
+/** Marcas do eixo: Geist Mono 11 px, no tom apagado da paleta. */
+const EIXO = {
+  fontSize: 11,
+  fill: "#756E65",
+  fontFamily: "var(--font-geist-mono), ui-monospace, monospace",
+};
+
 const valorCurto = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 2,
 });
@@ -36,12 +43,18 @@ function DicaDoDia({
   const dia = payload[0].payload;
 
   return (
-    <div className="bg-white rounded-lg shadow-md px-3 py-2 text-xs text-[#707070] flex flex-col gap-0.5">
-      <span className="font-semibold text-[#3D3D3D]">
+    <div className="flex flex-col gap-1 rounded-[10px] border border-filete bg-white px-3 py-2.5 text-[12.5px] text-tinta-2 shadow-[0_8px_24px_rgba(21,19,17,0.08)]">
+      <span className="font-mono text-[11px] text-tinta-3 tabular">
         {formatarData(dia.dia)}
       </span>
-      <span>Valor a cobrar: {formatarReais(dia.cobrado)}</span>
-      <span>Custo: {formatarReais(dia.custo)}</span>
+      <span className="flex items-center gap-1.5">
+        <span className="h-2 w-2 rounded-[2px] bg-acao" aria-hidden />
+        Valor a cobrar:{" "}
+        <strong className="tabular font-semibold text-tinta">
+          {formatarReais(dia.cobrado)}
+        </strong>
+      </span>
+      <span className="pl-3.5 tabular">Custo: {formatarReais(dia.custo)}</span>
     </div>
   );
 }
@@ -72,12 +85,12 @@ export function GraficoPorDia({ dias }: { dias: Dia[] }) {
           <CartesianGrid
             strokeDasharray="4 4"
             vertical={false}
-            stroke="#F0F0F0"
+            stroke="#ECE8E1"
           />
           <XAxis
             dataKey="dia"
             tickFormatter={(dia: string) => dia.slice(8, 10)}
-            tick={{ fontSize: 12, fill: "#BDBDBD" }}
+            tick={EIXO}
             axisLine={false}
             tickLine={false}
             interval="preserveStartEnd"
@@ -85,18 +98,19 @@ export function GraficoPorDia({ dias }: { dias: Dia[] }) {
           />
           <YAxis
             tickFormatter={(valor: number) => valorCurto.format(valor)}
-            tick={{ fontSize: 12, fill: "#BDBDBD" }}
+            tick={EIXO}
             axisLine={false}
             tickLine={false}
             width={48}
           />
-          <Tooltip content={<DicaDoDia />} cursor={{ fill: "#ECF7F8" }} />
+          <Tooltip content={<DicaDoDia />} cursor={{ fill: "#EEF6F7" }} />
           <Bar
             dataKey="cobrado"
             name="Valor a cobrar"
-            fill="#348C98"
+            fill="#2C7D88"
             radius={[4, 4, 0, 0]}
             maxBarSize={24}
+            isAnimationActive={false}
           />
         </BarChart>
       </ResponsiveContainer>

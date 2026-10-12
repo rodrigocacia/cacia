@@ -1,29 +1,32 @@
-"use client";
-
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 interface HeaderToGoBackProps {
   link: string;
-  bgColor?: string;
-  image?: string;
+  /** Para onde o botão leva, escrito por extenso ao lado da seta. */
+  label?: string;
 }
 
-export function HeaderToGoBack({ link, bgColor, image }: HeaderToGoBackProps) {
-  const router = useRouter();
-
+/**
+ * Linha de volta das fichas: um botão contornado com a seta e o nome da
+ * lista de onde se veio. Sem faixa colorida nem sombra — o painel de papel
+ * já separa a página do resto.
+ */
+export function HeaderToGoBack({
+  link,
+  label = "Voltar",
+}: HeaderToGoBackProps) {
   return (
-    <header
-      className={`w-full ${
-        image ? image : bgColor ? "bg-[#ECF7F8]" : "bg-[#BBE2E7]"
-      } py-4 px-4 flex items-center justify-between`}
-    >
-      <button
-        onClick={() => router.push(link)}
-        className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md"
+    <div className="mb-5 flex items-center">
+      <Link
+        href={link}
+        className="group inline-flex items-center gap-3 rounded-[9px] text-[13.5px] text-tinta-2 transition-colors hover:text-tinta focus-visible:ring-[3px] focus-visible:ring-nevoa-2 focus-visible:outline-none"
       >
-        <ArrowLeft className="w-5 h-5 text-gray-600" />
-      </button>
-    </header>
+        <span className="flex h-9 w-9 items-center justify-center rounded-[9px] border border-filete-forte bg-white text-tinta transition-colors group-hover:bg-gray-100">
+          <ArrowLeft size={16} strokeWidth={1.7} aria-hidden />
+        </span>
+        {label}
+      </Link>
+    </div>
   );
 }

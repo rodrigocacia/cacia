@@ -1,41 +1,64 @@
 import { ReactNode } from "react";
-
-import { Icon } from "@/components/icone";
+import clsx from "clsx";
 
 interface CartaoDeValorProps {
-  icon: string;
   rotulo: string;
-  valor: string;
-  /** Linha de apoio abaixo do rótulo (variação, valor secundário). */
+  /** `null` quando não há valor a mostrar: aparece "—" e a `nota` explica. */
+  valor: string | null;
+  /** Linha de apoio abaixo do valor (variação, valor secundário). */
   detalhe?: ReactNode;
 }
 
-/** Indicador do relatório de consumo, no mesmo desenho dos de Performance. */
-export function CartaoDeValor({
-  icon,
-  rotulo,
-  valor,
-  detalhe,
-}: CartaoDeValorProps) {
+/**
+ * Indicador do relatório de consumo: uma célula da faixa de números
+ * (`FaixaDeIndicadores`), no mesmo desenho do Início do app do escritório.
+ */
+export function CartaoDeValor({ rotulo, valor, detalhe }: CartaoDeValorProps) {
   return (
-    <div className="bg-white rounded-xl p-5 flex items-center gap-4 shadow-sm min-w-0">
-      <div className="flex items-center justify-center w-12 h-12 shrink-0 rounded-md bg-[#ECF7F8]">
-        <Icon icon={icon} className="text-[#348C98]" width={28} height={28} />
-      </div>
+    <div className="flex min-w-0 flex-col gap-2.5 bg-white px-6 py-5 max-md:px-4 max-md:py-4">
+      <span className="rotulo">{rotulo}</span>
 
-      <div className="flex flex-col flex-1 min-w-0">
-        <span className="text-xl font-semibold text-[#3D3D3D] leading-7 truncate">
-          {valor}
-        </span>
-        <span className="text-sm text-[#707070] font-medium leading-5">
-          {rotulo}
-        </span>
-        {detalhe && (
-          <span className="text-xs text-[#BDBDBD] font-medium mt-0.5">
-            {detalhe}
-          </span>
+      <span
+        className={clsx(
+          "tabular truncate text-[30px] leading-none font-medium tracking-[-0.03em] max-md:text-[24px]",
+          valor === null ? "text-tinta-3" : "text-tinta",
         )}
-      </div>
+      >
+        {valor ?? "—"}
+      </span>
+
+      {detalhe && (
+        <span className="text-[12.5px] leading-snug text-tinta-3">
+          {detalhe}
+        </span>
+      )}
     </div>
+  );
+}
+
+/**
+ * Faixa que junta os indicadores num cartão só, separados por filetes de
+ * 1 px (o fundo do cartão aparece no vão entre as células).
+ */
+export function FaixaDeIndicadores({
+  children,
+  className,
+  rotulo,
+}: {
+  children: ReactNode;
+  /** Colunas da grade, por largura de tela. */
+  className?: string;
+  rotulo: string;
+}) {
+  return (
+    <section
+      aria-label={rotulo}
+      className={clsx(
+        "grid gap-px overflow-hidden rounded-[14px] border border-filete bg-filete",
+        className,
+      )}
+    >
+      {children}
+    </section>
   );
 }

@@ -1,81 +1,166 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Direção visual 02: janela nanquim, painel de papel, uma cor de ação.
+ *
+ * Os cinzas do Tailwind (gray, zinc, neutral, slate, stone) são redefinidos
+ * para a mesma escala quente. Assim o código que já usa `text-zinc-500` ou
+ * `border-gray-200` passa a falar a nova paleta sem ser reescrito.
+ */
+@theme {
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-newsreader), Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-ink: #151311;
+  --color-ink-2: #1c1a17;
+  --color-ink-line: #2a2622;
+  --color-grafite: #24211e;
+  --color-papel: #fbfaf7;
+  --color-papel-2: #f6f4ef;
+  --color-filete: #ece8e1;
+  --color-filete-forte: #ddd7ce;
+  --color-tinta: #1b1916;
+  --color-tinta-2: #57514a;
+  --color-tinta-3: #756e65;
+  --color-turquesa: #348c98;
+  --color-acao: #2c7d88;
+  --color-acao-escura: #246a74;
+  --color-turquesa-profundo: #1f5c64;
+  --color-turquesa-claro: #6cc1cc;
+  --color-nevoa: #eef6f7;
+  --color-nevoa-2: #d7ebee;
+  --color-ambar: #8a5a10;
+  --color-ambar-fundo: #fbf3e4;
+  --color-ambar-ponto: #c98a2a;
+  --color-brand: #2c7d88;
+
+  --color-gray-50: #fbfaf7;
+  --color-gray-100: #f4f2ed;
+  --color-gray-200: #ece8e1;
+  --color-gray-300: #ddd7ce;
+  --color-gray-400: #b7b0a6;
+  --color-gray-500: #8c857c;
+  --color-gray-600: #6b655d;
+  --color-gray-700: #57514a;
+  --color-gray-800: #3a3632;
+  --color-gray-900: #24211e;
+  --color-gray-950: #151311;
+
+  --color-zinc-50: #fbfaf7;
+  --color-zinc-100: #f4f2ed;
+  --color-zinc-200: #ece8e1;
+  --color-zinc-300: #ddd7ce;
+  --color-zinc-400: #b7b0a6;
+  --color-zinc-500: #756e65;
+  --color-zinc-600: #6b655d;
+  --color-zinc-700: #57514a;
+  --color-zinc-800: #3a3632;
+  --color-zinc-900: #1b1916;
+  --color-zinc-950: #151311;
+
+  --color-neutral-50: #fbfaf7;
+  --color-neutral-100: #f4f2ed;
+  --color-neutral-200: #ece8e1;
+  --color-neutral-300: #ddd7ce;
+  --color-neutral-400: #b7b0a6;
+  --color-neutral-500: #8c857c;
+  --color-neutral-600: #6b655d;
+  --color-neutral-700: #57514a;
+  --color-neutral-800: #3a3632;
+  --color-neutral-900: #24211e;
+  --color-neutral-950: #151311;
+
+  --color-slate-50: #fbfaf7;
+  --color-slate-100: #f4f2ed;
+  --color-slate-200: #ece8e1;
+  --color-slate-300: #ddd7ce;
+  --color-slate-400: #b7b0a6;
+  --color-slate-500: #8c857c;
+  --color-slate-600: #6b655d;
+  --color-slate-700: #57514a;
+  --color-slate-800: #3a3632;
+  --color-slate-900: #24211e;
+  --color-slate-950: #151311;
+}
+
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: #fbfaf7;
+  --foreground: #1b1916;
+  --card: #ffffff;
+  --card-foreground: #1b1916;
+  --popover: #ffffff;
+  --popover-foreground: #1b1916;
+  --primary: #2c7d88;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f2ed;
+  --secondary-foreground: #1b1916;
+  --muted: #f4f2ed;
+  --muted-foreground: #756e65;
+  --accent: #f4f2ed;
+  --accent-foreground: #1b1916;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: #ece8e1;
+  --input: #ddd7ce;
+  --ring: #2c7d88;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #151311;
+  --sidebar-foreground: #b7b0a6;
+  --sidebar-primary: #2c7d88;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #24211e;
+  --sidebar-accent-foreground: #f5f2ed;
+  --sidebar-border: #2a2622;
+  --sidebar-ring: #6cc1cc;
+  /* Nomes antigos, mantidos para o código que ainda os usa */
+  --font-montserrat: var(--font-geist);
+  --font-plus-jakarta: var(--font-geist);
 }
 
 .dark {
@@ -117,8 +202,35 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-ink text-foreground;
+    font-feature-settings: 'ss01', 'cv11';
   }
+  /* Números de dados sempre alinhados em coluna */
+  table,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Títulos editoriais */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+}
+
+/* Rótulo em caixa alta da nova direção */
+.rotulo {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #756e65;
+}
+
+.font-montserrat,
+.font-plus-jakarta {
+  font-family: var(--font-geist), sans-serif;
 }
 
 .phone-input-wrapper input {
@@ -127,4 +239,9 @@
   outline: none !important;
   box-shadow: none !important;
   padding: 0 !important;
+}
+
+html body[data-scroll-locked] {
+  overflow: visible !important;
+  margin-right: 0 !important;
 }

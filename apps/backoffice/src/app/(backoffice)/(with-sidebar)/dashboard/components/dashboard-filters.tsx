@@ -65,9 +65,8 @@ export function DashboardFilters({
   };
 
   return (
-    <div className="flex items-center justify-between w-full my-4">
-      <div className="hidden sm:block" />
-      <div className="flex flex-col sm:flex-row items-center bg-white rounded-full gap-2 px-4 py-2 w-full sm:w-auto">
+    <div className="flex w-full items-center sm:w-auto">
+      <div className="flex w-full flex-col items-center gap-2 sm:w-auto sm:flex-row">
         <div className="w-full sm:w-auto">
           <CustomSelect
             defaultValue={""}

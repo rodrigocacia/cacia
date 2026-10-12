@@ -4,9 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { DialogTitle } from "@radix-ui/react-dialog";
 
-import { Icon } from "@/components/icone";
-
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { CabecalhoDoFormulario } from "@/components/drawer-or-sheet/partes";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/sppiner";
 
@@ -90,32 +89,21 @@ function FormComponent({
   }, [editId, methods]);
 
   if (editId && loading) {
-    return (
-      <div className="p-6">
-        <Spinner size="md" className="h-40" />
-      </div>
-    );
+    return <Spinner />;
   }
 
   return (
     <FormProvider {...methods}>
-      <div className="px-4 pb-6 w-full h-screen overflow-y-scroll">
-        <div className="mt-10 flex flex-col gap-3 mb-10">
-          <div className="flex gap-2">
-            <Icon
-              icon={editId ? "mdi:pencil-outline" : "mdi:plus-outline"}
-              className="text-[#BBE2E7] w-[30px] h-[30px]"
-            />
-            <h3 className="text-xl text-[#3D3D3D] font-bold">
-              {editId ? "Editar usuário" : "Novo usuário"}
-            </h3>
-          </div>
-          <p className="text-base text-[#BDBDBD]">
-            {editId
-              ? "Edite os campos abaixo para atualizar os dados do usuário"
-              : "Preencha os campos abaixo para criar um novo usuário"}
-          </p>
-        </div>
+      <div className="flex h-screen w-full flex-col gap-7 overflow-y-auto max-md:h-[85vh]">
+        <CabecalhoDoFormulario
+          rotulo="Usuários"
+          titulo={editId ? "Editar usuário" : "Novo usuário"}
+          descricao={
+            editId
+              ? "Edite os campos abaixo para atualizar os dados do usuário."
+              : "Preencha os campos abaixo para criar um novo usuário."
+          }
+        />
 
         <PersonalData
           editId={editId || ""}
@@ -205,7 +193,7 @@ export function Form() {
     <div>
       <div className="h-full max-md:hidden">
         <Sheet open={openSheet} onOpenChange={handleChangeSheet}>
-          <SheetContent className="min-w-[707px] rounded-tl-[24px] rounded-bl-[24px]">
+          <SheetContent className="min-w-[640px] px-8">
             <SheetTitle className="sr-only">
               {editId ? "Editar usuário" : "Novo usuário"}
             </SheetTitle>
@@ -219,7 +207,7 @@ export function Form() {
 
       <div className="md:hidden">
         <Drawer open={openDrawer} onOpenChange={handleChangeDrawer}>
-          <DrawerContent className="h-full">
+          <DrawerContent className="h-full px-4">
             <DialogTitle className="sr-only">
               {editId ? "Editar usuário" : "Novo usuário"}
             </DialogTitle>

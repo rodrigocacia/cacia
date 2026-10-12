@@ -1,24 +1,21 @@
 import { Suspense } from "react";
 
 import Link from "next/link";
-import { FaPlus } from "react-icons/fa";
+import { Plus } from "lucide-react";
 
 import { SWRConfig } from "swr";
-
-import { Icon } from "@/components/icone";
 
 import { getUsers } from "@/http/user/get-users";
 
 import { Header } from "@/components/header";
 import { UsersTable } from "@/components/tables/users-table";
-import { Breadcrumbs } from "@/components/ui/custom-breadcrumb";
+import { PageHeader } from "@/components/ui/page-header";
 import { CustomSearchFilter } from "@/components/ui/custom-search-filter";
 import { UsersFiltersButton } from "@/components/tables/users-filters-button";
 import { LoadingText } from "@/components/ui/sppiner";
 import { Button } from "@/components/ui/custom-button";
 
 import { Form } from "./new/steps";
-import { userCrumbs } from "@/constants/breadcrumbs";
 
 export default async function User({
   searchParams,
@@ -34,39 +31,26 @@ export default async function User({
   });
 
   return (
-    <div className="w-full h-full max-lg:px-4">
+    <div className="w-full">
       <Header title="Usuários" />
 
-      <Breadcrumbs crumbs={userCrumbs} />
+      <PageHeader
+        title="Usuários"
+        count={users?.totalItems}
+        description="Pessoas com acesso à plataforma e os escritórios de cada uma."
+        action={
+          <Link href="?novo=1" scroll={false}>
+            <Button
+              variant="primary"
+              iconLeft={<Plus size={16} strokeWidth={2} />}
+            >
+              Novo usuário
+            </Button>
+          </Link>
+        }
+      />
 
-      <div className="w-full flex items-start justify-between mt-8 mb-4 max-md:hidden">
-        <div className="flex gap-2">
-          <Icon
-            icon="mdi:account-group-outline"
-            className="text-[#BDBDBD] w-8 h-8"
-          />
-
-          <h3 className="text-[18px] text-[#3D3D3D] font-bold">Usuários</h3>
-
-          <div className="w-7 h-7 flex items-center justify-center bg-[#E0E6EB] rounded-full">
-            <span className="text-base text-[#707070] font-bold">
-              {users?.totalItems}
-            </span>
-          </div>
-        </div>
-
-        <Link href="?novo=1" scroll={false}>
-          <Button
-            className="cursor-pointer"
-            variant="primary"
-            iconLeft={<FaPlus size={14} />}
-          >
-            Novo usuário
-          </Button>
-        </Link>
-      </div>
-
-      <div className="w-full flex items-center gap-3 max-md:mt-3.5">
+      <div className="mt-5 flex w-full items-center gap-2.5">
         <Suspense fallback={<LoadingText />}>
           <CustomSearchFilter placeholder="Buscar por nome ou e-mail..." />
         </Suspense>
@@ -87,18 +71,6 @@ export default async function User({
       >
         <UsersTable />
       </SWRConfig>
-
-      <div className="md:hidden mt-4">
-        <Link href="?novo=1" scroll={false}>
-          <Button
-            className="cursor-pointer"
-            variant="primary"
-            iconLeft={<FaPlus size={14} />}
-          >
-            Novo usuário
-          </Button>
-        </Link>
-      </div>
 
       {/*
         Uma instância só: o formulário decide entre Sheet e Drawer pela

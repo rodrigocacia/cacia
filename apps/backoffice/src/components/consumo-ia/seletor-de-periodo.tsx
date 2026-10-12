@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
 
-import { Icon } from "@/components/icone";
+import { CalendarDays } from "lucide-react";
+
 import {
   ehData,
   formatarData,
@@ -17,6 +18,9 @@ const OPCOES: { valor: TipoDePeriodo; rotulo: string }[] = [
   { valor: "mes-passado", rotulo: "Mês passado" },
   { valor: "personalizado", rotulo: "Personalizado" },
 ];
+
+const CAMPO_DE_DATA =
+  "h-9 rounded-[9px] border border-filete-forte bg-white px-3 text-[13px] text-tinta outline-none transition-[border-color,box-shadow] focus:border-acao focus:shadow-[0_0_0_3px_#D7EBEE]";
 
 /**
  * Período do relatório, guardado na URL (`?periodo=&de=&ate=`): a página é
@@ -72,19 +76,24 @@ export function SeletorDePeriodo({
   }
 
   return (
-    <div className="w-full flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center bg-white shadow-sm rounded-full p-1">
+    <div className="flex w-full flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2.5">
+        <div
+          role="group"
+          aria-label="Período do relatório"
+          className="flex gap-0.5 rounded-[9px] border border-filete bg-[#F1EEE8] p-[3px]"
+        >
           {OPCOES.map((opcao) => (
             <button
               key={opcao.valor}
               type="button"
+              aria-pressed={tipo === opcao.valor}
               onClick={() => escolher(opcao.valor)}
               className={clsx(
-                "px-4 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer",
+                "h-7 cursor-pointer rounded-[7px] px-3 text-[12.5px] whitespace-nowrap transition-colors",
                 tipo === opcao.valor
-                  ? "bg-[#ECF7F8] text-[#348C98]"
-                  : "text-[#707070] hover:text-[#348C98]",
+                  ? "bg-white font-semibold text-tinta shadow-[0_1px_2px_rgba(21,19,17,0.08)]"
+                  : "font-medium text-tinta-3 hover:text-tinta",
               )}
             >
               {opcao.rotulo}
@@ -100,37 +109,45 @@ export function SeletorDePeriodo({
               value={de}
               max={ate || undefined}
               onChange={(e) => setDe(e.target.value)}
-              className="bg-white shadow-sm rounded-full px-4 py-2 text-sm text-[#707070] outline-[#348C98]"
+              className={CAMPO_DE_DATA}
             />
-            <span className="text-sm text-[#BDBDBD]">até</span>
+            <span className="text-[13px] text-tinta-3">até</span>
             <input
               type="date"
               aria-label="Data final"
               value={ate}
               min={de || undefined}
               onChange={(e) => setAte(e.target.value)}
-              className="bg-white shadow-sm rounded-full px-4 py-2 text-sm text-[#707070] outline-[#348C98]"
+              className={CAMPO_DE_DATA}
             />
             <button
               type="button"
               onClick={aplicar}
-              className="px-4 py-2 rounded-full text-sm font-medium bg-[#348C98] text-white cursor-pointer"
+              className="h-9 cursor-pointer rounded-[9px] bg-acao px-3.5 text-[13px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition-colors hover:bg-acao-escura"
             >
               Aplicar
             </button>
           </div>
         )}
 
-        <span className="flex items-center gap-1.5 text-sm text-[#707070]">
-          <Icon icon="mdi:calendar-month-outline" className="w-4 h-4" />
+        <span className="flex items-center gap-1.5 font-mono text-[12px] text-tinta-3 tabular">
+          <CalendarDays size={14} strokeWidth={1.7} aria-hidden />
           {formatarData(periodo.de)} a {formatarData(periodo.ate)}
           {pendente && (
-            <span className="ml-2 w-4 h-4 border-2 border-t-transparent border-[#348C98] rounded-full animate-spin" />
+            <span
+              role="status"
+              aria-label="Carregando"
+              className="ml-1.5 h-3.5 w-3.5 animate-spin rounded-full border-2 border-acao border-t-transparent"
+            />
           )}
         </span>
       </div>
 
-      {erro && <p className="text-xs font-medium text-red-500">{erro}</p>}
+      {erro && (
+        <p role="alert" className="text-[12.5px] font-medium text-[#A23B2A]">
+          {erro}
+        </p>
+      )}
     </div>
   );
 }
