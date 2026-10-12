@@ -6,11 +6,8 @@ import { ptBR } from "date-fns/locale"
 import { getCustomerById } from "@/http/customer/get-customer-by-id"
 
 import { Header } from "@/components/header"
-import { Breadcrumbs } from "@/components/ui/custom-breadcrumb"
 
-import { Sidebar } from "./sidebar"
-import { customerDetailsCrumbs } from "@/constants/breadcrumbs"
-import { HeaderToGoBack } from "@/components/header-to-go-back"
+import { CabecalhoDoCliente } from "./cabecalho"
 
 export default async function ProfileLayout({
   children,
@@ -22,10 +19,10 @@ export default async function ProfileLayout({
 
   let formattedCreatedAtDate = null
 
-  if (customer?.created_at !== null) {
+  if (customer?.created_at) {
     formattedCreatedAtDate = format(
       new Date(customer?.created_at),
-      "MMMM, yyyy",
+      "MMMM 'de' yyyy",
       {
         locale: ptBR,
       }
@@ -33,29 +30,17 @@ export default async function ProfileLayout({
   }
 
   return (
-    <div className="w-full h-fit flex flex-col">
-      <div className="max-md:hidden">
-        <Header title="Clientes" name={customer?.name ?? ""} />
+    <div className="flex h-fit w-full flex-col max-lg:px-4">
+      <Header title="Clientes" name={customer?.name ?? ""} />
 
-        <Breadcrumbs
-          crumbs={customerDetailsCrumbs(customer?._id, customer?.name)}
-        />
-      </div>
+      <CabecalhoDoCliente
+        name={customer?.name ?? ""}
+        createdAt={formattedCreatedAtDate}
+        document={customer?.document}
+        phone={customer?.remotejid}
+      />
 
-      <div className="md:hidden">
-        <HeaderToGoBack link="/customer" bgColor="#ECF7F8" />
-      </div>
-
-      <div className="w-full grid grid-cols-app max-md:grid-cols-1 mt-8 max-md:mt-0">
-        <Sidebar
-          name={customer?.name}
-          createdAt={formattedCreatedAtDate ?? "-"}
-        />
-
-        <main className="px-4 pb-12 max-md:px-0 lg:col-start-2 max-md:pb-0">
-          {children}
-        </main>
-      </div>
+      <main className="w-full pt-5 pb-12">{children}</main>
     </div>
   )
 }

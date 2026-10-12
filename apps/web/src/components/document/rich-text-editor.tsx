@@ -77,9 +77,9 @@ const ColorPicker = ({
 }) => {
   const colors = [
     "#000000",
-    "#333333",
-    "#666666",
-    "#999999",
+    "#1B1916",
+    "#57514A",
+    "#8C857C",
     "#CCCCCC",
     "#FF0000",
     "#FF6600",
@@ -485,8 +485,10 @@ export function RichTextEditor({
   const currentFontSize = editor.getAttributes("textStyle").fontSize || "16px"
 
   return (
-    <div className={`border border-gray-200 rounded-lg ${className}`}>
-      <div className="border-b border-gray-200 p-2 flex flex-wrap gap-1 bg-gray-50 rounded-t-lg">
+    <div
+      className={`overflow-hidden rounded-[12px] border border-filete-forte bg-white ${className}`}
+    >
+      <div className="flex flex-wrap gap-1 border-b border-filete bg-papel p-2">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive("bold")}
@@ -506,7 +508,7 @@ export function RichTextEditor({
           title="Sublinhado"
         />
 
-        <div className="w-px h-6 bg-gray-300 mx-1"></div>
+        <div className="mx-1 h-6 w-px bg-filete-forte"></div>
 
         <div className="relative">
           <ToolbarButton
@@ -580,7 +582,7 @@ export function RichTextEditor({
           )}
         </div>
 
-        <div className="w-px h-6 bg-gray-300 mx-1"></div>
+        <div className="mx-1 h-6 w-px bg-filete-forte"></div>
 
         <ToolbarButton
           onClick={() =>
@@ -607,7 +609,7 @@ export function RichTextEditor({
           title="Título 3"
         />
 
-        <div className="w-px h-6 bg-gray-300 mx-1"></div>
+        <div className="mx-1 h-6 w-px bg-filete-forte"></div>
 
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -622,7 +624,7 @@ export function RichTextEditor({
           title="Lista numerada"
         />
 
-        <div className="w-px h-6 bg-gray-300 mx-1"></div>
+        <div className="mx-1 h-6 w-px bg-filete-forte"></div>
 
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
@@ -644,7 +646,7 @@ export function RichTextEditor({
           title="Link"
         />
 
-        <div className="w-px h-6 bg-gray-300 mx-1"></div>
+        <div className="mx-1 h-6 w-px bg-filete-forte"></div>
 
         <ToolbarButton
           onClick={() => editor.chain().focus().setTextAlign("left").run()}
@@ -665,7 +667,7 @@ export function RichTextEditor({
           title="Alinhar à direita"
         />
 
-        <div className="w-px h-6 bg-gray-300 mx-1"></div>
+        <div className="mx-1 h-6 w-px bg-filete-forte"></div>
 
         <ToolbarButton
           onClick={() => editor.chain().focus().undo().run()}

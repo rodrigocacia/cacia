@@ -3,9 +3,13 @@
 import { useOnboardingStore } from "@/stores/use-onboard-store"
 
 import { HeaderSteps } from "../components/header-steps"
-import { Button } from "@/components/ui/custom-button"
+import {
+  BotaoAvancar,
+  BotaoVoltar,
+  RodapeDoPasso,
+  SecaoDoPasso,
+} from "../components/partes"
 import { CardNotification } from "@/app/(cacia)/(with-sidebar)/setting/(custom-sidebar)/notifications/components/card-notification"
-import { Icon } from "@/components/icone"
 import { updateSetting } from "@/http/setting/update-setting"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { SettinFormData, settingFormSchema } from "@/schemas/setting"
@@ -18,6 +22,8 @@ import { useOfficeById } from "@/http/hooks/office"
 import { updateOffice } from "@/http/office/udpate-office"
 import { Spinner } from "@/components/ui/sppiner"
 import { mensagemDeErro } from "@/utils/error-handlers"
+import { useConnection } from "@/http/hooks/connection"
+import { isConnectionWorking } from "@/utils/connection-status"
 
 export function Form() {
   const { prevStep, resetStep } = useOnboardingStore()
@@ -31,6 +37,11 @@ export function Form() {
   const { mutate, settings } = useSetting(1)
 
   const { office } = useOfficeById()
+
+  // O aviso de WhatsApp desconectado aparece uma vez, no topo — antes cada
+  // cartão repetia o próprio selo.
+  const { connection } = useConnection()
+  const whatsappConectado = isConnectionWorking(connection)
 
   const isLoading = settings.length === 0 || !office
 
@@ -124,45 +135,23 @@ export function Form() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="bg-white relative z-10 w-full h-full max-lg:h-fit flex flex-col justify-center shadow-md rounded-r-4xl px-8 pt-[28px] max-lg:pb-4"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col">
       <HeaderSteps />
 
-      <div className="w-full flex flex-col gap-3 max-md:mt-4 mt-10">
-        <div className="flex items-center gap-2">
-          <Icon
-            icon="mdi:message-notification-outline"
-            className="w-8 h-8 text-[#BDBDBD]"
-          />
-          <h3 className="text-[20px] text-[#348C98] font-bold">
-            Notificações via WhatsApp
-          </h3>
-        </div>
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-normal text-[#3D3D3D]">
-            Escolha quando você e seus clientes devem ser notificados via
-            WhatsApp.
-          </p>
-        </div>
-      </div>
+      <SecaoDoPasso
+        titulo="Notificações via WhatsApp"
+        descricao="Escolha quando você e seus clientes devem ser notificados via WhatsApp."
+      />
 
-      <div className="w-full mt-4 p-3 bg-[#FFF3CD] border border-[#FFEAA7] rounded-lg">
-        <p className="text-sm text-[#856404] text-center">
+      {!whatsappConectado && (
+        <p className="rounded-[12px] bg-ambar-fundo px-4 py-3 text-[13.5px] text-ambar">
           Conecte seu WhatsApp para ativar as notificações.
         </p>
-      </div>
+      )}
 
-      <div className="flex mt-5 items-center gap-3">
-        <Icon
-          icon="ic:outline-person"
-          className="w-[26px] h-[26px] text-[#BDBDBD]"
-        />
-        <h3 className="text-[18px] text-[#707070] font-bold">Para clientes</h3>
-      </div>
+      <h3 className="rotulo mt-7">Para clientes</h3>
 
-      <div className="mt-8 flex flex-col gap-2.5">
+      <div className="mt-3 flex flex-col rounded-[14px] border border-filete bg-white px-5 py-4">
         <CardNotification
           name="n_w_c_new_event"
           control={control}
@@ -177,19 +166,9 @@ export function Form() {
         />
       </div>
 
-      <div className="flex mt-5 items-center gap-3">
-        <Icon
-          icon="ic:outline-admin-panel-settings"
-          className="w-[26px] h-[26px] text-[#BDBDBD]"
-        />
-        <h3 className="text-[18px] text-[#707070] font-bold">
-          Para administradores
-        </h3>
-      </div>
+      <h3 className="rotulo mt-7">Para administradores</h3>
 
-      <hr className="w-full my-[11px] max-md:my-2 h-px border-t-0 bg-gray-200" />
-
-      <div className="mt-8 flex flex-col gap-2.5">
+      <div className="mt-3 flex flex-col rounded-[14px] border border-filete bg-white px-5 py-4">
         <CardNotification
           name="n_w_a_new_lead"
           control={control}
@@ -228,35 +207,10 @@ export function Form() {
         />
       </div>
 
-      <div className="flex items-center justify-between mt-8 mb-7">
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-[251px] max-lg:w-full cursor-pointer"
-            onClick={() => prevStep()}
-            iconLeft={
-              <Icon icon="mdi:arrow-left" className="w-6 h-6 text-[#707070]" />
-            }
-          >
-            Voltar
-          </Button>
-        </div>
-
-        <Button
-          type="submit"
-          className="w-[251px] max-lg:w-fit cursor-pointer"
-          variant="primary"
-          isLoading={isSubmitting}
-          iconRight={
-            !isSubmitting ? (
-              <Icon icon="mdi:arrow-right" className="w-6 h-6 text-white" />
-            ) : null
-          }
-        >
-          Mostrar dashboard
-        </Button>
-      </div>
+      <RodapeDoPasso>
+        <BotaoVoltar onClick={() => prevStep()} />
+        <BotaoAvancar isLoading={isSubmitting}>Ir para o painel</BotaoAvancar>
+      </RodapeDoPasso>
 
       {hasError && (
         <Toast

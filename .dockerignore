@@ -1,0 +1,17 @@
+# Contexto do build da imagem da API (apps/api/Dockerfile, a partir da raiz).
+# Sem isto, o `COPY . .` levaria node_modules do Windows e o .env local para
+# dentro da imagem.
+**/node_modules
+**/.next
+**/.open-next
+**/.wrangler
+**/.turbo
+**/dist
+**/coverage
+.git
+.env
+.env.*
+!.env.example
+**/.env.local
+apps/web
+apps/backoffice

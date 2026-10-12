@@ -399,8 +399,11 @@ export class RelatorioDeConsumoService {
              SUM(cost_brl)::float8 AS custo
         FROM ai_usage
        WHERE office_id = ${officeId}::uuid
-         AND created_at >= ${periodo.inicio}
-         AND created_at < ${periodo.fim}
+         -- A coluna guarda UTC sem fuso. Comparar direto com o parâmetro
+         -- (que tem fuso) usaria o fuso da sessão do banco: num Postgres em
+         -- horário de Brasília, o dia começaria três horas errado.
+         AND (created_at AT TIME ZONE 'UTC') >= ${periodo.inicio}
+         AND (created_at AT TIME ZONE 'UTC') < ${periodo.fim}
        GROUP BY 1`;
 
     const porData = new Map(linhas.map((l) => [l.dia, Number(l.custo)]));

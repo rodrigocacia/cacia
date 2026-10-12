@@ -25,8 +25,8 @@ export function Breadcrumbs({ crumbs }: BreadcrumbsProps) {
             className={clsx(
               "flex items-center gap-1.5 rounded-full px-2.5 py-1 transition-colors",
               crumb.isActive
-                ? "bg-[#ECF7F8] text-[#348C98] font-semibold"
-                : "text-[#9A9AA5] hover:text-[#707070]"
+                ? "bg-[#EEF6F7] text-[#348C98] font-semibold"
+                : "text-[#9A9AA5] hover:text-[#57514A]"
             )}
           >
             {crumb.icon}

@@ -6,7 +6,6 @@ import { Icon } from "@/components/icone"
 import { ClockIcon } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { formatName } from "@/utils/formatters"
 import { formatProcess } from "@/utils/formatters"
 
 import { Spinner } from "@/components/ui/sppiner"
@@ -55,7 +54,7 @@ export function DialogShowEvent() {
     >
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-left">
+          <DialogTitle className="text-left font-display text-[26px] font-normal">
             {isLoading ? "Carregando..." : event?.title || "Detalhes do Evento"}
           </DialogTitle>
         </DialogHeader>
@@ -68,7 +67,7 @@ export function DialogShowEvent() {
 
         {isError && eventShowId && (
           <div className="flex items-center justify-center py-8">
-            <p className="text-sm text-red-500 font-semibold">
+            <p className="text-[13px] text-[#A23B2A]">
               Erro ao carregar evento
             </p>
           </div>
@@ -78,20 +77,20 @@ export function DialogShowEvent() {
           <div className="flex flex-col gap-4">
             {event.status && (
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600 font-semibold">Status</p>
+                <p className="text-[13px] text-tinta-3">Status</p>
                 <StatusEvent status={event.status} />
               </div>
             )}
 
-            <div className="flex items-center justify-between text-gray-600 text-sm">
-              <span className="text-gray-600 font-semibold">
+            <div className="tabular flex items-center justify-between text-[13.5px] text-tinta-2">
+              <span className="font-medium text-tinta">
                 {event.start_time &&
                   format(event.start_time, "d 'de' MMMM 'de' yyyy", {
                     locale: ptBR,
                   })}
               </span>
 
-              <span className="flex items-center gap-1 text-gray-600">
+              <span className="flex items-center gap-1 text-tinta-2">
                 <ClockIcon className="w-4 h-4" />
                 {event.start_time && format(event.start_time, "HH:mm")} -{" "}
                 {event.end_time && format(event.end_time, "HH:mm")}
@@ -99,39 +98,39 @@ export function DialogShowEvent() {
             </div>
 
             {event.lead && (
-              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded border">
+              <div className="flex items-center gap-2 rounded-[10px] border border-filete bg-white px-3 py-2 text-[13px]">
                 <Icon
                   icon="mdi:account-outline"
-                  className="w-4 h-4 text-gray-600"
+                  className="h-4 w-4 text-tinta-3"
                 />
-                <span className="text-gray-700">
-                  {formatName(event.lead.name) || "Lead sem nome"}
+                <span className="text-tinta">
+                  {event.lead.name || "Lead sem nome"}
                 </span>
               </div>
             )}
 
             {event.customer && (
-              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded border">
+              <div className="flex items-center gap-2 rounded-[10px] border border-filete bg-white px-3 py-2 text-[13px]">
                 <Icon
                   icon="mdi:account-outline"
-                  className="w-4 h-4 text-gray-600"
+                  className="h-4 w-4 text-tinta-3"
                 />
-                <span className="text-gray-700">
-                  {formatName(event.customer.name) || "Cliente sem nome"}
+                <span className="text-tinta">
+                  {event.customer.name || "Cliente sem nome"}
                 </span>
               </div>
             )}
 
             {event.process && (
-              <div className="flex flex-col gap-1 p-3 bg-gray-50 rounded border">
+              <div className="flex flex-col gap-1 rounded-[10px] border border-filete bg-white px-3 py-2 text-[13px]">
                 <div className="flex items-center gap-2">
                   <Icon
                     icon="mdi:folder-text-outline"
-                    className="w-4 h-4 text-gray-600"
+                    className="h-4 w-4 text-tinta-3"
                   />
-                  <span className="text-gray-700">Processo</span>
+                  <span className="text-tinta">Processo</span>
                 </div>
-                <span className="text-gray-700">
+                <span className="text-tinta">
                   {formatProcess(event.process.number)}
                 </span>
               </div>
@@ -139,35 +138,33 @@ export function DialogShowEvent() {
 
             {event.type && (
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600 font-semibold">
-                  Tipo de evento
-                </p>
+                <p className="text-[13px] text-tinta-3">Tipo de evento</p>
                 <TypeEvent type={event.type} />
               </div>
             )}
 
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-600 font-semibold">Agenda</p>
-              <span className="inline-flex items-center gap-2 text-gray-700 font-medium">
+              <p className="text-[13px] text-tinta-3">Agenda</p>
+              <span className="inline-flex items-center gap-2 text-[13px] font-medium text-tinta">
                 {event.calendar?.title || "Agenda não definida"}
               </span>
             </div>
 
             {event.description && (
               <div className="flex flex-col gap-2">
-                <p className="text-sm text-gray-600 font-semibold">Detalhes</p>
-                <div className="text-sm text-gray-700 bg-gray-50 p-3 rounded border">
+                <p className="text-[13px] text-tinta-3">Detalhes</p>
+                <div className="rounded-[10px] border border-filete bg-papel p-3 text-[13.5px] text-tinta-2">
                   {event.description}
                 </div>
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-3 pt-4 border-t">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-filete pt-4">
               <div className="flex items-center gap-2">
                 {event.customer && (
                   <Link
-                    href={`/customer/${event.customer._id}/information`}
-                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    href={`/customer/${event.customer._id}/personal-information`}
+                    className="flex h-9 items-center rounded-[9px] border border-filete-forte bg-white px-3 text-[13px] font-medium text-tinta transition-colors hover:bg-gray-100"
                   >
                     Cliente
                   </Link>
@@ -176,7 +173,7 @@ export function DialogShowEvent() {
                 {event.process && (
                   <Link
                     href={`/process/${event.process._id}/information`}
-                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    className="flex h-9 items-center rounded-[9px] border border-filete-forte bg-white px-3 text-[13px] font-medium text-tinta transition-colors hover:bg-gray-100"
                   >
                     Processo
                   </Link>
@@ -196,7 +193,7 @@ export function DialogShowEvent() {
                     params.set("deleteEventId", eventShowId ?? "")
                     router.replace(`${pathname}?${params.toString()}`)
                   }}
-                  className="px-4 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50 transition-colors"
+                  className="flex h-9 cursor-pointer items-center rounded-[9px] border border-filete-forte bg-white px-3 text-[13px] font-medium text-tinta transition-colors hover:border-[#F3D5CF] hover:bg-[#FBEDEA] hover:text-[#A23B2A]"
                 >
                   Excluir
                 </button>
@@ -204,7 +201,7 @@ export function DialogShowEvent() {
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  className="flex h-9 cursor-pointer items-center rounded-[9px] border border-filete-forte bg-white px-3 text-[13px] font-medium text-tinta transition-colors hover:bg-gray-100"
                 >
                   Fechar
                 </button>

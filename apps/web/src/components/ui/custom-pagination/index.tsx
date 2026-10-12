@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter, useSearchParams } from "next/navigation"
-import { Icon } from "@/components/icone"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 type PaginationProps = {
   totalItems: number
@@ -9,6 +9,9 @@ type PaginationProps = {
   perPage: number
   currentPage: number
 }
+
+const BOTAO =
+  "flex h-8 w-8 items-center justify-center rounded-lg border border-filete-forte bg-white text-tinta-2 transition-colors hover:bg-gray-100 hover:text-tinta disabled:cursor-not-allowed disabled:border-filete disabled:bg-transparent disabled:text-gray-400 disabled:hover:bg-transparent"
 
 export function CustomPagination({
   totalItems,
@@ -21,13 +24,8 @@ export function CustomPagination({
   const currentPage = Number(searchParams.get("page")) || 1
   const end = Math.min(currentPage * perPage, totalItems)
 
-  const canGoBack = currentPage > 1
+  const canGoBack = currentPage > 1 && totalPages > 1
   const canGoForward = currentPage < totalPages
-
-  const backButtonColor =
-    canGoBack && totalPages > 1
-      ? "bg-[#348C98]"
-      : "bg-[#F2F2F2] cursor-not-allowed"
 
   const goToPage = (page: number) => {
     const params = new URLSearchParams(searchParams)
@@ -36,57 +34,40 @@ export function CustomPagination({
   }
 
   return (
-    <div className="w-full flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <h3 className="text-sm text-[#BDBDBD] text-center md:text-left">
+    <div className="flex w-full flex-wrap items-center justify-between gap-3 text-[13px] text-tinta-3">
+      <p>
         Mostrando{" "}
-        <strong className="text-sm text-[#707070] font-semibold">{end}</strong>{" "}
-        de{" "}
-        <strong className="text-sm text-[#707070] font-semibold">
+        <strong className="font-semibold text-tinta tabular">{end}</strong> de{" "}
+        <strong className="font-semibold text-tinta tabular">
           {totalItems}
         </strong>{" "}
         registros
-      </h3>
+      </p>
 
-      <div className="flex items-center justify-center md:justify-start gap-2 md:gap-3 mb-4 md:mb-0">
+      <div className="flex items-center gap-2">
         <button
+          type="button"
+          aria-label="Página anterior"
           disabled={!canGoBack}
           onClick={() => goToPage(currentPage - 1)}
-          className={`w-8 h-8 rounded-full flex items-center justify-center ${backButtonColor}`}
+          className={BOTAO}
         >
-          <Icon
-            icon="mdi:arrow-left"
-            className={
-              canGoBack && totalPages > 1
-                ? "text-white cursor-pointer"
-                : "text-[#707070]"
-            }
-          />
+          <ChevronLeft size={16} strokeWidth={1.7} />
         </button>
 
-        <div className="rounded-[10px] border border-[#F6F6F9] flex gap-2 md:gap-3 px-2 md:px-3 py-2 ">
-          <span className="text-sm text-[#707070] font-semibold">
-            {currentPage}
-          </span>
-          <Icon icon="mdi:chevron-down" className="text-[#BDBDBD]" />
-        </div>
-
-        <h3 className="text-sm">
-          de{" "}
-          <span className="text-sm text-[#707070] font-semibold">
-            {totalPages}
-          </span>
-        </h3>
+        <span className="px-1 font-mono text-xs tabular">
+          <span className="text-tinta">{currentPage}</span>
+          <span className="text-tinta-3"> / {Math.max(totalPages, 1)}</span>
+        </span>
 
         <button
+          type="button"
+          aria-label="Próxima página"
           disabled={!canGoForward}
           onClick={() => goToPage(currentPage + 1)}
-          className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            canGoForward
-              ? "bg-[#348C98] cursor-pointer"
-              : "bg-[#B0B0B0] cursor-not-allowed"
-          }`}
+          className={BOTAO}
         >
-          <Icon icon="mdi:arrow-right" className="text-white" />
+          <ChevronRight size={16} strokeWidth={1.7} />
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useSearchParams } from "next/navigation"
+import { ultimoContato } from "@/utils/ultimo-contato"
 
 import { useLeads } from "@/http/hooks/lead"
 
@@ -17,12 +18,13 @@ import { CustomPagination } from "../ui/custom-pagination"
 import { RowActions } from "../ui/row-actions"
 import { TableCard, TableCardFooter } from "../ui/table-card"
 import { LeadBadge } from "../ui/badge/lead-badge"
-import { CustomAvatar } from "../ui/custom-avatar"
+import { Iniciais } from "./iniciais"
 
 import { Spinner } from "../ui/sppiner"
 import { EmptySearch } from "../empty-search"
-import { formatPhone, formatName } from "@/utils/formatters"
-import { Icon } from "@/components/icone"
+import Link from "next/link"
+import { ArrowUpRight, Pencil, UserCheck } from "lucide-react"
+import { formatPhone } from "@/utils/formatters"
 
 export function LeadsTable() {
   const searchParams = useSearchParams()
@@ -48,63 +50,72 @@ export function LeadsTable() {
 
   return (
     <>
-      <div className="mt-6 w-full">
+      <div className="mt-5 w-full">
         <TableCard>
           <Table>
             <TableHeader className="max-md:hidden">
               <TableRow>
                 <TableHead>Nome</TableHead>
                 <TableHead className="hidden md:table-cell">Telefone</TableHead>
-                <TableHead className="">Último contato</TableHead>
-                <TableHead></TableHead>
+                <TableHead className="hidden md:table-cell">
+                  Último contato
+                </TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>
+                  <span className="sr-only">Ações</span>
+                </TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
               {leads?.map((lead) => (
                 <TableRow key={lead?._id}>
-                  <TableCell className="font-medium">
-                    <div className="flex gap-2.5 items-center">
-                      <CustomAvatar name={lead.name} size="md" />
+                  <TableCell className="max-md:pr-2">
+                    <Link
+                      href={`/lead/${lead._id}`}
+                      className="flex items-center gap-3"
+                    >
+                      <Iniciais nome={lead.name} />
 
-                      <div className="flex flex-col gap-2">
-                        <span className="text-sm text-[#707070] inline-flex items-center gap-2 font-medium">
-                          {lead.name
-                            ? `${formatName(lead.name).substring(0, 20)}${
-                                formatName(lead.name).length > 20 ? "..." : ""
-                              }`
-                            : "Atualizando..."}
+                      <div className="flex min-w-0 flex-col">
+                        <span className="max-w-[260px] truncate text-[13.5px] font-medium text-tinta max-md:max-w-[150px]">
+                          {lead.name || "Atualizando..."}
                         </span>
 
-                        <p className="text-[10px] text-[#707070] md:hidden">
+                        <span className="tabular text-xs text-tinta-3 md:hidden">
                           {formatPhone(lead?.remotejid)}
-                        </p>
+                        </span>
                       </div>
-                    </div>
+                    </Link>
                   </TableCell>
 
-                  <TableCell className="hidden md:table-cell">
+                  <TableCell className="tabular hidden md:table-cell">
                     {formatPhone(lead?.remotejid)}
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {lead?.updated_at}
+
+                  <TableCell className="tabular hidden text-tinta-3 md:table-cell">
+                    {/* A API manda `lastActivityAt` (o adaptador entrega em
+                        snake_case); `updated_at` nem vem na listagem. */}
+                    {lead?.last_activity_at ? (
+                      <time
+                        dateTime={lead.last_activity_at}
+                        suppressHydrationWarning
+                        title={new Date(lead.last_activity_at).toLocaleString(
+                          "pt-BR"
+                        )}
+                      >
+                        {ultimoContato(lead.last_activity_at)}
+                      </time>
+                    ) : (
+                      "—"
+                    )}
                   </TableCell>
 
-                  <TableCell className="hidden md:table-cell">
+                  <TableCell className="max-md:px-2">
                     <LeadBadge variant={lead.status} />
                   </TableCell>
 
-                  <TableCell className="md:hidden">
-                    <div className="w-fit flex flex-1 items-end flex-col gap-2.5">
-                      <LeadBadge variant={lead.status} />
-
-                      <h3 className="text-[10px] text-[#707070] font-semibold">
-                        {lead?.updated_at}
-                      </h3>
-                    </div>
-                  </TableCell>
-
-                  <TableCell className="text-right">
+                  <TableCell className="text-right max-md:pl-0">
                     <RowActions
                       actions={[
                         {
@@ -113,22 +124,12 @@ export function LeadsTable() {
                           // da tabela.
                           label: "Abrir ficha",
                           href: `/lead/${lead._id}`,
-                          icon: (
-                            <Icon
-                              icon="mdi:open-in-new"
-                              className="h-[18px] w-[18px]"
-                            />
-                          ),
+                          icon: <ArrowUpRight strokeWidth={1.7} />,
                         },
                         {
                           label: "Editar",
                           href: `/lead?editLeadId=${lead._id}`,
-                          icon: (
-                            <Icon
-                              icon="mdi:edit"
-                              className="h-[18px] w-[18px]"
-                            />
-                          ),
+                          icon: <Pencil strokeWidth={1.7} />,
                         },
                         {
                           label:
@@ -139,12 +140,7 @@ export function LeadsTable() {
                             lead.status === "CONVERTED"
                               ? `/customer/${lead.customer}/personal-information`
                               : `/lead?action=customer&leadId=${lead._id}`,
-                          icon: (
-                            <Icon
-                              icon="mdi:account-check"
-                              className="h-[18px] w-[18px]"
-                            />
-                          ),
+                          icon: <UserCheck strokeWidth={1.7} />,
                         },
                       ]}
                     />

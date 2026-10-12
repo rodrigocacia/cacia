@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useParams } from "next/navigation"
-import { FaTrash } from "react-icons/fa"
+import { Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/custom-button"
 import {
@@ -66,11 +66,11 @@ export function DialogDeleteProcess({ number }: { number: string }) {
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
           <Button
-            className="cursor-pointer"
-            variant="danger"
-            iconLeft={<FaTrash size={14} className="text-[#DC2626]" />}
+            className="h-9! cursor-pointer rounded-[9px]! px-3.5 text-[13.5px] font-medium hover:text-[#A23B2A]"
+            variant="outline"
+            iconLeft={<Trash2 size={15} strokeWidth={1.7} />}
           >
-            <span className="text-sm text-[#DC2626]">Excluir</span>
+            Excluir
           </Button>
         </DialogTrigger>
 
@@ -82,28 +82,28 @@ export function DialogDeleteProcess({ number }: { number: string }) {
           </DialogHeader>
 
           <div className="w-full flex flex-col items-center">
-            <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full bg-[#F6F6F9]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FBEDEA]">
               <Icon
-                icon="mdi:help-circle"
-                className="w-[56px] h-[56px] text-[#BDBDBD]"
+                icon="mdi:trash-can-outline"
+                className="h-6 w-6 text-[#A23B2A]"
               />
             </div>
 
-            <div className="flex flex-col items-center justify-center gap-3.5 mt-[30px]">
-              <h4 className="text-xl text-center text-[#33454C] font-semibold">
+            <div className="mt-5 flex flex-col items-center justify-center gap-2">
+              <h4 className="text-center font-display text-[26px] leading-tight text-tinta">
                 Deseja mesmo excluir o processo
               </h4>
-              <h4 className="text-xl text-center text-[#33454C] font-semibold">
+              <h4 className="text-center font-display text-[26px] leading-tight text-tinta">
                 {formatProcess(number)}?
               </h4>
 
-              <p className="text-[18px] leading-[24px] text-[#4D5D63] text-center">
+              <p className="text-center text-[14.5px] leading-[1.5] text-tinta-2">
                 Caso prossiga com esta solicitação, todos os dados do processo
                 serão perdidos, e essa ação não poderá ser desfeita.
               </p>
             </div>
 
-            <div className="w-full flex items-center justify-center gap-3.5 mt-[34px]">
+            <div className="mt-7 flex w-full items-center justify-center gap-2.5">
               <Button
                 variant="outline"
                 onClick={() => setIsOpen(false)}

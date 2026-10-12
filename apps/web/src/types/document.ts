@@ -167,7 +167,7 @@ export const documentStatusConfig: DocumentStatusConfig = {
   },
   [DocumentStatus.SENT]: {
     label: "Enviado",
-    color: "bg-[#ECF7F8]",
+    color: "bg-[#EEF6F7]",
     text: "text-[#348C98]",
     icon: "mdi:send-outline",
   },

@@ -10,12 +10,17 @@ export function NotificationsCount() {
   return (
     <Link
       href="/notification"
-      className="cursor-pointer relative w-[38px] h-[38px] flex items-center justify-center rounded-2xl bg-white shadow-md"
+      aria-label={
+        unreadCount > 0
+          ? `${unreadCount} notificações não lidas`
+          : "Notificações"
+      }
+      className="relative flex h-8 w-8 items-center justify-center rounded-lg text-tinta-2 transition-colors hover:bg-gray-100"
     >
-      <Bell size={18} />
+      <Bell size={17} strokeWidth={1.7} />
 
       {unreadCount > 0 && (
-        <span className="absolute -top-1 -right-2 px-1.5 py-0.5 flex items-center justify-center rounded-full bg-[#348C98] font-bold text-xs text-white border border-white">
+        <span className="absolute -top-0.5 -right-1 flex h-4 min-w-4 items-center justify-center rounded-[5px] bg-acao px-1 font-mono text-[10px] text-white">
           {unreadCount}
         </span>
       )}

@@ -73,7 +73,7 @@ export function ExtensionIcon({
         return (
           <Icon
             icon="mdi:file-document-outline"
-            className={`${className} text-[#707070]`}
+            className={`${className} text-[#57514A]`}
           />
         )
     }

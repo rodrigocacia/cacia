@@ -31,6 +31,7 @@ import { updateCustomer } from "@/http/customer/update-customer"
 import { useLeads } from "@/http/hooks/lead"
 import { getCepsByCity } from "@/http/get-city-cep-informations"
 import { mensagemDeErro } from "@/utils/error-handlers"
+import { RodapeDoFormulario } from "@/components/drawer-or-sheet/partes"
 
 interface AddressProps {
   lastStep(): void
@@ -275,10 +276,12 @@ export function Address({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="pb-6 w-full h-screen">
-      <div className="flex flex-col gap-5 mt-10">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex w-full flex-grow flex-col gap-5"
+    >
+      <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-5">
-          <h3 className="text-xl font-semibold text-[#3D3D3D]">Endereço</h3>
           <Input
             {...register("cep")}
             label="CEP"
@@ -360,29 +363,29 @@ export function Address({
             />
           </div>
         </div>
-
-        <div className="flex items-center justify-between mb-4 mt-4">
-          <CustomButton
-            type="button"
-            onClick={lastStep}
-            className="w-[251px] cursor-pointer"
-            variant="outline"
-          >
-            Voltar
-          </CustomButton>
-
-          <CustomButton
-            type="submit"
-            onClick={() => {}}
-            className="px-10 cursor-pointer"
-            variant="primary"
-            iconLeft={<Check />}
-            isLoading={isSubmitting}
-          >
-            {customer ? "Atualizar cliente" : "Salvar cliente"}
-          </CustomButton>
-        </div>
       </div>
+
+      <RodapeDoFormulario>
+        <CustomButton
+          type="button"
+          onClick={lastStep}
+          className="cursor-pointer"
+          variant="outline"
+        >
+          Voltar
+        </CustomButton>
+
+        <CustomButton
+          type="submit"
+          onClick={() => {}}
+          className="cursor-pointer px-6"
+          variant="primary"
+          iconLeft={<Check size={16} />}
+          isLoading={isSubmitting}
+        >
+          {customer ? "Atualizar cliente" : "Salvar cliente"}
+        </CustomButton>
+      </RodapeDoFormulario>
 
       {hasError && (
         <Toast

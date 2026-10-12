@@ -27,7 +27,7 @@ import { Icon } from "@/components/icone"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
+const SIDEBAR_WIDTH = "15rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
@@ -270,7 +270,7 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <Icon icon="mdi:menu" className="min-w-9 min-h-9 text-[#707070]" />
+      <Icon icon="mdi:menu" className="min-w-9 min-h-9 text-[#57514A]" />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )

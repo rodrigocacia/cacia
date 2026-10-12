@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Icon } from "@/components/icone"
 
 import { Button } from "@/components/ui/custom-button"
 import { Input } from "@/components/ui/custom-input"
@@ -15,6 +14,9 @@ import { Toast } from "@/components/ui/toast"
 import { useMe } from "@/http/hooks/user"
 import { revalidateProfile } from "../actions"
 import { mensagemDeErro } from "@/utils/error-handlers"
+import { Check } from "lucide-react"
+
+import { Cartao, RodapeDoCartao } from "../../setting/_ui/cartao"
 
 function formatPhoneToE164(phone: string): string {
   if (!phone) return ""
@@ -89,33 +91,25 @@ export function Form({ name, document, phone }: FormProps) {
   }
 
   return (
-    <div className="h-full w-full p-8 max-md:p-0 pb-6 md:rounded-2xl md:shadow-sm md:pb-0">
-      <div className="flex items-center gap-3">
-        <Icon
-          icon="mdi:person-circle-outline"
-          className="w-8 h-8 text-[#BDBDBD]"
-        />
-
-        <h3 className="text-[20px] text-[#707070] font-bold">Meus dados</h3>
-      </div>
-
-      <hr className="w-full my-4 max-md:my-2 h-px border-t-0 bg-gray-200" />
-
+    <Cartao
+      titulo="Meus dados"
+      descricao="Seus dados pessoais, usados no cadastro e nos documentos."
+    >
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full mt-6 flex flex-col justify-between gap-8 pb-10"
+        className="flex w-full flex-col gap-7"
       >
         <div className="w-full flex flex-col gap-4">
           <Input
             iconName="person"
-            label="Nome Completo"
+            label="Nome completo"
             aria-label="Nome"
             autoComplete="name"
             {...register("name")}
             error={errors?.name}
           />
 
-          <div className="w-full flex gap-6 items-center justify-between max-md:flex-col max-md:gap-4">
+          <div className="grid w-full gap-4 md:grid-cols-2">
             <div className="w-full">
               <Input
                 iconName="contact"
@@ -138,20 +132,18 @@ export function Form({ name, document, phone }: FormProps) {
           </div>
         </div>
 
-        <div className="w-full flex items-center justify-end max-md:flex-col max-md:gap-4 mt-8 max-md:pb-10">
+        <RodapeDoCartao>
           <Button
             type="submit"
             disabled={isSubmitting}
-            iconLeft={
-              <Icon icon="mdi:content-save" className="w-6 h-6 text-white" />
-            }
+            iconLeft={<Check size={16} />}
             isLoading={isSubmitting}
-            className="px-10 cursor-pointer max-md:w-full"
+            className="px-5"
             variant="primary"
           >
             Salvar
           </Button>
-        </div>
+        </RodapeDoCartao>
       </form>
 
       {isSuccess && (
@@ -171,6 +163,6 @@ export function Form({ name, document, phone }: FormProps) {
           description={errorMessage}
         />
       )}
-    </div>
+    </Cartao>
   )
 }

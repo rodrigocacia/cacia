@@ -49,6 +49,8 @@ const CAMPOS_CARTAO = {
   id: true,
   name: true,
   remotejid: true,
+  // O caso em uma linha: é o que se lê no cartão para decidir quem atender
+  briefing: true,
   value: true,
   status: true,
   stageChangedAt: true,

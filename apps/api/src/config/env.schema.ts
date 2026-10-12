@@ -15,6 +15,9 @@ export const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
 
   WEBSITE_URL: z.string().url(),
+  // O painel administrativo chama a API pelo navegador, de outra origem;
+  // sem ela no CORS, o backoffice publicado não consegue nem fazer login.
+  BACKOFFICE_URL: z.string().url().optional(),
   APP_WEBHOOK_URL: z.string().url(),
 
   // Autenticação

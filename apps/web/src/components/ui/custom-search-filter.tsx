@@ -27,8 +27,8 @@ export function CustomSearchFilter(props: CustomSearchFilterProps) {
   }, [value, router])
 
   return (
-    <div className="flex h-11 w-full max-w-[360px] items-center gap-2.5 rounded-full border border-[#E7E7EE] bg-white px-4 transition-colors focus-within:border-[#348C98] focus-within:ring-2 focus-within:ring-[#348C98]/15 max-md:h-[52px] max-md:max-w-none">
-      <IoMdSearch size={20} className="text-[#BDBDBD]" />
+    <div className="flex h-11 w-full max-w-[360px] items-center gap-2 rounded-[10px] border border-filete-forte bg-white px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-acao focus-within:shadow-[0_0_0_3px_#D7EBEE] max-md:max-w-none">
+      <IoMdSearch size={18} className="shrink-0 text-gray-400" />
       <input
         {...props}
         value={value}
@@ -36,7 +36,7 @@ export function CustomSearchFilter(props: CustomSearchFilterProps) {
           setValue(e.target.value)
           props.onChange?.(e)
         }}
-        className={`w-full bg-transparent text-sm text-[#333] placeholder-[#BDBDBD] outline-none ${
+        className={`w-full bg-transparent text-[14.5px] text-tinta placeholder-gray-400 outline-none ${
           props.className || ""
         }`}
       />

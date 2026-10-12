@@ -16,7 +16,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Button } from "../ui/custom-button"
-import { AiOutlinePlus } from "react-icons/ai"
 import { Plus } from "lucide-react"
 
 interface DrawerOrSheetProps {
@@ -56,15 +55,15 @@ export function DrawerOrSheet({
               <Button
                 onClick={onTriggerClick}
                 type="button"
-                className="h-11! cursor-pointer px-5 text-sm shadow-sm"
-                iconLeft={<AiOutlinePlus size={18} />}
+                className="h-10! cursor-pointer px-4 text-[13.5px]"
+                iconLeft={<Plus size={16} strokeWidth={2} />}
               >
                 {triggerLabel}
               </Button>
             </SheetTrigger>
           )}
-          <SheetContent className="min-w-[730px] border-none">
-            <SheetTitle className="sr-only">Novo</SheetTitle>
+          <SheetContent className="min-w-[640px] px-8">
+            <SheetTitle className="sr-only">{triggerLabel}</SheetTitle>
             {children}
           </SheetContent>
         </Sheet>
@@ -79,20 +78,19 @@ export function DrawerOrSheet({
             }
           }}
         >
-          <DrawerTrigger
-            className="md:hidden fixed w-[56px] h-[56px] bottom-6 right-6 bg-teal-500 hover:bg-teal-600 text-white rounded-full shadow-lg flex items-center justify-center text-xl z-50"
-            onClick={onTriggerClick}
-          >
-            <Plus className="w-5 h-5" />
-          </DrawerTrigger>
-          <DrawerContent className=" border-none">
-            <DrawerHeader>
-              <DrawerTitle className="text-white text-xl font-semibold text-left">
-                Solicitação de saque
-              </DrawerTitle>
-              <DrawerDescription className="sr-only">
-                Solicitação de saque
-              </DrawerDescription>
+          {hasTrigger && (
+            <DrawerTrigger
+              aria-label={triggerLabel}
+              className="fixed right-5 bottom-5 z-50 flex h-14 w-14 items-center justify-center rounded-2xl bg-acao text-white shadow-[0_10px_24px_rgba(21,19,17,0.22)] transition-colors hover:bg-acao-escura md:hidden"
+              onClick={onTriggerClick}
+            >
+              <Plus className="h-5 w-5" strokeWidth={2} />
+            </DrawerTrigger>
+          )}
+          <DrawerContent className="px-4">
+            <DrawerHeader className="sr-only">
+              <DrawerTitle>{triggerLabel}</DrawerTitle>
+              <DrawerDescription>{triggerLabel}</DrawerDescription>
             </DrawerHeader>
 
             {children}

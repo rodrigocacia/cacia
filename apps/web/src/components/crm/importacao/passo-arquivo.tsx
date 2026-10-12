@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react"
 
-import { Icon } from "@/components/icone"
+import { Upload } from "lucide-react"
 
 /**
  * O envio do arquivo.
@@ -42,22 +42,21 @@ export function PassoArquivo({
           setArrastando(false)
           receber(evento.dataTransfer.files[0])
         }}
-        className={`flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed px-6 py-12 transition ${
+        className={`flex w-full cursor-pointer flex-col items-center gap-2.5 rounded-[14px] border border-dashed bg-white px-6 py-12 transition ${
           arrastando
-            ? "border-zinc-500 bg-zinc-50"
-            : "border-zinc-300 hover:border-zinc-400"
+            ? "border-acao bg-nevoa"
+            : "border-filete-forte hover:border-acao"
         } disabled:opacity-50`}
       >
-        <Icon
-          icon="mdi:file-upload-outline"
-          className="h-8 w-8 text-zinc-400"
-        />
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-nevoa text-turquesa-profundo">
+          <Upload size={20} strokeWidth={1.7} />
+        </span>
 
-        <span className="text-sm font-medium text-zinc-700">
+        <span className="text-[14px] font-medium text-tinta">
           {ocupado ? "Lendo o arquivo…" : "Clique ou arraste o arquivo CSV"}
         </span>
 
-        <span className="text-xs text-zinc-500">Até 10 MB</span>
+        <span className="text-xs text-tinta-3">Até 10 MB</span>
       </button>
 
       <input
@@ -68,9 +67,9 @@ export function PassoArquivo({
         onChange={(evento) => receber(evento.target.files?.[0])}
       />
 
-      <div className="mt-4 rounded-lg bg-zinc-50 p-3 text-xs text-zinc-600">
-        <p className="font-medium text-zinc-700">O que o arquivo precisa ter</p>
-        <ul className="mt-1.5 list-inside list-disc space-y-0.5">
+      <div className="mt-4 rounded-[14px] border border-filete bg-white px-5 py-4 text-[13px] text-tinta-2">
+        <p className="rotulo">O que o arquivo precisa ter</p>
+        <ul className="mt-2 list-inside list-disc space-y-1">
           <li>Uma primeira linha com o nome das colunas</li>
           <li>
             Uma coluna com o <strong>telefone</strong> — é o que identifica o

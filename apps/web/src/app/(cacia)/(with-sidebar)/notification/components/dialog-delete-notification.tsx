@@ -5,7 +5,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Icon } from "@/components/icone"
 import { deleteNotification } from "@/http/notification/delete-notification"
 import { useState } from "react"
 import { useNotification } from "@/http/hooks/notification"
@@ -72,32 +71,18 @@ export function DialogDeleteNotification({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="px-[30px]">
         <DialogHeader>
-          <DialogTitle className="sr-only">Excluir notificação</DialogTitle>
+          <DialogTitle className="text-left text-[17px] font-semibold text-tinta">
+            Excluir a notificação?
+          </DialogTitle>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="w-full flex flex-col items-center"
-        >
-          <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full bg-[#F6F6F9]">
-            <Icon
-              icon="mdi:help-circle"
-              className="w-[56px] h-[56px] text-[#BDBDBD]"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6">
+          <p className="text-[14px] leading-relaxed text-tinta-2">
+            Caso prossiga com esta solicitação, todos os dados serão perdidos e
+            essa ação não poderá ser desfeita.
+          </p>
 
-          <div className="flex flex-col items-center justify-center gap-3.5 mt-[30px]">
-            <h4 className="text-xl text-center text-[#33454C] font-semibold">
-              Deseja mesmo excluir a notificação?
-            </h4>
-
-            <p className="text-[18px] leading-[24px] text-[#4D5D63] text-center">
-              Caso prossiga com esta solicitação, todos os dados serão perdidos
-              e essa ação não poderá ser desfeita.
-            </p>
-          </div>
-
-          <div className="w-full flex items-center justify-center gap-3.5 mt-[34px]">
+          <div className="flex w-full items-center justify-end gap-2 max-md:flex-col-reverse max-md:items-stretch">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>

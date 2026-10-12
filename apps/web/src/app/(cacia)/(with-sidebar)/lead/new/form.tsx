@@ -7,7 +7,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 import { HTTPError } from "ky"
 
-import { Icon } from "@/components/icone"
 import { Check } from "lucide-react"
 
 import { SubmitHandler, useForm } from "react-hook-form"
@@ -26,6 +25,10 @@ import { Toast } from "@/components/ui/toast"
 import { updateLead } from "@/http/lead/update-lead"
 import { InputPhone } from "@/components/ui/custom-input-phone"
 import { DrawerOrSheet } from "@/components/drawer-or-sheet"
+import {
+  CabecalhoDoFormulario,
+  RodapeDoFormulario,
+} from "@/components/drawer-or-sheet/partes"
 import { mensagemDeErro } from "@/utils/error-handlers"
 
 const createLeadFormSchema = z.object({
@@ -142,64 +145,55 @@ function FormComponent({ handleOpenSuccess, lead }: FormComponentProps) {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="px-4 flex flex-col justify-between pb-6 w-full h-screen overflow-y-scroll"
+      className="flex h-screen w-full flex-col gap-7 overflow-y-auto pb-6 max-md:h-[80vh]"
     >
-      <div className="flex flex-col gap-10">
-        <div className="mt-10 flex flex-col gap-3">
-          <div className="flex gap-2">
-            <Icon
-              icon="mdi:add-circle-outline"
-              className="text-[#BBE2E7] w-[30px] h-[30px]"
-            />
+      <CabecalhoDoFormulario
+        rotulo="Leads"
+        titulo={lead ? "Editar lead" : "Novo lead"}
+        descricao={
+          lead
+            ? "Atualize os dados de contato do lead."
+            : "Preencha os campos abaixo para cadastrar o novo lead."
+        }
+      />
 
-            <h3 className="text-xl text-[#3D3D3D] font-bold">
-              {lead ? "Editar lead" : "Novo lead"}
-            </h3>
-          </div>
+      <div className="flex flex-col gap-5">
+        <Input
+          {...register("name")}
+          label="Nome"
+          iconName="person"
+          placeholder="Insira o nome do lead..."
+          autoComplete="name"
+          error={errors?.name}
+        />
 
-          <p className="text-base text-[#BDBDBD]">
-            Preencha os campos abaixo para cadastrar o novo lead
-          </p>
-        </div>
+        <InputPhone
+          control={control}
+          name="remotejid"
+          label="Telefone (WhatsApp)"
+          placeholder="Insira o número de telefone do lead..."
+          error={errors?.remotejid}
+          disabled={Boolean(lead)}
+          hint={
+            lead
+              ? "O telefone identifica o contato no WhatsApp e não pode ser alterado."
+              : undefined
+          }
+        />
 
-        <div className="flex flex-col gap-5">
-          <Input
-            {...register("name")}
-            label="Nome"
-            iconName="person"
-            placeholder="Insira o nome do lead..."
-            autoComplete="name"
-            error={errors?.name}
-          />
-
-          <InputPhone
-            control={control}
-            name="remotejid"
-            label="Telefone (WhatsApp)"
-            placeholder="Insira o número de telefone do lead..."
-            error={errors?.remotejid}
-            disabled={Boolean(lead)}
-            hint={
-              lead
-                ? "O telefone identifica o contato no WhatsApp e não pode ser alterado."
-                : undefined
-            }
-          />
-
-          <Input
-            {...register("email")}
-            label="E-mail"
-            placeholder="Insira o e-mail do lead..."
-            autoComplete="email"
-            error={errors?.email}
-          />
-        </div>
+        <Input
+          {...register("email")}
+          label="E-mail"
+          placeholder="Insira o e-mail do lead..."
+          autoComplete="email"
+          error={errors?.email}
+        />
       </div>
 
-      <div className="flex items-center justify-between">
+      <RodapeDoFormulario>
         <CustomButton
           type="button"
-          className="w-[251px] cursor-pointer"
+          className="cursor-pointer"
           variant="outline"
           onClick={handleClose}
         >
@@ -208,14 +202,14 @@ function FormComponent({ handleOpenSuccess, lead }: FormComponentProps) {
 
         <CustomButton
           type="submit"
-          className="px-10 cursor-pointer"
+          className="cursor-pointer px-6"
           variant="primary"
-          iconLeft={<Check />}
+          iconLeft={<Check size={16} />}
           isLoading={isSubmitting}
         >
-          {lead ? "Editar" : "Salvar"}
+          {lead ? "Salvar alterações" : "Salvar lead"}
         </CustomButton>
-      </div>
+      </RodapeDoFormulario>
 
       {hasError && (
         <Toast

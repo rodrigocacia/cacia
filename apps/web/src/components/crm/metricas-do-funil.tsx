@@ -17,18 +17,16 @@ function Numero({
   destaque?: boolean
 }) {
   return (
-    <div className="min-w-28 rounded-lg border border-zinc-200 bg-white px-3 py-2">
-      <p className="text-[11px] uppercase tracking-wide text-zinc-400">
-        {rotulo}
-      </p>
+    <div className="flex min-w-0 flex-col gap-1.5 border-filete px-5 py-4 not-last:border-r max-md:not-last:border-r-0 max-md:not-last:border-b">
+      <p className="text-[12.5px] text-tinta-3">{rotulo}</p>
       <p
-        className={`text-lg font-semibold ${
-          destaque ? "text-emerald-700" : "text-zinc-800"
+        className={`tabular truncate text-[26px] leading-none font-medium tracking-[-0.03em] ${
+          destaque ? "text-turquesa-profundo" : "text-tinta"
         }`}
       >
         {valor}
       </p>
-      {detalhe && <p className="text-[11px] text-zinc-500">{detalhe}</p>}
+      {detalhe && <p className="text-xs text-tinta-3">{detalhe}</p>}
     </div>
   )
 }
@@ -65,7 +63,7 @@ export function MetricasDoFunil({
       : `${Math.round(periodo.taxaConversao * 100)}%`
 
   return (
-    <div className="mb-3 flex flex-wrap gap-2">
+    <div className="mb-5 grid rounded-[14px] border border-filete bg-white md:grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
       <Numero rotulo={`Novos em ${dias}d`} valor={String(periodo.criados)} />
 
       <Numero

@@ -5,9 +5,9 @@ Serviços que rodam no Fly.io fora da aplicação.
 ## WAHA
 
 ```bash
-fly apps create cacia-waha
-fly volumes create waha_sessions --size 3 --region gru -a cacia-waha
-fly secrets set WAHA_API_KEY="<chave>" -a cacia-waha
+fly apps create cacia-waha-prod
+fly volumes create waha_sessions --size 3 --region gru -a cacia-waha-prod
+fly secrets set WAHA_API_KEY="<chave>" -a cacia-waha-prod
 fly deploy -c infra/waha/fly.toml
 ```
 

@@ -1,40 +1,50 @@
+import {
+  Bell,
+  CalendarCheck,
+  FileWarning,
+  RefreshCw,
+  UserPlus,
+} from "lucide-react"
+
 import { NotificationType } from "@/types/notification"
-import { Icon } from "@/components/icone"
+
+import type { GrupoDaNav } from "../setting/_ui/nav-secoes"
 
 export const navLinks = [
+  { name: "Todas", param: "all", icone: Bell, path: "/notification" },
   {
-    id: 1,
-    name: "Todas",
-    param: "all",
-    icon: <Icon icon="mingcute:notification-fill" className="w-5 h-5" />,
-    path: "/notification",
-  },
-  {
-    id: 2,
     name: "Documentos pendentes",
     param: NotificationType.CONFIRM_DOC,
-    icon: <Icon icon="mdi:file-document-alert" className="w-5 h-5" />,
+    icone: FileWarning,
     path: `/notification?type=${NotificationType.CONFIRM_DOC}`,
   },
   {
-    id: 3,
     name: "Novos compromissos",
     param: NotificationType.NEW_EVENT,
-    icon: <Icon icon="mdi:calendar-check" className="w-5 h-5" />,
+    icone: CalendarCheck,
     path: `/notification?type=${NotificationType.NEW_EVENT}`,
   },
   {
-    id: 4,
     name: "Atualizações processuais",
     param: NotificationType.PROCESS_UPDATE,
-    icon: <Icon icon="uim:process" className="w-5 h-5" />,
+    icone: RefreshCw,
     path: `/notification?type=${NotificationType.PROCESS_UPDATE}`,
   },
   {
-    id: 5,
     name: "Novos leads",
     param: NotificationType.NEW_LEAD,
-    icon: <Icon icon="mdi:leads-outline" className="w-5 h-5" />,
+    icone: UserPlus,
     path: `/notification?type=${NotificationType.NEW_LEAD}`,
+  },
+]
+
+export const GruposDeNotificacao: GrupoDaNav[] = [
+  {
+    rotulo: "Filtrar",
+    itens: navLinks.map((link) => ({
+      nome: link.name,
+      icone: link.icone,
+      path: link.path,
+    })),
   },
 ]

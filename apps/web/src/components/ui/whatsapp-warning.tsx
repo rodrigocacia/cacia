@@ -1,6 +1,6 @@
 "use client"
 
-import { Icon } from "@/components/icone"
+import { TriangleAlert } from "lucide-react"
 
 interface WhatsappWarningProps {
   className?: string
@@ -9,22 +9,18 @@ interface WhatsappWarningProps {
 export function WhatsappWarning({ className = "" }: WhatsappWarningProps) {
   return (
     <div
-      className={`w-full bg-[#FFF3CD] border border-[#FFE69C] rounded-[12px] p-4 ${className}`}
+      className={`flex w-full items-start gap-3 rounded-[12px] bg-ambar-fundo px-4 py-3.5 ${className}`}
     >
-      <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 mt-0.5">
-          <Icon icon="mdi:alert-circle" className="w-5 h-5 text-[#856404]" />
-        </div>
-        <div className="flex-1">
-          <p className="text-sm text-[#856404] leading-relaxed">
-            <span className="font-semibold">
-              {" "}
-              Não utilize seu número pessoal
-            </span>{" "}
-            — a integração exige um canal dedicado.
-          </p>
-        </div>
-      </div>
+      <TriangleAlert
+        size={17}
+        strokeWidth={1.7}
+        className="mt-px shrink-0 text-ambar"
+        aria-hidden
+      />
+      <p className="text-[13.5px] leading-relaxed text-ambar">
+        <span className="font-semibold">Não utilize seu número pessoal</span> —
+        a integração exige um canal dedicado.
+      </p>
     </div>
   )
 }

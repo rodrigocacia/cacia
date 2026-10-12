@@ -16,10 +16,10 @@ import {
   subDays,
   format,
   isSameMonth,
+  isToday,
 } from "date-fns"
 
 import { ptBR } from "date-fns/locale"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { Event } from "@/types/event"
 
@@ -27,7 +27,8 @@ import { useCalendarStore } from "@/stores/use-calendar-store"
 
 import CardCalendar from "../card-calendar"
 import { EventDetail } from "./event-detail"
-import { formatTime } from "@/utils/formatters"
+import { horarioDaAgenda } from "@/utils/horario-da-agenda"
+import { CabecalhoDaGrade } from "./cabecalho-da-grade"
 
 export const MonthCalendar = ({ events }: { events: Event[] }) => {
   const currentMonth = useCalendarStore((state) => state.currentMonth)
@@ -78,53 +79,20 @@ export const MonthCalendar = ({ events }: { events: Event[] }) => {
 
   // O título é o mês exibido. Usar o fim da semana de `currentMonth` (que é
   // o dia de hoje ao abrir) mostrava o mês seguinte nos últimos dias do mês.
-  const renderDayHeader = () => {
-    return (
-      <div className="grid grid-cols-[60px_1fr] border-gray-200">
-        <div className="bg-[#FCFCFD]" />
-        <div className="px-4 py-3 text-sm font-medium">
-          <div className="text-2xl text-[#707070] font-semibold">
-            {format(currentMonth, "MMMM 'de' yyyy", { locale: ptBR })}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const renderHeader = () => {
-    return (
-      <div className="flex justify-between items-center mb-4 px-2">
-        <h2 className="text-lg font-bold text-[#3D3D3D]">
-          {renderDayHeader()}
-        </h2>
-        <div className="flex gap-2">
-          <button
-            className="cursor-pointer p-2 rounded-full bg-[#ECF7F8] flex items-center justify-center"
-            onClick={() => handleNavigation("prev")}
-          >
-            <ChevronLeft className="w-4 h-4 text-[#348C98]" />
-          </button>
-          <button
-            className="cursor-pointer p-2 rounded-full bg-[#ECF7F8] flex items-center justify-center"
-            onClick={() => handleNavigation("next")}
-          >
-            <ChevronRight className="w-4 h-4 text-[#348C98]" />
-          </button>
-        </div>
-      </div>
-    )
-  }
+  const renderHeader = () => (
+    <CabecalhoDaGrade
+      titulo={format(currentMonth, "MMMM 'de' yyyy", { locale: ptBR })}
+      aoNavegar={handleNavigation}
+    />
+  )
 
   const renderDays = () => {
-    const weekDays = ["SEG", "TER", "QUA", "QUI", "SEX", "SAB", "DOM"]
+    const weekDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
     return (
-      <div className="grid grid-cols-7 gap-px bg-[#F6F6F9]">
+      <div className="grid grid-cols-7 border-b border-filete bg-papel">
         {weekDays.map((day, i) => (
-          <div
-            key={i}
-            className="bg-[#FCFCFD] flex items-start px-2 py-2 text-sm font-medium"
-          >
-            <span className="text-xl text-[#BDBDBD] font-semibold">{day}</span>
+          <div key={i} className="rotulo px-2.5 py-2">
+            {day}
           </div>
         ))}
       </div>
@@ -156,9 +124,12 @@ export const MonthCalendar = ({ events }: { events: Event[] }) => {
       for (let i = 0; i < 7; i++) {
         const eventsWithFormattedDate = events.map((event) => ({
           ...event,
-          start_time: format(event.start_time, "yyyy-MM-dd"),
-          formatted_start_hour: formatTime(event.start_time),
-          formatted_end_hour: formatTime(event.end_time),
+          start_time: format(horarioDaAgenda(event.start_time), "yyyy-MM-dd"),
+          formatted_start_hour: format(
+            horarioDaAgenda(event.start_time),
+            "HH:mm"
+          ),
+          formatted_end_hour: format(horarioDaAgenda(event.end_time), "HH:mm"),
         }))
 
         const formattedDate = format(day, "yyyy-MM-dd")
@@ -170,19 +141,31 @@ export const MonthCalendar = ({ events }: { events: Event[] }) => {
         days.push(
           <div
             key={day.toString()}
-            className={`p-2 border-0.5 border-[#F6F6F9] min-h-36 flex flex-col gap-2 overflow-y-auto ${
-              isCurrentMonth ? "bg-white" : "bg-[#FCFCFD] text-gray-400"
+            className={`flex min-h-[120px] min-w-0 flex-col gap-1 overflow-y-auto p-1.5 ${
+              isCurrentMonth ? "bg-white" : "bg-papel"
             }`}
           >
             <div
-              className={`text-base font-semibold ${
-                isCurrentMonth ? "text-[#707070]" : "text-[#BDBDBD]"
+              className={`tabular flex h-6 w-fit min-w-6 items-center justify-center rounded-md px-1 text-[12.5px] ${
+                isToday(day)
+                  ? "bg-acao font-semibold text-white"
+                  : isCurrentMonth
+                    ? "font-medium text-tinta-2"
+                    : "text-gray-400"
               }`}
             >
               {format(day, "d")}
             </div>
             {dayEvents.map((event, idx) => (
-              <div key={idx} onClick={() => handleSelectEvent(event)}>
+              <div
+                key={idx}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleSelectEvent(event)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSelectEvent(event)
+                }}
+              >
                 <CardCalendar
                   title={event.title}
                   start_hour={event.formatted_start_hour}
@@ -201,7 +184,7 @@ export const MonthCalendar = ({ events }: { events: Event[] }) => {
       rows.push(
         <div
           key={day.toString()}
-          className="grid grid-cols-7 gap-px bg-[#F6F6F9]"
+          className="grid grid-cols-7 gap-px border-b border-filete bg-filete last:border-b-0"
         >
           {days}
         </div>
@@ -213,12 +196,12 @@ export const MonthCalendar = ({ events }: { events: Event[] }) => {
   }
 
   return (
-    <div className="mt-6 bg-[#FCFCFD] flex flex-col">
+    <div className="mt-4 flex flex-col overflow-hidden rounded-[14px] border border-filete bg-white">
       {renderHeader()}
       <div className="flex">
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           {renderDays()}
-          <div className="gap-px bg-[#F6F6F9]">{renderCells()}</div>
+          <div>{renderCells()}</div>
         </div>
 
         {eventId ? <EventDetail /> : null}

@@ -10,14 +10,9 @@ import { DialogTitle } from "@radix-ui/react-dialog"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { Icon } from "@/components/icone"
-
-import { AiOutlinePlus } from "react-icons/ai"
-
 import { Calendar } from "@/types/calendar"
 import { Customer } from "@/types/customer"
 import { useCalendar } from "@/http/hooks/calendar"
-import { formatName } from "@/utils/formatters"
 
 import { createEvent } from "@/http/event/create-event"
 import { useProcess } from "@/http/hooks/process"
@@ -56,6 +51,11 @@ import { updateEvent } from "@/http/event/update-event"
 import { CustomRadioButton } from "@/components/ui/custom-radio-button"
 import { useLeads } from "@/http/hooks/lead"
 import { mensagemDeErro } from "@/utils/error-handlers"
+import {
+  CabecalhoDoFormulario,
+  RodapeDoFormulario,
+  SecaoDoFormulario,
+} from "@/components/drawer-or-sheet/partes"
 
 interface FormComponentProps {
   setOpen(value: boolean): void
@@ -328,28 +328,21 @@ function FormComponent({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="px-4 pb-6 w-full h-screen overflow-y-scroll"
+      className="flex h-screen w-full flex-col gap-7 overflow-y-auto pb-6 max-md:h-[85vh]"
     >
-      <div className="mt-10 flex flex-col gap-3">
-        <div className="flex gap-2">
-          <Icon
-            icon="mdi:add-circle-outline"
-            className="text-[#BBE2E7] w-[30px] h-[30px]"
-          />
+      <CabecalhoDoFormulario
+        rotulo="Agenda"
+        titulo={editEventId ? "Editar evento" : "Novo evento"}
+        descricao={
+          editEventId
+            ? "Altere o que mudou no evento e salve."
+            : "Preencha os campos abaixo para cadastrar o novo evento."
+        }
+      />
 
-          <h3 className="text-xl text-[#3D3D3D] font-bold">
-            {editEventId ? "Editar evento" : "Novo evento"}
-          </h3>
-        </div>
+      <div className="flex flex-col gap-5">
+        <SecaoDoFormulario>Evento</SecaoDoFormulario>
 
-        <p className="text-base text-[#BDBDBD]">
-          {editEventId
-            ? "Preencha os campos abaixo para editar o evento"
-            : "Preencha os campos abaixo para cadastrar o novo evento"}
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-5 mt-10">
         <div className="flex flex-col gap-2">
           <Controller
             name="calendar_id"
@@ -453,6 +446,8 @@ function FormComponent({
           )}
         </div>
 
+        <SecaoDoFormulario>Vínculos</SecaoDoFormulario>
+
         {typeUser === "customer" ? (
           <div className="flex flex-col gap-2">
             <Controller
@@ -463,7 +458,7 @@ function FormComponent({
                   label="Cliente"
                   options={customers?.map((customer: Customer) => ({
                     value: customer?._id,
-                    label: formatName(customer?.name),
+                    label: customer?.name,
                   }))}
                   value={value ?? ""}
                   onChange={
@@ -499,7 +494,7 @@ function FormComponent({
                   label="Lead"
                   options={leads?.map((lead) => ({
                     value: lead?._id,
-                    label: formatName(lead?.name),
+                    label: lead?.name,
                   }))}
                   value={value ?? ""}
                   onChange={
@@ -627,11 +622,11 @@ function FormComponent({
         </div>
 
         <div>
-          <h4 className="text-base text-[#707070] font-semibold">
-            O evento é em qual modalidade?
+          <h4 className="mb-[7px] text-[13px] font-medium text-tinta-2">
+            Modalidade
           </h4>
 
-          <div className="flex items-center gap-4 md:gap-10 mt-4 flex-wrap">
+          <div className="flex flex-wrap items-center gap-4 md:gap-8">
             <Controller
               name="consultation_mode"
               control={control}
@@ -657,6 +652,8 @@ function FormComponent({
             />
           </div>
         </div>
+
+        <SecaoDoFormulario>Data e horário</SecaoDoFormulario>
 
         <div className="flex flex-col gap-2">
           <div className="flex gap-2 max-md:flex-col items-end max-md:w-full">
@@ -745,40 +742,40 @@ function FormComponent({
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="flex max-md:flex-col max-md:gap-4 items-center justify-between">
-          {editEventId && (
-            <CustomButton
-              type="button"
-              onClick={handleDeleteEvent}
-              className="w-full lg:hidden py-3 cursor-pointer"
-              variant="danger"
-            >
-              Excluir evento
-            </CustomButton>
-          )}
-
+      <RodapeDoFormulario>
+        {editEventId && (
           <CustomButton
             type="button"
-            onClick={handleClose}
-            className="w-[251px] max-md:w-full cursor-pointer"
-            variant="outline"
+            onClick={handleDeleteEvent}
+            className="mr-auto cursor-pointer lg:hidden max-md:mr-0"
+            variant="danger"
           >
-            Cancelar
+            Excluir evento
           </CustomButton>
+        )}
 
-          <CustomButton
-            type="submit"
-            className="px-10 max-md:w-full cursor-pointer"
-            variant="primary"
-            isLoading={isSubmitting}
-            disabled={isSubmitting}
-            iconLeft={<Check />}
-          >
-            {editEventId ? "Salvar" : "Salvar evento"}
-          </CustomButton>
-        </div>
-      </div>
+        <CustomButton
+          type="button"
+          onClick={handleClose}
+          className="cursor-pointer"
+          variant="outline"
+        >
+          Cancelar
+        </CustomButton>
+
+        <CustomButton
+          type="submit"
+          className="cursor-pointer px-6"
+          variant="primary"
+          isLoading={isSubmitting}
+          disabled={isSubmitting}
+          iconLeft={<Check size={16} />}
+        >
+          {editEventId ? "Salvar alterações" : "Salvar evento"}
+        </CustomButton>
+      </RodapeDoFormulario>
 
       {hasError && (
         <Toast
@@ -862,15 +859,19 @@ export function Form({
         <Sheet open={openSheet} onOpenChange={handleChangeSheet}>
           <SheetTrigger asChild>
             <Button
-              className="font-plus-jakarta-sans font-semibold cursor-pointer min-w-[160px]"
-              iconLeft={<AiOutlinePlus size={20} />}
+              className={
+                processId || customerId
+                  ? "h-9! cursor-pointer rounded-[9px]! px-3.5 text-[13.5px]"
+                  : "h-10! cursor-pointer px-4 text-[13.5px]"
+              }
+              iconLeft={<Plus size={16} strokeWidth={2} />}
               onClick={handleNewEventClick}
             >
               Novo evento
             </Button>
           </SheetTrigger>
 
-          <SheetContent className="min-w-[707px] rounded-tl-[24px] rounded-bl-[24px]">
+          <SheetContent className="min-w-[640px] px-8">
             <SheetTitle className="sr-only">Novo evento</SheetTitle>
 
             <FormComponent
@@ -887,12 +888,13 @@ export function Form({
         <Drawer open={openDrawer} onOpenChange={handleChangeDrawer}>
           <DrawerTrigger
             onClick={handleNewEventClick}
-            className="md:hidden flex items-center justify-center fixed w-[56px] h-[56px] bottom-6 right-6 bg-teal-500 hover:bg-teal-600 text-white rounded-full shadow-lg text-xl"
+            aria-label="Novo evento"
+            className="fixed right-5 bottom-5 z-50 flex h-14 w-14 items-center justify-center rounded-2xl bg-acao text-white shadow-[0_10px_24px_rgba(21,19,17,0.22)] transition-colors hover:bg-acao-escura md:hidden"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="h-5 w-5" strokeWidth={2} />
           </DrawerTrigger>
 
-          <DrawerContent className="h-full">
+          <DrawerContent className="h-full px-4">
             <DialogTitle className="sr-only">Novo evento</DialogTitle>
 
             <FormComponent

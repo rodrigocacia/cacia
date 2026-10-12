@@ -1,6 +1,5 @@
 "use client"
 import { Suspense } from "react"
-import { Icon } from "@/components/icone"
 import { SWRConfig } from "swr"
 import { Form } from "./new/steps"
 import { CustomersTable } from "@/components/tables/customers-table"
@@ -19,19 +18,12 @@ export default function ClientFormSection({
 }: ClientFormSectionProps) {
   return (
     <>
-      <div className="mt-2">
-        <PageHeader
-          icon={
-            <Icon
-              icon="mdi:account-group-outline"
-              className="h-5 w-5 text-[#348C98]"
-            />
-          }
-          title="Clientes"
-          count={customers?.totalItems}
-          action={<Form customer={customerById} hasTrigger={true} />}
-        />
-      </div>
+      <PageHeader
+        title="Clientes"
+        count={customers?.totalItems}
+        description="Pessoas e empresas que o escritório já representa."
+        action={<Form customer={customerById} hasTrigger={true} />}
+      />
 
       <div className="mt-5">
         <ListToolbar>

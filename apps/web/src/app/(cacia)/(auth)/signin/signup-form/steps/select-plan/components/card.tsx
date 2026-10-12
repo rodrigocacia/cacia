@@ -28,7 +28,7 @@ export function Card({ plan, selectedPlan, setSelectedPlan }: CardProps) {
               <div className="w-5 h-5 flex items-center justify-center">
                 <Check className="w-4 h-4 font-bold text-[#348C98]" />
               </div>
-              <span className="text-base text-[#3D3D3D]">{benefit.title}</span>
+              <span className="text-base text-[#1B1916]">{benefit.title}</span>
             </div>
           ))}
         </div>

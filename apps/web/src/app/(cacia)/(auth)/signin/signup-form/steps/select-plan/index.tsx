@@ -29,7 +29,7 @@ export function SelectPlan() {
   return (
     <div className="w-full h-full pb-4">
       <div className="flex flex-col gap-5">
-        <h3 className="text-xl font-semibold text-[#3D3D3D]">
+        <h3 className="text-xl font-semibold text-[#1B1916]">
           Benefícios Beta
         </h3>
 

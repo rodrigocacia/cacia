@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "./custom-button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog"
-import { Icon } from "@/components/icone"
+import { Trash2 } from "lucide-react"
 import { deleteFolder } from "@/http/folder/delete-folder"
 import { deleteDocument } from "@/http/document/delete-document"
 
@@ -68,36 +68,30 @@ export function DialogDeleteFolderDocument({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="px-[30px]">
+        <DialogContent className="sm:max-w-[460px]">
           <DialogHeader>
             <DialogTitle className="sr-only">
               Deseja mesmo excluir o {itemTypeLabel}?
             </DialogTitle>
           </DialogHeader>
 
-          <form
-            onSubmit={handleSubmit}
-            className="w-full flex flex-col items-center"
-          >
-            <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full bg-[#F6F6F9]">
-              <Icon
-                icon="mdi:help-circle"
-                className="w-[56px] h-[56px] text-[#BDBDBD]"
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="flex w-full flex-col">
+            <span className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#FBEDEA] text-[#A23B2A]">
+              <Trash2 size={18} strokeWidth={1.7} aria-hidden />
+            </span>
 
-            <div className="flex flex-col items-center justify-center gap-3.5 mt-[30px]">
-              <h4 className="text-xl text-center text-[#33454C] font-semibold">
+            <div className="mt-4 flex flex-col gap-2">
+              <h4 className="font-display text-[26px] leading-[1.15] text-tinta">
                 Deseja mesmo excluir{" "}
                 {itemType === "folder" ? "a pasta" : "o documento"} {itemTitle}?
               </h4>
 
-              <p className="text-[18px] leading-[24px] text-[#4D5D63] text-center">
+              <p className="text-[14px] leading-relaxed text-tinta-2">
                 {warningText}
               </p>
             </div>
 
-            <div className="w-full flex items-center justify-center gap-3.5 mt-[34px]">
+            <div className="-mx-6 mt-6 flex items-center justify-end gap-2.5 border-t border-filete px-6 pt-4 max-sm:flex-col-reverse max-sm:items-stretch">
               <Button
                 type="button"
                 variant="outline"

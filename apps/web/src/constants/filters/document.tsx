@@ -8,7 +8,7 @@ export const documentSortOptions = [
     icon: (
       <Icon
         icon="mdi:sort-alphabetical-ascending"
-        className="text-[#BDBDBD] w-4 h-4"
+        className="text-[#A39C93] w-4 h-4"
       />
     ),
   },
@@ -19,7 +19,7 @@ export const documentSortOptions = [
     icon: (
       <Icon
         icon="mdi:sort-alphabetical-descending"
-        className="text-[#BDBDBD] w-4 h-4"
+        className="text-[#A39C93] w-4 h-4"
       />
     ),
   },
@@ -30,7 +30,7 @@ export const documentSortOptions = [
     icon: (
       <Icon
         icon="mdi:clock-time-eight-outline"
-        className="text-[#BDBDBD] w-4 h-4"
+        className="text-[#A39C93] w-4 h-4"
       />
     ),
   },
@@ -41,7 +41,7 @@ export const documentSortOptions = [
     icon: (
       <Icon
         icon="mdi:clock-time-eight-outline"
-        className="text-[#BDBDBD] w-4 h-4"
+        className="text-[#A39C93] w-4 h-4"
       />
     ),
   },

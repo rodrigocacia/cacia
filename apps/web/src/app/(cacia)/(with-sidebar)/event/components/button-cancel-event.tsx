@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-import { Icon } from "@/components/icone"
+import { X } from "lucide-react"
 import { Toast } from "@/components/ui/toast"
 
 import { cancelEvent } from "@/http/event/cancel-event"
@@ -61,9 +61,13 @@ export function BotaoCancelarEvento({
           type="button"
           onClick={cancelar}
           disabled={enviando}
-          className="cursor-pointer bg-transparent border border-amber-300 text-amber-700 flex items-center justify-center gap-2 px-4 py-2 rounded-md disabled:opacity-60"
+          className={`flex h-9 cursor-pointer items-center justify-center gap-2 rounded-[9px] border px-3 text-[13px] font-medium transition-colors disabled:opacity-60 ${
+            confirmando
+              ? "border-ambar-ponto bg-ambar-fundo text-ambar"
+              : "border-filete-forte bg-white text-tinta hover:bg-ambar-fundo hover:text-ambar"
+          }`}
         >
-          <Icon icon="mdi:close" className="w-4 h-4" />
+          <X size={14} strokeWidth={1.7} />
           {confirmando ? "Confirmar cancelamento" : "Cancelar compromisso"}
         </button>
       )}

@@ -16,9 +16,11 @@ function Numero({
   cor: string
 }) {
   return (
-    <div className="rounded-lg border border-zinc-200 px-3 py-2">
-      <p className={`text-xl font-semibold ${cor}`}>{valor}</p>
-      <p className="text-xs text-zinc-500">{rotulo}</p>
+    <div className="rounded-[14px] border border-filete bg-white px-4 py-3">
+      <p className={`tabular font-display text-[32px] leading-none ${cor}`}>
+        {valor}
+      </p>
+      <p className="mt-1.5 text-xs text-tinta-3">{rotulo}</p>
     </div>
   )
 }
@@ -36,7 +38,7 @@ export function PassoResultado({
   importacao: Importacao | null
 }) {
   if (!importacao) {
-    return <p className="text-sm text-zinc-500">Carregando…</p>
+    return <p className="text-sm text-tinta-3">Carregando…</p>
   }
 
   const rodando = EM_ANDAMENTO.has(importacao.status)
@@ -51,25 +53,25 @@ export function PassoResultado({
     <div>
       {rodando && (
         <div className="mb-4">
-          <p className="mb-1.5 text-sm text-zinc-600">
+          <p className="mb-1.5 text-[13.5px] text-tinta-2">
             Importando… {processadas} de {importacao.totalRows}
           </p>
 
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-200">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-filete">
             <div
-              className="h-full bg-zinc-900 transition-all"
+              className="h-full bg-acao transition-all"
               style={{ width: `${progresso}%` }}
             />
           </div>
 
-          <p className="mt-1.5 text-xs text-zinc-500">
+          <p className="mt-1.5 text-xs text-tinta-3">
             Pode fechar esta tela — a importação continua no servidor.
           </p>
         </div>
       )}
 
       {importacao.status === "FAILED" && (
-        <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="mb-4 rounded-xl bg-[#FBEDEA] px-4 py-3 text-sm text-[#A23B2A]">
           A importação falhou: {importacao.errorMessage ?? "erro desconhecido"}.
           O que já havia entrado foi mantido.
         </p>
@@ -79,33 +81,33 @@ export function PassoResultado({
         <Numero
           valor={importacao.importedRows}
           rotulo="leads criados"
-          cor="text-emerald-700"
+          cor="text-turquesa-profundo"
         />
         <Numero
           valor={importacao.skippedRows}
           rotulo="já existiam"
-          cor="text-zinc-700"
+          cor="text-tinta"
         />
         <Numero
           valor={importacao.failedRows}
           rotulo="com erro"
-          cor="text-red-700"
+          cor="text-[#A23B2A]"
         />
       </div>
 
       {(importacao.errors ?? []).length > 0 && (
-        <div className="mt-4 rounded-xl border border-zinc-200">
-          <p className="border-b border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-700">
+        <div className="mt-4 overflow-hidden rounded-[14px] border border-filete bg-white">
+          <p className="border-b border-filete px-4 py-3 text-[14.5px] font-semibold text-tinta">
             Linhas que não entraram
           </p>
 
-          <ul className="max-h-64 divide-y divide-zinc-100 overflow-y-auto text-sm">
+          <ul className="max-h-64 divide-y divide-[#F1EEE8] overflow-y-auto text-[13px]">
             {(importacao.errors ?? []).map((erro) => (
               <li
                 key={erro.linha}
-                className="flex gap-3 px-3 py-1.5 text-zinc-600"
+                className="flex gap-3 px-4 py-2 text-tinta-2"
               >
-                <span className="w-16 shrink-0 text-zinc-400">
+                <span className="tabular w-16 shrink-0 text-tinta-3">
                   linha {erro.linha}
                 </span>
                 <span>{erro.motivo}</span>
@@ -113,7 +115,7 @@ export function PassoResultado({
             ))}
           </ul>
 
-          <p className="border-t border-zinc-200 px-3 py-2 text-xs text-zinc-500">
+          <p className="border-t border-filete px-4 py-2.5 text-xs text-tinta-3">
             Corrija essas linhas na planilha e envie de novo — os contatos que
             já entraram serão ignorados.
           </p>
@@ -124,14 +126,14 @@ export function PassoResultado({
         <div className="mt-5 flex gap-2">
           <Link
             href="/lead?view=kanban"
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
+            className="flex h-9 cursor-pointer items-center rounded-[9px] bg-acao px-3.5 text-[13.5px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition hover:bg-acao-escura disabled:cursor-not-allowed disabled:opacity-40"
           >
             Ver no funil
           </Link>
 
           <Link
             href="/lead/import"
-            className="rounded-lg border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50"
+            className="flex h-9 items-center rounded-[9px] border border-filete-forte bg-white px-3.5 text-[13.5px] font-medium text-tinta transition hover:bg-gray-100"
           >
             Importar outra planilha
           </Link>

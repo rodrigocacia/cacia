@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/custom-input"
 import { CustomTextarea } from "@/components/ui/custom-textarea"
 import { Toast } from "@/components/ui/toast"
 
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
+import { Drawer, DrawerContent } from "@/components/ui/drawer"
 
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { updateQuestion } from "@/http/question/update-question"
@@ -150,14 +150,14 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
             className="text-[#BBE2E7] w-[30px] h-[30px]"
           />
 
-          <h3 className="text-xl text-[#3D3D3D] font-bold">
+          <h3 className="text-xl text-[#1B1916] font-bold">
             {/* Pelo `editId`, e não pela dúvida carregada: enquanto ela chega,
                 o título dizia "Nova" numa edição. */}
             {editId ? "Editar dúvida" : "Nova dúvida"}
           </h3>
         </div>
 
-        <p className="text-base text-[#BDBDBD]">
+        <p className="text-base text-[#A39C93]">
           {editId
             ? "Edite os campos para atualizar a dúvida"
             : "Cadastre a pergunta e a resposta."}
@@ -227,7 +227,9 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
   )
 }
 
-export function Form({ setting = false }: { setting?: boolean }) {
+// O botão do cabeçalho abre o painel (desktop) ou a gaveta (celular); o
+// antigo botão flutuante "+" duplicava essa entrada e saiu.
+export function Form() {
   const [openSheet, setOpenSheet] = useState(false)
   const [openDrawer, setOpenDrawer] = useState(false)
   const [openSuccess, setOpenSuccess] = useState(false)
@@ -313,24 +315,12 @@ export function Form({ setting = false }: { setting?: boolean }) {
     }
   }
 
-  const handleDrawerButtonClick = () => {
-    const params = new URLSearchParams(searchParams.toString())
-    params.delete("editId")
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
-
-    editProcessedRef.current = false
-    setOpenSheet(false)
-    setOpenDrawer(true)
-  }
-
   return (
     <div>
       <div className="h-full">
         <Sheet open={openSheet} onOpenChange={handleChangeSheet}>
           <Button
-            className={`cursor-pointer w-full md:w-auto ${
-              setting ? "hidden md:block" : ""
-            }`}
+            className="w-full md:w-auto"
             iconLeft={<AiOutlinePlus size={20} />}
             onClick={handleNewProcessClick}
           >
@@ -357,16 +347,6 @@ export function Form({ setting = false }: { setting?: boolean }) {
           preventScrollRestoration
           repositionInputs={false}
         >
-          {setting && (
-            <DrawerTrigger asChild>
-              <button
-                className="md:hidden fixed w-[56px] h-[56px] bottom-6 right-6 bg-teal-500 hover:bg-teal-600 text-white rounded-full shadow-lg text-xl z-50"
-                onClick={handleDrawerButtonClick}
-              >
-                +
-              </button>
-            </DrawerTrigger>
-          )}
           <DrawerContent className="h-[90vh] max-h-screen">
             <DialogTitle className="sr-only">
               {editId ? "Editar dúvida" : "Nova dúvida"}

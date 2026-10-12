@@ -1,10 +1,9 @@
 "use client"
 
-import { Icon } from "@/components/icone"
 import { useMemo } from "react"
 import { useSearchParams } from "next/navigation"
 
-import { EmptySearch } from "@/components/empty-search"
+import { Painel, Vazio } from "@/components/tables/ficha"
 
 import { CardProcess } from "./components/card-process"
 import { Form } from "../../../process/new/form"
@@ -34,58 +33,33 @@ export function Processes({ processes, customerId }: ProcessesProps) {
   }, [processes, status])
 
   return (
-    <div className="p-8 max-md:p-0 pb-4 md:rounded-2xl md:shadow-sm">
-      <div className="w-full flex items-center gap-3 max-md:hidden">
-        <Icon
-          icon="mdi:folder-text-outline"
-          className="text-[#BDBDBD] w-8 h-8"
-        />
-
-        <h3 className="text-[20px] text-[#707070] font-bold">Processos</h3>
-      </div>
-
-      <hr className="w-full my-6 max-md:my-2 h-px border-t-0 bg-gray-200 max-md:hidden" />
-
+    <div className="flex flex-col gap-4">
       <FiltersTabResponsive showWeb filters={processFilters} />
 
-      <div className="w-full flex items-center gap-1 mt-[22px]">
-        <Icon icon="mdi:file-document" className="text-[#BDBDBD] w-5 h-5" />
-
-        <h2 className="text-sm text-[#3D3D3D] font-bold">
-          {status
-            ? `Processos ${status} (${filteredProcesses?.length})`
-            : `Todos os processos (${filteredProcesses?.length})`}
-        </h2>
-      </div>
-
-      {filteredProcesses?.length === 0 && (
-        <EmptySearch
-          title={
-            status ? "Nenhum processo encontrado" : "Nenhum processo encontrado"
-          }
-          subtitle={
-            status
-              ? `Nenhum processo com status "${status}"`
-              : "Não foi encontrado nenhum processo"
-          }
-        />
-      )}
-
-      <div className="w-full mt-6 flex flex-col justify-between gap-8">
-        {filteredProcesses?.length > 0 && (
-          <div className="w-full flex flex-col gap-4">
-            <div className="grid grid-cols-2 max-md:grid-cols-1 gap-3">
-              {filteredProcesses?.map((process) => (
-                <CardProcess key={process?._id} process={process} />
-              ))}
-            </div>
+      <Painel
+        titulo={status ? "Processos filtrados" : "Todos os processos"}
+        contagem={filteredProcesses?.length ?? 0}
+        acao={
+          <div className="max-md:hidden">
+            <Form customerContext={true} customerId={customerId} />
           </div>
+        }
+        semPreenchimento
+      >
+        {filteredProcesses?.length === 0 ? (
+          <Vazio>
+            {status
+              ? "Nenhum processo com esse status."
+              : "Este cliente ainda não tem processos."}
+          </Vazio>
+        ) : (
+          <ul className="flex flex-col">
+            {filteredProcesses?.map((process) => (
+              <CardProcess key={process?._id} process={process} />
+            ))}
+          </ul>
         )}
-
-        <div className="w-full flex items-center justify-end max-md:flex-col max-md:gap-4 max-md:hidden">
-          <Form customerContext={true} customerId={customerId} />
-        </div>
-      </div>
+      </Painel>
 
       <div className="md:hidden">
         <Form customerContext={true} customerId={customerId} />

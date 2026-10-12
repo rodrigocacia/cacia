@@ -33,27 +33,29 @@ export function TabCalendarType() {
   }
 
   return (
-    <div className="h-[40px] w-fit p-1 flex items-center bg-white shadow-md rounded-4xl">
+    <div
+      role="group"
+      aria-label="Visualização da agenda"
+      className="flex gap-0.5 rounded-[9px] border border-filete bg-[#F1EEE8] p-[3px]"
+    >
       {[
         { name: "Dia", value: "day" },
         { name: "Semana", value: "week" },
         { name: "Mês", value: "month" },
       ].map((day) => (
-        <div
+        <button
+          type="button"
           key={day.name}
-          className={`cursor-pointer h-[32px] px-2 flex items-center ${
-            tab === day.value ? "bg-[#ECF7F8]" : ""
-          } items-center justify-center py-2 px-4 rounded-4xl`}
+          aria-pressed={tab === day.value}
+          className={`h-8 cursor-pointer rounded-[7px] px-3.5 text-[13px] transition-colors ${
+            tab === day.value
+              ? "bg-white font-semibold text-tinta shadow-[0_1px_2px_rgba(21,19,17,0.08)]"
+              : "font-medium text-tinta-3 hover:text-tinta"
+          }`}
           onClick={() => handleTab(day.value)}
         >
-          <span
-            className={`font-semibold font-plus-jakarta-sans ${
-              tab === day.value ? "text-[#348C98]" : "text-[#707070]"
-            } `}
-          >
-            {day.name}
-          </span>
-        </div>
+          {day.name}
+        </button>
       ))}
     </div>
   )

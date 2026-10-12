@@ -2,18 +2,22 @@
 
 import { useEffect, useState } from "react"
 
-import { Icon } from "@/components/icone"
+import clsx from "clsx"
 import { Check } from "lucide-react"
 import { useForm, SubmitHandler } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { SettinFormData, settingFormSchema } from "@/schemas/setting"
 import { Button } from "@/components/ui/custom-button"
-import { CardNotification } from "./components/card-notification"
+import { LinhaNotificacao } from "./components/linha-notificacao"
+import { useConnection } from "@/http/hooks/connection"
+import { isConnectionWorking } from "@/utils/connection-status"
 import { useSetting } from "@/http/hooks/setting"
 import { updateSetting } from "@/http/setting/update-setting"
 import { Toast } from "@/components/ui/toast"
 import { mensagemDeErro } from "@/utils/error-handlers"
+
+import { Cartao, RodapeDoCartao } from "../../_ui/cartao"
 
 export function AdministratorDetail() {
   const [hasSuccess, setHasSuccess] = useState(false)
@@ -21,6 +25,8 @@ export function AdministratorDetail() {
   const [errorMessage, setErrorMessage] = useState("")
 
   const { mutate, settings } = useSetting(1)
+  const { connection } = useConnection()
+  const whatsappConectado = isConnectionWorking(connection)
 
   const {
     control,
@@ -89,110 +95,98 @@ export function AdministratorDetail() {
   }
 
   return (
-    <form
-      className="p-8 max-md:p-0 pb-4 md:rounded-2xl md:shadow-sm"
-      onSubmit={handleSubmit(onSubmit)}
-    >
-      <div className="flex items-center gap-3 max-md:mt-4">
-        <Icon
-          icon="mdi:message-notification-outline"
-          className="w-8 h-8 text-[#BDBDBD]"
-        />
-        <h3 className="text-[20px] text-[#707070] font-bold">
-          Notificações via WhatsApp
-        </h3>
-      </div>
+    <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
+      <Cartao
+        titulo="Notificações via WhatsApp"
+        descricao="Escolha quais avisos o assistente envia, e para quem."
+        acao={
+          <span className="inline-flex h-[22px] items-center gap-1.5 rounded-md border border-[#E3DED6] px-2 text-xs text-tinta-2">
+            <span
+              aria-hidden
+              className={clsx(
+                "h-1.5 w-1.5 rounded-full",
+                whatsappConectado ? "bg-acao" : "bg-ambar-ponto"
+              )}
+            />
+            {whatsappConectado ? "WhatsApp conectado" : "WhatsApp desconectado"}
+          </span>
+        }
+      >
+        <div className="flex flex-col gap-8">
+          <section className="flex flex-col gap-4">
+            <h3 className="rotulo">Para clientes</h3>
+            <div className="flex flex-col">
+              <LinhaNotificacao
+                name="n_w_c_new_event"
+                control={control}
+                title="Novo evento"
+                description="Envie alertas de novos eventos que incluem os clientes"
+              />
+              <LinhaNotificacao
+                name="n_w_c_update_process"
+                control={control}
+                title="Atualização processual"
+                description="Envie alertas de novas atualizações aos processos dos clientes"
+              />
+            </div>
+          </section>
 
-      <hr className="w-full my-4 max-md:my-2 h-px border-t-0 bg-gray-200" />
+          <section className="flex flex-col gap-4 border-t border-filete pt-7">
+            <h3 className="rotulo">Para administradores</h3>
+            <div className="flex flex-col">
+              <LinhaNotificacao
+                name="n_w_a_new_lead"
+                control={control}
+                title="Novo atendimento de lead"
+                description="Receba alertas de novos leads sendo atendidos"
+              />
+              <LinhaNotificacao
+                name="n_w_a_new_mark_lead"
+                control={control}
+                title="Novo feedback de lead"
+                description="Receba alertas de feedbacks coletados em atendimentos de leads"
+              />
+              <LinhaNotificacao
+                name="n_w_a_new_mark_customer"
+                control={control}
+                title="Novo feedback de cliente"
+                description="Receba alertas de feedbacks coletados em atendimentos com clientes"
+              />
+              <LinhaNotificacao
+                name="n_w_a_new_event"
+                control={control}
+                title="Novo evento"
+                description="Receba alertas de novos eventos"
+              />
+              <LinhaNotificacao
+                name="n_w_a_update_process"
+                control={control}
+                title="Atualização processual"
+                description="Receba alertas de novas atualizações aos processos dos clientes"
+              />
+              <LinhaNotificacao
+                name="n_w_a_update_system"
+                control={control}
+                title="Atualizações do sistema"
+                description="Receba alertas sobre melhorias da plataforma"
+              />
+            </div>
+          </section>
 
-      <div className="flex mt-5 items-center gap-3">
-        <Icon
-          icon="ic:outline-person"
-          className="w-[26px] h-[26px] text-[#BDBDBD]"
-        />
-        <h3 className="text-[18px] text-[#707070] font-bold">Para Clientes</h3>
-      </div>
-
-      <hr className="w-full my-[11px] max-md:my-2 h-px border-t-0 bg-gray-200" />
-
-      <div className="mt-8 flex flex-col gap-2.5">
-        <CardNotification
-          name="n_w_c_new_event"
-          control={control}
-          title="Novo evento"
-          description="Envie alertas de novos eventos que incluem os clientes"
-        />
-        <CardNotification
-          name="n_w_c_update_process"
-          control={control}
-          title="Atualização processual"
-          description="Envie alertas de novas atualizações aos processos dos clientes"
-        />
-      </div>
-
-      <div className="flex mt-5 items-center gap-3">
-        <Icon
-          icon="ic:outline-admin-panel-settings"
-          className="w-[26px] h-[26px] text-[#BDBDBD]"
-        />
-        <h3 className="text-[18px] text-[#707070] font-bold">
-          Para Administradores
-        </h3>
-      </div>
-
-      <hr className="w-full my-[11px] max-md:my-2 h-px border-t-0 bg-gray-200" />
-
-      <div className="mt-8 flex flex-col gap-2.5">
-        <CardNotification
-          name="n_w_a_new_lead"
-          control={control}
-          title="Novo atendimento Lead"
-          description="Receba alertas de novos leads sendo atendidos"
-        />
-        <CardNotification
-          name="n_w_a_new_mark_lead"
-          control={control}
-          title="Novo Feedback de Lead"
-          description="Receba alertas de feedbacks coletados em atendimentos de Leads"
-        />
-        <CardNotification
-          name="n_w_a_new_mark_customer"
-          control={control}
-          title="Novo Feedback de Cliente"
-          description="Receba alertas de feedbacks coletados em atendimentos com clientes"
-        />
-        <CardNotification
-          name="n_w_a_new_event"
-          control={control}
-          title="Novo evento"
-          description="Receba alertas de novos eventos"
-        />
-        <CardNotification
-          name="n_w_a_update_process"
-          control={control}
-          title="Atualização processual"
-          description="Receba alertas de novas atualizações aos processos dos clientes"
-        />
-        <CardNotification
-          name="n_w_a_update_system"
-          control={control}
-          title="Atualizações do Sistema"
-          description="Receba alertas sobre melhorias da plataforma"
-        />
-      </div>
-
-      <div className="w-full flex items-center justify-end max-md:flex-col max-md:gap-4 mt-8 max-md:pb-10">
-        <Button
-          type="submit"
-          className="px-10 cursor-pointer max-md:w-full"
-          variant="primary"
-          iconLeft={<Check />}
-          disabled={isSubmitting}
-          isLoading={isSubmitting}
-        >
-          Salvar
-        </Button>
-      </div>
+          <RodapeDoCartao>
+            <Button
+              type="submit"
+              className="px-5"
+              variant="primary"
+              iconLeft={<Check size={16} />}
+              disabled={isSubmitting}
+              isLoading={isSubmitting}
+            >
+              Salvar
+            </Button>
+          </RodapeDoCartao>
+        </div>
+      </Cartao>
 
       {hasError && (
         <Toast

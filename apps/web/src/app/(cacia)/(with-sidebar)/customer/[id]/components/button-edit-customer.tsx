@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 import { Button } from "@/components/ui/custom-button"
-import { Icon } from "@/components/icone"
+import { Pencil } from "lucide-react"
 
 export function ButtonEditCustomer({ customerId }: { customerId: string }) {
   const router = useRouter()
@@ -19,19 +19,13 @@ export function ButtonEditCustomer({ customerId }: { customerId: string }) {
 
   return (
     <Button
-      className="cursor-pointer bg-transparent border border-[#348C98] w-full"
+      className="h-9! cursor-pointer rounded-[9px]! px-3.5 text-[13.5px] font-medium"
+      variant="outline"
       type="button"
       onClick={handleEditCustomer}
-      iconLeft={
-        <Icon
-          icon="mdi:pencil"
-          className="text-[#348C98]"
-          width={20}
-          height={20}
-        />
-      }
+      iconLeft={<Pencil size={15} strokeWidth={1.7} />}
     >
-      <span className="text-sm text-[#348C98]">Editar cliente</span>
+      Editar cliente
     </Button>
   )
 }

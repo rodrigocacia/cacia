@@ -33,16 +33,14 @@ export function GraficoPorDia({ dias }: { dias: ConsumoDoDia[] }) {
   )
 
   return (
-    <section className="rounded-xl border border-[#ECECF1] bg-white p-4 md:p-5">
+    <section className="flex flex-col">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-sm font-semibold text-[#24211E]">
-          Consumo por dia
-        </h3>
+        <h3 className="rotulo">Consumo por dia</h3>
 
         {maiorDia && (
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-tinta-3">
             Maior dia: {formatarData(maiorDia.dia)} ·{" "}
-            <span className="font-medium text-[#24211E]">
+            <span className="font-medium text-tinta">
               {formatarReais(maiorDia.valor)}
             </span>
           </p>
@@ -56,7 +54,7 @@ export function GraficoPorDia({ dias }: { dias: ConsumoDoDia[] }) {
             {marcas.map((marca) => (
               <span
                 key={marca}
-                className="absolute right-2 translate-y-1/2 text-[10px] text-zinc-400 whitespace-nowrap"
+                className="absolute right-2 translate-y-1/2 text-[10px] text-tinta-3 whitespace-nowrap"
                 style={{ bottom: `${topo > 0 ? (marca / topo) * 100 : 0}%` }}
               >
                 {formatarReais(marca)}
@@ -67,11 +65,11 @@ export function GraficoPorDia({ dias }: { dias: ConsumoDoDia[] }) {
 
         <div className="min-w-0 flex-1 overflow-x-auto pt-8">
           <div style={{ minWidth: larguraMinima }}>
-            <div className="relative h-52 border-b border-[#ECECF1]">
+            <div className="relative h-52 border-b border-filete">
               {marcas.slice(1).map((marca) => (
                 <div
                   key={marca}
-                  className="absolute inset-x-0 border-t border-dashed border-[#ECECF1]"
+                  className="absolute inset-x-0 border-t border-dashed border-filete"
                   style={{ bottom: `${(marca / topo) * 100}%` }}
                 />
               ))}
@@ -88,12 +86,12 @@ export function GraficoPorDia({ dias }: { dias: ConsumoDoDia[] }) {
                       className="group relative flex h-full flex-1 items-end justify-center"
                     >
                       <div
-                        className="w-full max-w-[20px] rounded-t-md bg-[#348C98] transition-colors group-hover:bg-[#2A727C]"
+                        className="w-full max-w-[20px] rounded-t-md bg-acao transition-colors group-hover:bg-acao-escura"
                         style={{ height: `${altura}%` }}
                       />
 
                       <span
-                        className="pointer-events-none absolute left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-[#24211E] px-2 py-1 text-[11px] text-white shadow group-hover:block"
+                        className="pointer-events-none absolute left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-grafite px-2 py-1 text-[11px] text-white shadow group-hover:block"
                         style={{ bottom: `calc(${altura}% + 6px)` }}
                       >
                         {descricao}
@@ -108,7 +106,7 @@ export function GraficoPorDia({ dias }: { dias: ConsumoDoDia[] }) {
               {dias.map((dia, indice) => (
                 <span
                   key={dia.dia}
-                  className="flex-1 text-center text-[10px] text-zinc-400 whitespace-nowrap"
+                  className="flex-1 text-center text-[10px] text-tinta-3 whitespace-nowrap"
                 >
                   {indice % passo === 0
                     ? rotuloDoDia(dia.dia, dias.length)

@@ -1,7 +1,5 @@
 import { Suspense } from "react"
 
-import { Icon } from "@/components/icone"
-
 import { Header } from "@/components/header"
 import { ProcessTable } from "@/components/tables/process-table"
 import { Form } from "./new/form"
@@ -37,21 +35,20 @@ export default async function Process({
 
   return (
     <div className="w-full max-lg:px-4">
-      <Header />
+      <Header title="Processos" />
 
-      <div className="mt-2 max-md:hidden">
-        <PageHeader
-          icon={
-            <Icon
-              icon="mdi:folder-text-outline"
-              className="h-5 w-5 text-[#348C98]"
-            />
-          }
-          title="Processos"
-          count={process?.totalItems}
-          action={<Form process={processById} />}
-        />
-      </div>
+      <PageHeader
+        title="Processos"
+        count={process?.totalItems}
+        description="Processos dos seus clientes, com status, andamentos e documentos."
+        action={
+          // Uma instância só do formulário: ele mesmo troca o painel lateral
+          // (desktop) pela gaveta com botão flutuante (celular). Com duas
+          // cópias, as duas reagiam ao `editId`/`newProcess` da URL e abriam
+          // dois painéis ao mesmo tempo.
+          <Form process={processById} customerContext={true} />
+        }
+      />
 
       <div className="mt-5">
         <ListToolbar>
@@ -78,10 +75,6 @@ export default async function Process({
       >
         <ProcessTable />
       </SWRConfig>
-
-      <div className="md:hidden">
-        <Form process={processById} customerContext={true} />
-      </div>
     </div>
   )
 }

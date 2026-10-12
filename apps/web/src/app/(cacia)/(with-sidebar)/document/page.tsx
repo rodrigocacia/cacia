@@ -1,5 +1,4 @@
 import { Suspense } from "react"
-import { Icon } from "@/components/icone"
 import { getFolders } from "@/http/folder/get-folders"
 import { Header } from "@/components/header"
 import { Form } from "./new/form"
@@ -23,20 +22,18 @@ export default async function Document({
 
   return (
     <div className="w-full max-lg:px-4">
-      <Header />
-      <div className="mt-2 max-md:hidden">
-        <PageHeader
-          icon={
-            <Icon
-              icon="mdi:file-document-outline"
-              className="h-5 w-5 text-[#348C98]"
-            />
-          }
-          title="Documentos"
-          count={folders?.totalItems}
-          action={<Form />}
-        />
-      </div>
+      <Header title="Documentos" />
+
+      <PageHeader
+        title="Documentos"
+        count={folders?.totalItems}
+        description="Pastas, contratos e arquivos enviados pelos clientes."
+        action={
+          <div className="max-md:hidden">
+            <Form />
+          </div>
+        }
+      />
 
       <div className="mt-5">
         <ListToolbar>
@@ -48,13 +45,6 @@ export default async function Document({
         </ListToolbar>
       </div>
 
-      <div className="mt-7 flex w-full items-center gap-2">
-        <Icon
-          icon="mdi:folder-open"
-          className="h-[18px] w-[18px] text-[#BDBDBD]"
-        />
-        <h3 className="text-sm font-bold text-[#3D3D3D]">Todas as pastas</h3>
-      </div>
       <ClientDocumentGrid folders={folders?.data ?? []} />
       <div className="md:hidden">
         <Form />

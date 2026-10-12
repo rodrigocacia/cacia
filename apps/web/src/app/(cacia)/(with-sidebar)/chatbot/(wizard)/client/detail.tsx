@@ -1,105 +1,46 @@
 "use client"
 
 import { Button } from "@/components/ui/custom-button"
-import { Switch } from "@/components/ui/switch"
-import { Icon } from "@/components/icone"
+
+import { Cartao, RodapeDoCartao } from "../../../setting/_ui/cartao"
+import { LinhaDeAviso } from "../../_ui/linha-de-aviso"
 
 export function ClientDetail() {
   return (
-    <div className="p-8 max-md:p-0 pb-4 md:rounded-2xl md:shadow-sm">
-      <h3 className="text-[20px] text-[#707070] font-bold max-md:hidden">
-        Personalização do assistente
-      </h3>
-
-      <hr className="w-full my-6 max-md:my-2 h-px border-t-0 bg-gray-200 max-md:hidden" />
-
-      <div className="mt-8 flex flex-col gap-2.5">
-        <div className="w-full flex justify-between bg-[#ECF7F8] px-3 py-4 rounded-[12px]">
-          <div className="flex flex-col gap-2">
-            <h4 className="text-base text-[#707070] font-semibold">
-              Novo Atendimento
-            </h4>
-
-            <p className="text-sm text-[#707070]">
-              Receba alertas de novos agendamentos
-            </p>
-
-            <div className="w-fit mt-2 flex items-center gap-1.5 bg-[#EDFDEE] rounded-full px-2.5 py-[7px]">
-              <Icon
-                icon="ri:whatsapp-fill"
-                className="text-[#16A31B] w-4 h-4"
-              />
-
-              <span className="text-xs text-[#16A31B] font-semibold">
-                WhatsApp habilitado
-              </span>
-            </div>
-          </div>
-
-          <Switch />
-        </div>
-
-        <div className="w-full flex justify-between bg-[#ECF7F8] px-3 py-4 rounded-[12px]">
-          <div className="flex flex-col gap-2">
-            <h4 className="text-base text-[#707070] font-semibold">
-              Andamento Processual
-            </h4>
-
-            <p className="text-sm text-[#707070]">
-              Atualizações sobre seus processos
-            </p>
-
-            <div className="w-fit mt-2 flex items-center gap-1.5 bg-[#EDFDEE] rounded-full px-2.5 py-[7px]">
-              <Icon
-                icon="ri:whatsapp-fill"
-                className="text-[#16A31B] w-4 h-4"
-              />
-
-              <span className="text-xs text-[#16A31B] font-semibold">
-                WhatsApp habilitado
-              </span>
-            </div>
-          </div>
-
-          <Switch />
-        </div>
-
-        <div className="w-full flex justify-between bg-[#ECF7F8] px-3 py-4 rounded-[12px]">
-          <div className="flex flex-col gap-2">
-            <h4 className="text-base text-[#707070] font-semibold">
-              Documentos Recebidos
-            </h4>
-
-            <p className="text-sm text-[#707070]">
-              Notificações de novos documentos
-            </p>
-
-            <div className="w-fit mt-2 flex items-center gap-1.5 bg-[#EDFDEE] rounded-full px-2.5 py-[7px]">
-              <Icon
-                icon="ri:whatsapp-fill"
-                className="text-[#16A31B] w-4 h-4"
-              />
-
-              <span className="text-xs text-[#16A31B] font-semibold">
-                WhatsApp habilitado
-              </span>
-            </div>
-          </div>
-
-          <Switch />
-        </div>
+    <Cartao
+      titulo="Avisos para o cliente"
+      descricao="O que a assistente envia aos seus clientes."
+    >
+      <div className="flex flex-col">
+        <LinhaDeAviso
+          titulo="Novo atendimento"
+          descricao="Receba alertas de novos agendamentos"
+          canais={["WhatsApp"]}
+        />
+        <LinhaDeAviso
+          titulo="Andamento processual"
+          descricao="Atualizações sobre seus processos"
+          canais={["WhatsApp"]}
+        />
+        <LinhaDeAviso
+          titulo="Documentos recebidos"
+          descricao="Notificações de novos documentos"
+          canais={["WhatsApp"]}
+        />
       </div>
 
-      <div className="w-full flex items-center justify-end max-md:flex-col max-md:gap-4 mt-8 max-md:pb-10">
-        <Button
-          type="button"
-          onClick={() => {}}
-          className="px-10 cursor-pointer max-md:w-full"
-          variant="primary"
-        >
-          Salvar
-        </Button>
+      <div className="mt-7">
+        <RodapeDoCartao>
+          <Button
+            type="button"
+            onClick={() => {}}
+            className="cursor-pointer px-8"
+            variant="primary"
+          >
+            Salvar
+          </Button>
+        </RodapeDoCartao>
       </div>
-    </div>
+    </Cartao>
   )
 }

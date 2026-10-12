@@ -25,10 +25,10 @@ export function RowActions({ actions }: { actions: RowAction[] }) {
   return (
     <div className="flex items-center justify-end gap-0.5 opacity-0 transition-opacity duration-150 focus-within:opacity-100 group-hover/row:opacity-100 [@media(hover:none)]:opacity-100">
       {actions.map((action) => {
-        const className = `flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+        const className = `flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-transparent transition-colors [&_svg]:h-4 [&_svg]:w-4 ${
           action.danger
-            ? "text-[#C7C7D1] hover:bg-[#FEF2F2] hover:text-[#DC2626]"
-            : "text-[#8A8A96] hover:bg-[#ECF7F8] hover:text-[#348C98]"
+            ? "text-tinta-3 hover:border-[#F3D5CF] hover:bg-[#FBEDEA] hover:text-[#A23B2A]"
+            : "text-tinta-3 hover:border-filete-forte hover:bg-white hover:text-tinta"
         }`
 
         if (action.href) {

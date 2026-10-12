@@ -4,11 +4,11 @@ import { useState } from "react"
 
 import { useParams, useRouter } from "next/navigation"
 
-import { FaTrash } from "react-icons/fa"
-import { Icon } from "@/components/icone"
+import { Trash2 } from "lucide-react"
 
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -63,46 +63,34 @@ export function DialogDeleteCalendar({ name }: DialogDeleteCalendarProps) {
     <Dialog>
       <DialogTrigger asChild>
         <Button
-          className="cursor-pointer"
           variant="danger"
-          iconLeft={<FaTrash size={16} className="text-[#DC2626]" />}
+          className="h-9 rounded-[9px] px-3.5 text-[13.5px]"
+          iconLeft={<Trash2 size={15} strokeWidth={1.7} />}
         >
-          Excluir Agenda
+          Excluir agenda
         </Button>
       </DialogTrigger>
 
       <DialogContent className="px-[30px]">
         <DialogHeader>
-          <DialogTitle className="sr-only">Excluir agenda</DialogTitle>
+          <DialogTitle className="text-left text-[17px] font-semibold text-tinta">
+            Excluir a agenda &quot;{name}&quot;?
+          </DialogTitle>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="w-full flex flex-col items-center"
-        >
-          <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full bg-[#F6F6F9]">
-            <Icon
-              icon="mdi:help-circle"
-              className="w-[56px] h-[56px] text-[#BDBDBD]"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6">
+          <p className="text-[14px] leading-relaxed text-tinta-2">
+            Caso prossiga com esta solicitação, todos os dados da agenda serão
+            perdidos, incluindo todos os seus eventos, e essa ação não poderá
+            ser desfeita.
+          </p>
 
-          <div className="flex flex-col items-center justify-center gap-3.5 mt-[30px]">
-            <h4 className="text-xl text-center text-[#33454C] font-semibold">
-              Deseja mesmo excluir a agenda &quot;{name}&quot;?
-            </h4>
-
-            <p className="text-[18px] leading-[24px] text-[#4D5D63] text-center">
-              Caso prossiga com esta solicitação, todos os dados da agenda serão
-              perdidos,incluindo todos os seus eventos, e essa ação não poderá
-              ser desfeita.
-            </p>
-          </div>
-
-          <div className="w-full flex items-center justify-center gap-3.5 mt-[34px]">
-            <Button variant="outline" type="button">
-              Cancelar
-            </Button>
+          <div className="flex w-full items-center justify-end gap-2 max-md:flex-col-reverse max-md:items-stretch">
+            <DialogClose asChild>
+              <Button variant="outline" type="button">
+                Cancelar
+              </Button>
+            </DialogClose>
 
             <Button
               disabled={isLoading}

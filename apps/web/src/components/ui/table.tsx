@@ -27,7 +27,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
     <thead
       data-slot="table-header"
       className={cn(
-        "bg-[#FAFAFC] [&_tr]:border-b [&_tr]:border-[#EDEDF2]",
+        "bg-papel [&_tr]:h-10 [&_tr]:border-b [&_tr]:border-filete [&_tr]:hover:bg-papel",
         className
       )}
       {...props}
@@ -50,7 +50,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "bg-muted/50 border-t font-medium [&>tr]:last:border-b-0",
+        "border-t border-filete bg-papel font-medium [&>tr]:last:border-b-0",
         className
       )}
       {...props}
@@ -63,7 +63,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "group/row border-b border-[#F1F1F5] transition-colors hover:bg-[#FAFAFC] data-[state=selected]:bg-muted",
+        "group/row h-14 border-b border-[#F1EEE8] transition-colors hover:bg-papel data-[state=selected]:bg-papel",
         className
       )}
       {...props}
@@ -76,7 +76,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "h-11 px-4 text-left align-middle text-xs font-semibold tracking-[0.04em] whitespace-nowrap text-[#9A9AA5] uppercase [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "rotulo h-10 px-5 text-left align-middle font-normal whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props}
@@ -89,7 +89,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "px-4 py-3 align-middle text-sm whitespace-nowrap text-[#707070] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "px-5 py-2 align-middle text-[13.5px] whitespace-nowrap text-tinta-2 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props}
@@ -104,7 +104,7 @@ function TableCaption({
   return (
     <caption
       data-slot="table-caption"
-      className={cn("text-muted-foreground mt-4 text-sm", className)}
+      className={cn("mt-4 text-sm text-tinta-3", className)}
       {...props}
     />
   )

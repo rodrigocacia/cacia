@@ -10,6 +10,10 @@ export interface TabItemProps {
   icon?: React.ReactNode
 }
 
+/**
+ * Aba sublinhada: a ativa ganha tinta e um traço escuro de 2 px; as demais
+ * ficam no tom apagado. Turquesa fica reservado à ação principal.
+ */
 export function TabItem({
   value,
   title,
@@ -19,11 +23,15 @@ export function TabItem({
   return (
     <Tabs.Trigger
       value={value}
-      className="relative flex items-center px-1 pb-4 text-sm font-medium text-zinc-500 hover:text-[#348C98] data-[state=active]:text-[#348C98]"
+      className={`relative flex cursor-pointer items-center pb-2.5 text-[13.5px] whitespace-nowrap transition-colors ${
+        isSelected
+          ? "font-semibold text-tinta"
+          : "text-tinta-3 hover:text-tinta"
+      }`}
     >
       <div className="flex items-center gap-1.5">
         {icon && (
-          <span className={isSelected ? "text-[#348C98]" : "text-[#BDBDBD]"}>
+          <span className={isSelected ? "text-tinta" : "text-tinta-3"}>
             {icon}
           </span>
         )}
@@ -34,7 +42,7 @@ export function TabItem({
       {isSelected && (
         <motion.div
           layoutId="activeTab"
-          className="absolute -bottom-px left-0 right-0 h-0.5 rounded-tl-full rounded-tr-full bg-[#348C98]"
+          className="absolute right-0 -bottom-px left-0 h-0.5 bg-tinta"
         />
       )}
     </Tabs.Trigger>

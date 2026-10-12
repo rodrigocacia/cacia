@@ -5,10 +5,12 @@ interface HeadingProps {
 
 export function Heading({ title, subtitle }: HeadingProps) {
   return (
-    <div className="w-full flex flex-col gap-3.5">
-      <h2 className="text-[28px] text-[#3D3D3D] font-semibold">{title}</h2>
+    <div className="flex w-full flex-col gap-2.5">
+      <h2 className="font-display text-[40px] leading-[1.02] text-tinta max-lg:text-[32px]">
+        {title}
+      </h2>
 
-      <p className="text-[18px] text-[#BDBDBD] font-semibold">{subtitle}</p>
+      <p className="text-[15px] text-tinta-2">{subtitle}</p>
     </div>
   )
 }

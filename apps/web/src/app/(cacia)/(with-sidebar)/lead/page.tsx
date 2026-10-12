@@ -1,7 +1,5 @@
 import { Suspense } from "react"
 
-import { Icon } from "@/components/icone"
-
 import { Header } from "@/components/header"
 import { LeadsTable } from "@/components/tables/leads-table"
 
@@ -43,20 +41,13 @@ export default async function Lead({
   if (emFunil) {
     return (
       <div className="w-full max-lg:px-4">
-        <Header />
+        <Header title="Leads" />
 
-        <div className="mt-2 max-md:hidden">
-          <PageHeader
-            icon={
-              <Icon
-                icon="mdi:leads-outline"
-                className="h-5 w-5 text-[#348C98]"
-              />
-            }
-            title="Leads"
-            action={<Form lead={null} />}
-          />
-        </div>
+        <PageHeader
+          title="Leads"
+          description="Contatos em atendimento, do primeiro contato até virar cliente."
+          action={<Form lead={null} />}
+        />
 
         <div className="mt-5">
           <ListToolbar>
@@ -99,10 +90,10 @@ export default async function Lead({
 
   if (hasError || !leads) {
     return (
-      <div className="w-full h-full max-md:px-4">
+      <div className="h-full w-full max-lg:px-4">
         <Header title="Leads" />
 
-        <p className="text-red-500 font-semibold text-center mt-12">
+        <p className="mt-12 rounded-xl bg-[#FBEDEA] px-4 py-3 text-center text-sm text-[#A23B2A]">
           Ocorreu um erro ao carregar os leads. Tente novamente mais tarde.
         </p>
       </div>
@@ -111,22 +102,20 @@ export default async function Lead({
 
   return (
     <div className="w-full max-lg:px-4">
-      <Header />
+      <Header title="Leads" />
 
-      <div className="mt-2 max-md:hidden">
-        <PageHeader
-          icon={
-            <Icon icon="mdi:leads-outline" className="h-5 w-5 text-[#348C98]" />
-          }
-          title="Leads"
-          count={leads?.totalItems}
-          action={<Form lead={leadById} />}
-        />
-
-        <div className="sr-only">
-          <FormCustomer hasTrigger={false} lead={leadById} />
-        </div>
-      </div>
+      <PageHeader
+        title="Leads"
+        count={leads?.totalItems}
+        description="Contatos em atendimento, do primeiro contato até virar cliente."
+        action={
+          // Uma instância só de cada formulário: o `DrawerOrSheet` já troca o
+          // painel lateral pela gaveta no celular. Com duas cópias, as duas
+          // reagiam ao `editLeadId`/`createLead` da URL e abriam dois painéis
+          // (e dois botões flutuantes no celular).
+          <Form lead={leadById} />
+        }
+      />
 
       <div className="mt-5">
         <ListToolbar>
@@ -157,10 +146,6 @@ export default async function Lead({
       >
         <LeadsTable />
       </SWRConfig>
-
-      <div className="md:hidden">
-        <Form lead={leadById} />
-      </div>
 
       <FormCustomer hasTrigger={false} lead={leadById} />
     </div>

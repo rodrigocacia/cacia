@@ -12,6 +12,7 @@ import { WhatsappConnection } from "./06whatsapp-connection"
 import { Notification } from "./07notification"
 import { GetQrCodeResponse } from "@/http/connection/qr-code"
 import { LegalConsultation } from "./03legal-consultation"
+import { MolduraDeOnboarding } from "./components/moldura-onboarding"
 
 interface StepsProps {
   qrCode: GetQrCodeResponse | null
@@ -59,5 +60,18 @@ export function Steps({ qrCode }: StepsProps) {
     },
   ]
 
-  return <div className="w-full h-full">{steps[step].component}</div>
+  const atual = steps[step] ?? steps[0]
+
+  return (
+    <MolduraDeOnboarding
+      passo={steps[step] ? step : 0}
+      manchete={
+        atual.key === "whatsapp-connection" && qrCode
+          ? { inicio: "Escaneie e", destaque: "conecte." }
+          : undefined
+      }
+    >
+      {atual.component}
+    </MolduraDeOnboarding>
+  )
 }

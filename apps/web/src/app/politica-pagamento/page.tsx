@@ -9,17 +9,17 @@ export default function PoliticaPagamentoPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border p-8 max-lg:p-6">
-          <h1 className="text-3xl font-bold text-[#3D3D3D] mb-8">
+          <h1 className="text-3xl font-bold text-[#1B1916] mb-8">
             Política de Pagamento – ADVAI
           </h1>
 
-          <div className="space-y-6 text-[#707070] leading-relaxed">
+          <div className="space-y-6 text-[#57514A] leading-relaxed">
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 1. Modalidades de Pagamento
               </h2>
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-[#3D3D3D]">
+                <h3 className="text-lg font-medium text-[#1B1916]">
                   1.1 Meios Aceitos
                 </h3>
                 <p>
@@ -33,12 +33,12 @@ export default function PoliticaPagamentoPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 2. Planos e Renovação
               </h2>
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-medium text-[#3D3D3D] mb-2">
+                  <h3 className="text-lg font-medium text-[#1B1916] mb-2">
                     2.1 Tipos de Plano
                   </h3>
                   <p>
@@ -48,7 +48,7 @@ export default function PoliticaPagamentoPage() {
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-[#3D3D3D] mb-2">
+                  <h3 className="text-lg font-medium text-[#1B1916] mb-2">
                     2.2 Renovação Automática
                   </h3>
                   <p>
@@ -62,12 +62,12 @@ export default function PoliticaPagamentoPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 3. Cancelamento e Reembolso
               </h2>
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-medium text-[#3D3D3D] mb-2">
+                  <h3 className="text-lg font-medium text-[#1B1916] mb-2">
                     3.1 Período de Garantia
                   </h3>
                   <p>
@@ -78,7 +78,7 @@ export default function PoliticaPagamentoPage() {
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-[#3D3D3D] mb-2">
+                  <h3 className="text-lg font-medium text-[#1B1916] mb-2">
                     3.2 Reembolso Parcial ou Estornos
                   </h3>
                   <p>
@@ -92,11 +92,11 @@ export default function PoliticaPagamentoPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 4. Suspensão por Inadimplência
               </h2>
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-[#3D3D3D]">
+                <h3 className="text-lg font-medium text-[#1B1916]">
                   4.1 Falta de Pagamento
                 </h3>
                 <p>
@@ -109,11 +109,11 @@ export default function PoliticaPagamentoPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 5. Prevenção a Fraudes
               </h2>
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-[#3D3D3D]">
+                <h3 className="text-lg font-medium text-[#1B1916]">
                   5.1 Monitoramento e Medidas
                 </h3>
                 <p>
@@ -127,11 +127,11 @@ export default function PoliticaPagamentoPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 6. Alterações na Política de Pagamento
               </h2>
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-[#3D3D3D]">
+                <h3 className="text-lg font-medium text-[#1B1916]">
                   6.1 Atualizações
                 </h3>
                 <p>
@@ -145,11 +145,11 @@ export default function PoliticaPagamentoPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 7. Contato Financeiro
               </h2>
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-[#3D3D3D]">
+                <h3 className="text-lg font-medium text-[#1B1916]">
                   7.1 Suporte para Cobrança
                 </h3>
                 <p>

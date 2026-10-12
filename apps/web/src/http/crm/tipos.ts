@@ -45,6 +45,8 @@ export interface Cartao {
   id: string
   name: string
   remotejid: string
+  /** Resumo do caso, quando a assistente ou a equipe o registrou */
+  briefing?: string | null
   /** Decimal do Prisma chega como string — converter no consumidor, não aqui */
   value: string | null
   status: string

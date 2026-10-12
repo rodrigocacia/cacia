@@ -52,7 +52,7 @@ export function PaymentDetail({ close, setOpenToast }: PaymentDetailProps) {
         <button
           type="button"
           onClick={close}
-          className="absolute top-4 right-4 text-[#BDBDBD] hover:text-[#3D3D3D] transition-colors"
+          className="absolute top-4 right-4 text-[#A39C93] hover:text-[#1B1916] transition-colors"
         >
           <Icon icon="material-symbols:close" className="w-6 h-6" />
         </button>
@@ -63,11 +63,11 @@ export function PaymentDetail({ close, setOpenToast }: PaymentDetailProps) {
             className="w-[60px] h-[60px] text-[#BBE2E7]"
           />
 
-          <h1 className="text-2xl text-center text-[#3D3D3D] font-bold">
+          <h1 className="text-2xl text-center text-[#1B1916] font-bold">
             Pagamento realizado com sucesso
           </h1>
 
-          <p className="text-[18px] leading-[24px] text-[#BDBDBD] font-semibold">
+          <p className="text-[18px] leading-[24px] text-[#A39C93] font-semibold">
             O pagamento do seu plano foi realizado com sucesso!
           </p>
         </div>
@@ -83,7 +83,7 @@ export function PaymentDetail({ close, setOpenToast }: PaymentDetailProps) {
     return (
       <div className="w-full h-[350px] flex flex-col items-center justify-center">
         <Spinner />
-        <p className="mt-4 text-[#BDBDBD]">Gerando código PIX...</p>
+        <p className="mt-4 text-[#A39C93]">Gerando código PIX...</p>
       </div>
     )
   }
@@ -98,7 +98,7 @@ export function PaymentDetail({ close, setOpenToast }: PaymentDetailProps) {
               className="w-[30px] h-[30px] text-[#BBE2E7]"
             />
 
-            <h1 className="text-2xl text-center text-[#3D3D3D] font-bold">
+            <h1 className="text-2xl text-center text-[#1B1916] font-bold">
               Pague via PIX e ative agora
             </h1>
           </div>
@@ -106,21 +106,21 @@ export function PaymentDetail({ close, setOpenToast }: PaymentDetailProps) {
           <button
             type="button"
             onClick={close}
-            className="text-[#BDBDBD] hover:text-[#3D3D3D] transition-colors"
+            className="text-[#A39C93] hover:text-[#1B1916] transition-colors"
           >
             <Icon icon="material-symbols:close" className="w-6 h-6" />
           </button>
         </div>
 
-        <p className="text-[18px] leading-[24px] text-[#BDBDBD] font-semibold">
+        <p className="text-[18px] leading-[24px] text-[#A39C93] font-semibold">
           Escaneie o QR Code ou copie o código para ativar seu acesso Beta
         </p>
       </div>
 
       <div className="w-full flex flex-col gap-[14px]">
-        <h3 className="text-base text-[#707070]">Código PIX</h3>
+        <h3 className="text-base text-[#57514A]">Código PIX</h3>
 
-        <div className="w-full relative px-3 py-[18px] gap-2 flex items-center bg-[#FCFCFD] rounded-lg border border-[#F6F6F9]">
+        <div className="w-full relative px-3 py-[18px] gap-2 flex items-center bg-[#FBFAF7] rounded-lg border border-[#F1EEE8]">
           <p className="text-xs text-gray-400 break-all text-wrap">
             {signature?.transaction?.qr_code}
           </p>
@@ -129,7 +129,7 @@ export function PaymentDetail({ close, setOpenToast }: PaymentDetailProps) {
             {copied ? (
               <Check className="cursor-pointer w-8 h-8 text-[#3B82F6]" />
             ) : (
-              <Copy className="cursor-pointer w-8 h-8 text-[#BDBDBD]" />
+              <Copy className="cursor-pointer w-8 h-8 text-[#A39C93]" />
             )}
           </button>
         </div>
@@ -144,7 +144,7 @@ export function PaymentDetail({ close, setOpenToast }: PaymentDetailProps) {
       </div>
 
       <div className="w-full flex flex-col gap-2 items-center">
-        <p className="text-sm text-[#3D3D3D] text-center">
+        <p className="text-sm text-[#1B1916] text-center">
           Após confirmação, seu acesso será liberado automaticamente
         </p>
       </div>
@@ -155,7 +155,7 @@ export function PaymentDetail({ close, setOpenToast }: PaymentDetailProps) {
           className="w-[14px] h-[14px] text-[#3B82F6]"
         />
 
-        <p className="text-sm text-[#3D3D3D]">
+        <p className="text-sm text-[#1B1916]">
           Assim que o pagamento for confirmado, você receberá um e-mail com
           instruções para iniciarmos.
         </p>

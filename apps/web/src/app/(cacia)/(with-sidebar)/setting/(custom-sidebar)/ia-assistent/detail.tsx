@@ -6,8 +6,6 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { Icon } from "@/components/icone"
-
 import { Button } from "@/components/ui/custom-button"
 import { CustomTextarea } from "@/components/ui/custom-textarea"
 import { useAgents } from "@/http/hooks/agent"
@@ -18,6 +16,8 @@ import { CustomSelect } from "@/components/ui/custom-select"
 import { AgentStyle, agentStyleLabels } from "@/types/agent"
 import { Check } from "lucide-react"
 import { mensagemDeErro } from "@/utils/error-handlers"
+
+import { Cartao, RodapeDoCartao } from "../../_ui/cartao"
 
 // O rótulo em português vem do mapa central; o valor continua o enum da API
 const agentStyle = Object.values(AgentStyle).map((estilo) => ({
@@ -79,23 +79,24 @@ export function AssistantDetail() {
 
   if (isLoading) return <Spinner />
 
-  if (!serviceAgent) return <div>Nenhum agente de atendimento encontrado</div>
+  if (!serviceAgent) {
+    return (
+      <Cartao titulo="Assistente pessoal">
+        <p className="text-[13.5px] text-tinta-3">
+          Nenhum assistente encontrado.
+        </p>
+      </Cartao>
+    )
+  }
 
   return (
-    <div className="p-8 max-md:p-0 pb-4 md:rounded-2xl md:shadow-sm">
-      <div className="flex items-center gap-3 max-md:mt-4">
-        <Icon icon="mdi:robot-outline" className="w-8 h-8 text-[#BDBDBD]" />
-
-        <h3 className="text-[20px] text-[#707070] font-bold">
-          I.A. Assistente
-        </h3>
-      </div>
-
-      <hr className="w-full my-4 max-md:my-2 h-px border-t-0 bg-gray-200" />
-
+    <Cartao
+      titulo="Assistente pessoal"
+      descricao="Como o assistente conversa com você e com a equipe do escritório."
+    >
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full mt-6 flex flex-col justify-between gap-8"
+        className="flex w-full flex-col gap-7"
       >
         <div className="w-full flex flex-col gap-5">
           <Controller
@@ -119,7 +120,7 @@ export function AssistantDetail() {
             render={({ field }) => (
               <CustomTextarea
                 {...field}
-                label="Mensagem de Boas-vindas"
+                label="Mensagem de boas-vindas"
                 aria-label="Saudação Inicial"
                 value={field.value}
                 onChange={(e) => field.onChange(e.target.value)}
@@ -128,18 +129,18 @@ export function AssistantDetail() {
           />
         </div>
 
-        <div className="w-full flex items-center justify-end max-md:flex-col max-md:gap-4 mt-8 max-md:pb-10 max-md:mt-8">
+        <RodapeDoCartao>
           <Button
             type="submit"
             disabled={isSubmitting}
             isLoading={isSubmitting}
-            className="px-10 cursor-pointer max-md:w-full"
+            className="px-5"
             variant="primary"
-            iconLeft={<Check />}
+            iconLeft={<Check size={16} />}
           >
             Salvar
           </Button>
-        </div>
+        </RodapeDoCartao>
       </form>
 
       {hasError && (
@@ -159,6 +160,6 @@ export function AssistantDetail() {
           description="O assistente foi atualizado com sucesso!"
         />
       )}
-    </div>
+    </Cartao>
   )
 }

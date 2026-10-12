@@ -262,7 +262,7 @@ export function ProfessionalData({ lastStep }: ProfessionalDataProps) {
       className="w-full h-full pb-4"
     >
       <div className="flex flex-col gap-5">
-        <h3 className="text-xl font-semibold text-[#3D3D3D]">
+        <h3 className="text-xl font-semibold text-[#1B1916]">
           Dados do advogado
         </h3>
 
@@ -341,7 +341,7 @@ export function ProfessionalData({ lastStep }: ProfessionalDataProps) {
       </div>
 
       <div className="flex flex-col gap-5 mt-8">
-        <h3 className="text-xl font-semibold text-[#3D3D3D]">
+        <h3 className="text-xl font-semibold text-[#1B1916]">
           Endereço do escritório
         </h3>
 

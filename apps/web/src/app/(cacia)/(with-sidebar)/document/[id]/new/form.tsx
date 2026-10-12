@@ -10,9 +10,7 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { Icon } from "@/components/icone"
-
-import { AiOutlinePlus } from "react-icons/ai"
+import { Check, FileText, Plus, Upload, X } from "lucide-react"
 
 import { Button, Button as CustomButton } from "@/components/ui/custom-button"
 import { Input } from "@/components/ui/custom-input"
@@ -32,9 +30,13 @@ import { useParams } from "next/navigation"
 import { CustomSelect } from "@/components/ui/custom-select"
 import { useCustomers } from "@/http/hooks/customer"
 import { Customer } from "@/types/customer"
-import { formatName } from "@/utils/formatters"
 import { useProcess } from "@/http/hooks/process"
 import { mensagemDeErro } from "@/utils/error-handlers"
+import {
+  CabecalhoDoFormulario,
+  RodapeDoFormulario,
+  SecaoDoFormulario,
+} from "@/components/drawer-or-sheet/partes"
 
 export const areasDeAtuacao = [
   { value: "tecnologia", label: "Tecnologia" },
@@ -156,7 +158,7 @@ function FormComponent({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="px-4 pb-6 w-full h-screen overflow-y-scroll"
+      className="flex h-screen w-full flex-col gap-7 overflow-y-auto pb-6 max-md:h-[85vh]"
     >
       {erro && (
         <Toast
@@ -167,23 +169,14 @@ function FormComponent({
         />
       )}
 
-      <div className="mt-10 flex flex-col gap-3">
-        <div className="flex gap-2">
-          <Icon
-            icon="mdi:add-circle-outline"
-            className="text-[#BBE2E7] w-[30px] h-[30px]"
-          />
+      <CabecalhoDoFormulario
+        rotulo="Documentos"
+        titulo="Novo documento"
+        descricao="Envie o arquivo e, se quiser, vincule a um cliente e processo."
+      />
 
-          <h3 className="text-xl text-[#3D3D3D] font-bold">Novo documento</h3>
-        </div>
-
-        <p className="text-base text-[#BDBDBD]">
-          Preencha os campos abaixo para adicionar um novo documento
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-5 mt-10">
-        <div className="w-full flex items-center gap-3">
+      <div className="flex flex-col gap-5">
+        <div className="flex w-full items-center gap-3">
           <Controller
             name="linkToCustomerAndProcess"
             control={control}
@@ -192,7 +185,9 @@ function FormComponent({
             )}
           />
 
-          <h3>Vincular a um cliente e processo</h3>
+          <h3 className="text-[14px] text-tinta">
+            Vincular a um cliente e processo
+          </h3>
         </div>
 
         {linkToCustomerAndProcess && (
@@ -206,7 +201,7 @@ function FormComponent({
                     label="Cliente"
                     options={customers?.map((customer: Customer) => ({
                       value: customer?._id,
-                      label: formatName(customer?.name),
+                      label: customer?.name,
                     }))}
                     value={value}
                     onChange={(e: any) => {
@@ -262,13 +257,11 @@ function FormComponent({
         />
 
         <div className="w-full flex flex-col gap-3.5 mt-4">
-          <h3 className="text-base text-[#707070] font-semibold">
-            Arquivos do processo
-          </h3>
+          <SecaoDoFormulario>Arquivo</SecaoDoFormulario>
 
           <label
             htmlFor="file"
-            className="w-full cursor-pointer flex bg-[#FCFCFD] border-2 border-dashed border-[#BBE2E7] rounded-[14px] pt-5 pb-6"
+            className="flex w-full cursor-pointer rounded-[14px] border border-dashed border-filete-forte bg-white pt-6 pb-6 transition-colors hover:border-acao hover:bg-nevoa/40"
           >
             <input
               id="file"
@@ -279,17 +272,16 @@ function FormComponent({
             />
 
             <div className="w-full flex items-center flex-col gap-5">
-              <Icon
-                icon="mdi:cloud-upload"
-                className="text-[#BBE2E7] w-11 h-11"
-              />
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-nevoa text-turquesa-profundo">
+                <Upload size={20} strokeWidth={1.7} />
+              </span>
 
               <div className="w-full flex items-center flex-col gap-2">
-                <h3 className="text-sm text-[#BDBDBD] font-semibold">
-                  Toque para fazer upload
+                <h3 className="text-[14px] font-medium text-tinta">
+                  Clique para escolher o arquivo
                 </h3>
 
-                <p className="text-[12px] text-[#BDBDBD]">
+                <p className="text-xs text-tinta-3">
                   PDF, DOC, DOCX, TXT, JPEG, PNG (máx. 10MB)
                 </p>
               </div>
@@ -298,45 +290,51 @@ function FormComponent({
         </div>
 
         {file ? (
-          <div className="w-full flex items-center justify-between px-2.5 py-3 border border-[#F6F6F9] rounded-[10px]">
-            <div className="flex items-center gap-2.5">
-              <Icon
-                icon="mdi:file-pdf-box"
-                className="w-7 h-7 text-[#348C98]"
+          <div className="flex w-full items-center justify-between rounded-[10px] border border-filete bg-white px-3 py-2.5">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <FileText
+                size={18}
+                strokeWidth={1.7}
+                className="shrink-0 text-turquesa-profundo"
               />
 
-              <span className="text-sm text-gray-800">{file.name}</span>
+              <span className="truncate text-[13.5px] text-tinta">
+                {file.name}
+              </span>
             </div>
 
-            <button className="cursor-pointer" onClick={handleRemoveFile}>
-              <Icon
-                icon="mdi:close"
-                className="w-[18px] h-[18px] text-[#BDBDBD]"
-              />
+            <button
+              type="button"
+              aria-label="Remover arquivo"
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-tinta-3 hover:bg-gray-100 hover:text-tinta"
+              onClick={handleRemoveFile}
+            >
+              <X size={16} />
             </button>
           </div>
         ) : null}
-
-        <div className="flex items-center justify-between">
-          <CustomButton
-            onClick={() => setOpen(false)}
-            type="button"
-            className="w-[251px] cursor-pointer"
-            variant="outline"
-          >
-            Cancelar
-          </CustomButton>
-
-          <CustomButton
-            type="submit"
-            className="px-10 cursor-pointer"
-            variant="primary"
-            isLoading={isSubmitting}
-          >
-            Salvar
-          </CustomButton>
-        </div>
       </div>
+
+      <RodapeDoFormulario>
+        <CustomButton
+          onClick={() => setOpen(false)}
+          type="button"
+          className="cursor-pointer"
+          variant="outline"
+        >
+          Cancelar
+        </CustomButton>
+
+        <CustomButton
+          type="submit"
+          className="cursor-pointer px-6"
+          variant="primary"
+          isLoading={isSubmitting}
+          iconLeft={<Check size={16} />}
+        >
+          Salvar documento
+        </CustomButton>
+      </RodapeDoFormulario>
     </form>
   )
 }
@@ -362,14 +360,18 @@ export function Form({ location, customerId, processId }: FormProps) {
         <Sheet open={openSheet} onOpenChange={setOpenSheet}>
           <SheetTrigger asChild>
             <Button
-              className="cursor-pointer"
-              iconLeft={<AiOutlinePlus size={20} />}
+              className={
+                location
+                  ? "h-9! cursor-pointer rounded-[9px]! px-3.5 text-[13.5px]"
+                  : "h-10! cursor-pointer px-4 text-[13.5px]"
+              }
+              iconLeft={<Plus size={16} strokeWidth={2} />}
             >
               Novo documento
             </Button>
           </SheetTrigger>
 
-          <SheetContent className="min-w-[707px] rounded-tl-[24px] rounded-bl-[24px]">
+          <SheetContent className="min-w-[640px] px-8">
             <SheetTitle className="sr-only">Novo documento</SheetTitle>
 
             <FormComponent
@@ -388,11 +390,14 @@ export function Form({ location, customerId, processId }: FormProps) {
           open={openDrawer}
           onOpenChange={(value) => setOpenDrawer(value)}
         >
-          <DrawerTrigger className="md:hidden fixed w-[56px] h-[56px] bottom-6 right-6 bg-teal-500 hover:bg-teal-600 text-white rounded-full shadow-lg text-xl">
-            +
+          <DrawerTrigger
+            aria-label="Novo documento"
+            className="fixed right-5 bottom-5 z-50 flex h-14 w-14 items-center justify-center rounded-2xl bg-acao text-white shadow-[0_10px_24px_rgba(21,19,17,0.22)] transition-colors hover:bg-acao-escura md:hidden"
+          >
+            <Plus className="h-5 w-5" strokeWidth={2} />
           </DrawerTrigger>
 
-          <DrawerContent className="h-full">
+          <DrawerContent className="h-full px-4">
             <DialogTitle className="sr-only">Novo documento</DialogTitle>
 
             <FormComponent

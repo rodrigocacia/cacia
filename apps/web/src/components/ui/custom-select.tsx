@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect, forwardRef } from "react"
+import { useState, useRef, useEffect, forwardRef, useId } from "react"
 import {
   MdWork,
   MdKeyboardArrowDown,
@@ -73,6 +73,7 @@ export const CustomSelect = forwardRef<HTMLDivElement, CustomSelectProps>(
     const [selectedOption, setSelectedOption] = useState<Option | null>(null)
     const [isFocused, setIsFocused] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
+    const listaId = useId()
 
     const Icon = iconName ? iconMap[iconName] : null
 
@@ -114,23 +115,26 @@ export const CustomSelect = forwardRef<HTMLDivElement, CustomSelectProps>(
         className={variant === "compact" ? "relative w-[193px]" : "w-full"}
         ref={dropdownRef}
       >
-        {variant !== "compact" && (
-          <label className="block text-gray-600 text-base mb-2 font-semibold">
+        {variant !== "compact" && label && (
+          <label className="mb-[7px] block text-[13px] font-medium text-tinta-2">
             {label}
           </label>
         )}
 
         <div
           ref={ref}
-          className={`${
-            variant === "compact"
-              ? "h-11 bg-white rounded-2xl px-3"
-              : "rounded-2xl px-4 py-3"
-          } flex bg-white items-center justify-between border border-gray-200 transition-colors duration-200 cursor-pointer ${
+          role="combobox"
+          aria-expanded={isOpen}
+          aria-controls={listaId}
+          aria-haspopup="listbox"
+          aria-disabled={disabled}
+          className={`flex h-11 w-full items-center justify-between rounded-[10px] border bg-white transition-[border-color,box-shadow] duration-150 ${
+            variant === "compact" ? "px-3" : "px-3.5"
+          } ${
             isFocused || isOpen
-              ? "border-[#348C98] ring-2 ring-[#348C98]"
-              : "border-gray-200"
-          } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+              ? "border-acao shadow-[0_0_0_3px_#D7EBEE]"
+              : "border-filete-forte"
+          } ${disabled ? "cursor-not-allowed bg-gray-100 opacity-70" : "cursor-pointer"}`}
           onClick={() => {
             if (disabled) return
             setIsOpen(!isOpen)
@@ -144,11 +148,11 @@ export const CustomSelect = forwardRef<HTMLDivElement, CustomSelectProps>(
           }}
           tabIndex={disabled ? -1 : 0}
         >
-          <div className="flex items-center flex-1 gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             {Icon && (
               <Icon
-                className={`h-5 w-5 ${
-                  isFocused ? "text-[#348C98]" : "text-gray-400"
+                className={`h-[17px] w-[17px] shrink-0 ${
+                  isFocused || isOpen ? "text-acao" : "text-gray-400"
                 }`}
               />
             )}
@@ -156,34 +160,38 @@ export const CustomSelect = forwardRef<HTMLDivElement, CustomSelectProps>(
             <span
               className={`truncate ${
                 !selectedOption || !selectedOption.label
-                  ? "text-[#707070]"
-                  : variant === "compact"
-                    ? "text-[#707070] font-bold text-sm"
-                    : "text-[#707070] font-semibold"
-              }`}
+                  ? "text-gray-400"
+                  : "text-tinta"
+              } ${variant === "compact" ? "text-[13.5px] font-medium" : "text-[15px]"}`}
             >
               {selectedOption?.label || placeholder}
             </span>
           </div>
 
           <MdKeyboardArrowDown
-            className={`h-5 w-5 transition-transform ${
-              isOpen ? "rotate-180 text-[#348C98]" : "text-[#BDBDBD]"
+            className={`h-5 w-5 shrink-0 transition-transform ${
+              isOpen ? "rotate-180 text-acao" : "text-tinta-3"
             }`}
           />
         </div>
 
         {isOpen && !disabled && (
           <div className="relative z-10">
-            <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto text-sm">
+            <div
+              id={listaId}
+              role="listbox"
+              className="absolute right-0 left-0 mt-1.5 max-h-60 overflow-auto rounded-[12px] border border-filete bg-white p-1 text-[14px] shadow-[0_12px_32px_rgba(21,19,17,0.12)]"
+            >
               {options.length > 0 ? (
                 options.map((option) => (
                   <div
                     key={option.value}
-                    className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${
+                    role="option"
+                    aria-selected={selectedOption?.value === option.value}
+                    className={`cursor-pointer rounded-lg px-3 py-2 hover:bg-gray-100 ${
                       selectedOption?.value === option.value
-                        ? "bg-gray-50 text-[#348C98]"
-                        : "text-gray-700"
+                        ? "bg-nevoa font-medium text-turquesa-profundo"
+                        : "text-tinta"
                     }`}
                     onClick={() => handleSelect(option)}
                   >
@@ -191,7 +199,7 @@ export const CustomSelect = forwardRef<HTMLDivElement, CustomSelectProps>(
                   </div>
                 ))
               ) : (
-                <div className="px-4 py-2 text-gray-500 italic">
+                <div className="px-3 py-2 text-tinta-3">
                   Nenhuma opção disponível
                 </div>
               )}

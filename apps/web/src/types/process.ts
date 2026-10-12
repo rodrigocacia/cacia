@@ -67,13 +67,13 @@ export const processStatusConfig: ProcessStatusConfig = {
   },
   [ProcessStatus.CONCLUDED]: {
     label: "Concluído",
-    color: "bg-[#ECF7F8]",
+    color: "bg-[#EEF6F7]",
     text: "text-[#348C98]",
     icon: "mdi:check-circle-outline",
   },
   [ProcessStatus.FINISHED]: {
     label: "Finalizado",
-    color: "bg-[#ECF7F8]",
+    color: "bg-[#EEF6F7]",
     text: "text-[#348C98]",
     icon: "mdi:check-circle-outline",
   },

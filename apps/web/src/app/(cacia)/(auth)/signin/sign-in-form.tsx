@@ -1,6 +1,5 @@
 "use client"
 
-import Image from "next/image"
 import Link from "next/link"
 
 import { useRouter } from "next/navigation"
@@ -10,7 +9,6 @@ import { signInAction } from "./actions"
 
 import { Button } from "@/components/ui/custom-button"
 import { Input } from "@/components/ui/custom-input"
-import { AuthTabs } from "@/components/ui/auth-tabs"
 import { Toast } from "@/components/ui/toast"
 import { DialogCheckoutPlan } from "@/components/dialog-checkout-plan"
 import { AUTOCOMPLETE_VALUES } from "@/constants/autocomplete"
@@ -39,21 +37,24 @@ export function SignInForm() {
       <form
         method="post"
         onSubmit={handleSubmit}
-        className="bg-white relative z-10 w-full h-full max-lg:h-fit flex flex-col gap-8 shadow-md rounded-4xl max-lg:rounded-t-4xl max-lg:rounded-b-none px-8 pt-[28px] max-lg:pb-4"
+        className="flex w-full flex-col gap-8"
       >
-        <div className="w-full max-lg:hidden">
-          <Image src="/logo-cacia.png" alt="mockup" width={200} height={61} />
+        <div className="flex flex-col gap-2.5">
+          <h2 className="font-display text-[46px] leading-none text-tinta max-lg:text-[34px]">
+            Entrar
+          </h2>
+          <p className="text-[15px] text-tinta-2">
+            Bem-vindo de volta ao seu escritório.
+          </p>
         </div>
 
-        <AuthTabs />
-
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4">
           <Input
             type="email"
             name="email"
             label="E-mail"
-            placeholder="seu@email"
-            iconName="mail"
+            placeholder="voce@escritorio.adv.br"
+            iconName={null}
             autoComplete={AUTOCOMPLETE_VALUES.EMAIL}
             error={errors?.email[0]}
           />
@@ -62,31 +63,26 @@ export function SignInForm() {
             type="password"
             name="password"
             label="Senha"
-            placeholder="Insira a sua senha de acesso..."
-            iconName="lock"
+            placeholder="Sua senha"
+            iconName={null}
             autoComplete={AUTOCOMPLETE_VALUES.CURRENT_PASSWORD}
             error={errors?.password[0]}
           />
 
           <div className="flex items-center justify-end">
-            <Link href="forgot-password">Esqueci minha senha</Link>
+            <Link
+              href="/forgot-password"
+              className="text-[13px] font-medium text-turquesa-profundo hover:underline"
+            >
+              Esqueci a senha
+            </Link>
           </div>
         </div>
 
         <Button
           type="submit"
-          className="w-[251px] max-lg:w-full cursor-pointer"
+          className="h-[46px] w-full"
           variant="primary"
-          iconLeft={
-            !isPending ? (
-              <Image
-                src="/icons/welcome-button.svg"
-                alt=""
-                width={24}
-                height={24}
-              />
-            ) : null
-          }
           isLoading={isPending}
           disabled={!hidratado || isPending}
         >

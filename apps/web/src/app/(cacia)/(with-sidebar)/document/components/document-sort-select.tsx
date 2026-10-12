@@ -2,8 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { documentSortOptions } from "@/constants/filters/document"
-import { HiMiniBars3BottomLeft } from "react-icons/hi2"
-import { BiSolidChevronDown } from "react-icons/bi"
+import { ArrowDownUp, ChevronDown } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 
 export function DocumentSortSelect() {
@@ -53,37 +52,38 @@ export function DocumentSortSelect() {
 
   return (
     <div className="flex items-center gap-2 max-md:w-full max-md:flex-col max-md:items-start">
-      <h3 className="text-[10px] font-semibold tracking-wide text-[#BDBDBD] max-md:hidden">
-        ORDENAR POR
-      </h3>
+      <span className="rotulo max-md:hidden">Ordenar por</span>
       <div className="relative w-[193px] max-md:w-full" ref={dropdownRef}>
-        <div
-          className="flex h-11 cursor-pointer items-center justify-between rounded-full border border-[#E7E7EE] bg-white px-4 transition-colors hover:border-[#D5D5E0]"
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          className="flex h-11 w-full cursor-pointer items-center justify-between rounded-[10px] border border-filete-forte bg-white px-3.5 transition-colors hover:bg-gray-100"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <div className="flex h-full items-center gap-2.5">
-            <HiMiniBars3BottomLeft size={18} className="text-[#348C98]" />
-            <span className="text-sm font-semibold text-[#707070]">
+          <span className="flex h-full items-center gap-2">
+            <ArrowDownUp size={15} strokeWidth={1.7} className="text-tinta-3" />
+            <span className="text-[13.5px] font-medium text-tinta">
               {selectedOption?.name || "Mais recentes"}
             </span>
-          </div>
-          <BiSolidChevronDown
-            size={18}
-            className={`text-[#BDBDBD] transition-transform ${
+          </span>
+          <ChevronDown
+            size={16}
+            className={`text-tinta-3 transition-transform ${
               isOpen ? "rotate-180" : ""
             }`}
           />
-        </div>
+        </button>
 
         {isOpen && (
-          <div className="absolute left-0 right-0 z-10 mt-1.5 max-h-60 overflow-auto rounded-2xl border border-[#EDEDF2] bg-white p-1 text-sm shadow-lg">
+          <div className="absolute right-0 left-0 z-10 mt-1.5 max-h-60 overflow-auto rounded-[10px] border border-filete bg-white p-1 text-[13.5px] shadow-[0_12px_32px_rgba(21,19,17,0.12)]">
             {documentSortOptions.map((option) => (
               <div
                 key={option.value}
-                className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-[#F6F6F9] ${
+                className={`flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-gray-100 ${
                   currentSort === option.value
-                    ? "bg-[#ECF7F8] font-semibold text-[#348C98]"
-                    : "text-[#707070]"
+                    ? "bg-nevoa font-semibold text-turquesa-profundo"
+                    : "text-tinta-2"
                 }`}
                 onClick={() => handleSortChange(option.value)}
               >

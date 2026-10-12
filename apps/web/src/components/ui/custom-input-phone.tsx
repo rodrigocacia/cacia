@@ -42,7 +42,7 @@ export function InputPhone<T extends FieldValues>({
     <div className="w-full space-y-1">
       <div className="w-full">
         {label && (
-          <label className="block text-gray-600 text-base mb-2 font-semibold">
+          <label className="mb-[7px] block text-[13px] font-medium text-tinta-2">
             {label}
           </label>
         )}
@@ -86,16 +86,15 @@ export function InputPhone<T extends FieldValues>({
 
             return (
               <div
-                className={`flex items-center outline-0 gap-3 w-full rounded-2xl px-4 py-3 transition-all duration-200
-                border ${
+                className={`flex h-11 w-full items-center gap-2 rounded-[10px] border px-3.5 outline-0 transition-[border-color,box-shadow] duration-150 ${
                   isFocused
-                    ? "border-[#348C98] ring-1 ring-[#348C98]"
-                    : "border-gray-200"
-                } ${disabled ? "bg-gray-50 opacity-70" : "bg-white"}`}
+                    ? "border-acao shadow-[0_0_0_3px_#D7EBEE]"
+                    : "border-filete-forte"
+                } ${disabled ? "bg-gray-100 opacity-70" : "bg-white"}`}
               >
                 <MdOutlineSmartphone
-                  className={`h-5 w-5 shrink-0 transition-colors ${
-                    isFocused ? "text-[#348C98]" : "text-gray-400"
+                  className={`h-[17px] w-[17px] shrink-0 transition-colors ${
+                    isFocused ? "text-acao" : "text-gray-400"
                   }`}
                 />
                 <PhoneInput
@@ -114,14 +113,14 @@ export function InputPhone<T extends FieldValues>({
                   }}
                   countryCallingCodeEditable={false}
                   onChange={(value) => field.onChange(value)}
-                  className="phone-input-wrapper text-[16px] border-0 w-full text-gray-700 bg-transparent outline-none border-white"
+                  className="phone-input-wrapper w-full border-0 border-white bg-transparent text-[15px] text-tinta outline-none"
                 />
               </div>
             )
           }}
         />
       </div>
-      {hint && !error && <p className="text-xs text-gray-500">{hint}</p>}
+      {hint && !error && <p className="text-xs text-tinta-3">{hint}</p>}
       {error && (
         <p className="text-xs font-medium text-red-500 dark:text-red-400">
           {typeof error === "string" ? error : error.message}

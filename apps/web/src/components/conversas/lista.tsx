@@ -16,8 +16,8 @@ export type Aba = "todas" | StatusDaConversa
 
 export const ABAS: { valor: Aba; rotulo: string }[] = [
   { valor: "todas", rotulo: "Todas" },
-  { valor: "PENDING", rotulo: "Com a equipe" },
-  { valor: "ACTIVE", rotulo: "Com a IA" },
+  { valor: "PENDING", rotulo: "Com você" },
+  { valor: "ACTIVE", rotulo: "Com a assistente" },
   { valor: "COMPLETED", rotulo: "Encerradas" },
 ]
 
@@ -45,7 +45,7 @@ export function previa(mensagem: Mensagem | undefined): string {
 
   const autor =
     mensagem.sender === "AGENT"
-      ? "IA: "
+      ? "Assistente: "
       : mensagem.sender === "USER"
         ? "Você: "
         : ""
@@ -76,7 +76,7 @@ function Iniciais({ nome }: { nome: string }) {
     .join("")
 
   return (
-    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E6F2F4] text-sm font-semibold text-[#2A727C]">
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-nevoa text-xs font-semibold text-turquesa-profundo">
       {iniciais || "?"}
     </span>
   )
@@ -103,28 +103,38 @@ export function ListaDeConversas({
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="space-y-3 border-b border-[#ECECF1] p-3">
-        <label className="flex h-9 items-center gap-2 rounded-lg bg-[#F4F5F7] px-3 text-sm text-zinc-500 focus-within:ring-2 focus-within:ring-[#348C98]/30">
+      <div className="flex flex-col gap-3.5 px-5 pt-[22px] pb-0">
+        <h1 className="font-display text-[34px] leading-none text-tinta">
+          Conversas
+        </h1>
+
+        <label className="flex h-[34px] items-center gap-2 rounded-[9px] border border-[#E3DED6] bg-white px-2.5 text-tinta-3 focus-within:border-acao focus-within:shadow-[0_0_0_3px_#D7EBEE]">
           <Icon icon="mdi:magnify" className="h-4 w-4 shrink-0" />
           <input
             value={busca}
             onChange={(e) => aoBuscar(e.target.value)}
-            placeholder="Buscar por nome ou telefone"
-            className="w-full bg-transparent text-zinc-800 outline-none placeholder:text-zinc-400"
+            placeholder="Buscar nome ou telefone"
+            aria-label="Buscar conversas"
+            className="w-full bg-transparent text-[13px] text-tinta outline-none placeholder:text-gray-400"
           />
         </label>
 
-        <div className="flex gap-0.5 overflow-x-auto [scrollbar-width:none]">
+        <div
+          role="tablist"
+          className="-mx-5 flex gap-[18px] overflow-x-auto border-b border-filete px-5 text-[13px] [scrollbar-width:none]"
+        >
           {ABAS.map((a) => (
             <button
               key={a.valor}
               type="button"
+              role="tab"
+              aria-selected={aba === a.valor}
               onClick={() => aoTrocarAba(a.valor)}
               className={clsx(
-                "shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium transition",
+                "-mb-px shrink-0 cursor-pointer border-b-2 pb-2.5 whitespace-nowrap transition-colors",
                 aba === a.valor
-                  ? "bg-[#24211E] text-white"
-                  : "text-zinc-500 hover:bg-[#F4F5F7] hover:text-zinc-800"
+                  ? "border-tinta font-semibold text-tinta"
+                  : "border-transparent text-tinta-3 hover:text-tinta"
               )}
             >
               {a.rotulo}
@@ -148,7 +158,7 @@ export function ListaDeConversas({
               : "Nenhuma conversa aqui ainda. Elas aparecem quando alguém manda mensagem para o WhatsApp do escritório."}
           </div>
         ) : (
-          <ul>
+          <ul className="flex flex-col gap-0.5 p-2">
             {conversas.map((conversa) => {
               const nome = nomeDoContato(conversa)
               const ultima = conversa.messages?.[0]
@@ -161,10 +171,10 @@ export function ListaDeConversas({
                     type="button"
                     onClick={() => aoSelecionar(conversa.id)}
                     className={clsx(
-                      "flex w-full items-center gap-3 border-l-[3px] px-3 py-2.5 text-left transition",
+                      "flex w-full cursor-pointer items-center gap-3 rounded-[10px] border p-3 text-left transition-colors",
                       ativa
-                        ? "border-[#348C98] bg-[#F1F8F9]"
-                        : "border-transparent hover:bg-[#F8F9FA]"
+                        ? "border-filete bg-white"
+                        : "border-transparent hover:bg-[#F4F2ED]"
                     )}
                   >
                     <Iniciais nome={nome} />
@@ -173,7 +183,7 @@ export function ListaDeConversas({
                       <div className="flex items-baseline justify-between gap-2">
                         <span
                           className={clsx(
-                            "truncate text-sm text-zinc-900",
+                            "truncate text-[13.5px] text-tinta",
                             esperando ? "font-semibold" : "font-medium"
                           )}
                         >
@@ -181,10 +191,10 @@ export function ListaDeConversas({
                         </span>
                         <span
                           className={clsx(
-                            "shrink-0 text-[11px]",
+                            "tabular shrink-0 text-[11.5px]",
                             esperando
-                              ? "font-semibold text-[#348C98]"
-                              : "text-zinc-400"
+                              ? "font-semibold text-ambar"
+                              : "text-tinta-3"
                           )}
                         >
                           {quandoFoi(conversa.lastActivityAt)}
@@ -194,8 +204,8 @@ export function ListaDeConversas({
                       <div className="flex items-center justify-between gap-2">
                         <span
                           className={clsx(
-                            "truncate text-xs",
-                            esperando ? "text-zinc-700" : "text-zinc-500"
+                            "truncate text-[12.5px]",
+                            esperando ? "text-gray-800" : "text-tinta-3"
                           )}
                         >
                           {previa(ultima)}
@@ -203,7 +213,7 @@ export function ListaDeConversas({
 
                         {esperando ? (
                           <span
-                            className="h-2 w-2 shrink-0 rounded-full bg-[#348C98]"
+                            className="h-2 w-2 shrink-0 rounded-full bg-ambar-ponto"
                             title="Aguardando resposta"
                           />
                         ) : conversa.status === "ACTIVE" ? (

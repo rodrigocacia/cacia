@@ -19,7 +19,7 @@ import { Check } from "lucide-react"
 import { useCalendarById } from "@/http/hooks/calendar"
 
 import { translateWeekdayToLocale } from "@/utils/day-translation"
-import { formatName } from "@/utils/formatters"
+import { nomeParaExibir } from "@/utils/formatters"
 import { AgendaDetailFormData, schema } from "@/schemas/calendar"
 
 import {
@@ -42,6 +42,8 @@ import { CustomCheckbox } from "@/components/ui/custom-checkbox"
 import { updateCalendar } from "@/http/calendar/update-calendar"
 import { Me } from "@/types/me"
 import { mensagemDeErro } from "@/utils/error-handlers"
+
+import { Cartao } from "@/app/(cacia)/(with-sidebar)/setting/_ui/cartao"
 
 type DiaDoFormulario = AgendaDetailFormData["available_days"][number]
 
@@ -183,297 +185,170 @@ export function FormComponent({
   return (
     <form
       onSubmit={handleSubmit(onSubmit, onInvalid)}
-      className="p-8 max-md:p-0 pb-4 md:rounded-2xl md:shadow-sm"
+      className="flex flex-col gap-6"
     >
-      <div className="flex flex-col gap-5">
-        <Controller
-          name="title"
-          control={control}
-          render={({ field: { value = "", onChange, ...field } }) => (
-            <Input
-              {...field}
-              value={value}
-              label="Nome"
-              placeholder="Insira o nome da agenda"
-              iconName="edit"
-              error={errors?.title}
-              onChange={(e) => {
-                const newValue = e.target.value
-                onChange(newValue)
-
-                const params = new URLSearchParams(searchParams.toString())
-                params.set("name", newValue)
-                router.replace(`?${params.toString()}`, { scroll: false })
-              }}
-            />
-          )}
-        />
-
-        {user && (
+      <Cartao
+        titulo="Dados da agenda"
+        descricao="O nome, quem responde por ela e as regras que o assistente segue ao marcar."
+      >
+        <div className="flex flex-col gap-5">
           <Controller
-            name="user"
+            name="title"
             control={control}
-            render={({ field: { onChange, value } }) => (
-              <CustomSelect
-                label="Responsável"
-                defaultValue={user?.userId}
-                options={[
-                  {
-                    label: formatName(user?.name),
-                    value: user?.userId,
-                  },
-                ]}
+            render={({ field: { value = "", onChange, ...field } }) => (
+              <Input
+                {...field}
                 value={value}
-                onChange={(e: any) => {
-                  onChange(e)
+                label="Nome"
+                placeholder="Insira o nome da agenda"
+                iconName="edit"
+                error={errors?.title}
+                onChange={(e) => {
+                  const newValue = e.target.value
+                  onChange(newValue)
+
+                  const params = new URLSearchParams(searchParams.toString())
+                  params.set("name", newValue)
+                  router.replace(`?${params.toString()}`, { scroll: false })
                 }}
-                iconName="person"
               />
             )}
           />
-        )}
 
-        <Controller
-          name="general_roles"
-          control={control}
-          defaultValue=""
-          render={({ field }) => (
-            <CustomTextarea
-              {...field}
-              label="Regras gerais da agenda"
-              placeholder="Exemplo: Reagendamento em no máximo 24 horas ant..."
-              value={field.value}
-              onChange={(e) => field.onChange(e.target.value)}
+          {user && (
+            <Controller
+              name="user"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <CustomSelect
+                  label="Responsável"
+                  defaultValue={user?.userId}
+                  options={[
+                    {
+                      label: nomeParaExibir(user?.name),
+                      value: user?.userId,
+                    },
+                  ]}
+                  value={value}
+                  onChange={(e: any) => {
+                    onChange(e)
+                  }}
+                  iconName="person"
+                />
+              )}
             />
           )}
-        />
-      </div>
 
-      <h3 className="text-[20px] text-[#707070] font-bold mt-8">
-        Disponibilidade
-      </h3>
+          <Controller
+            name="general_roles"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <CustomTextarea
+                {...field}
+                label="Regras gerais da agenda"
+                placeholder="Exemplo: Reagendamento em no máximo 24 horas ant..."
+                value={field.value}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
+            )}
+          />
+        </div>
+      </Cartao>
 
-      {errors?.available_days &&
-        typeof errors.available_days === "object" &&
-        "message" in errors.available_days && (
-          <p className="text-xs font-medium text-red-500 dark:text-red-400 mt-1">
-            {errors.available_days.message as string}
-          </p>
-        )}
+      <Cartao
+        titulo="Disponibilidade"
+        descricao="Os dias e turnos em que o assistente pode oferecer horários."
+        semRecuo
+      >
+        {errors?.available_days &&
+          typeof errors.available_days === "object" &&
+          "message" in errors.available_days && (
+            <p className="px-7 pt-4 text-xs font-medium text-red-500 max-md:px-5 dark:text-red-400">
+              {errors.available_days.message as string}
+            </p>
+          )}
 
-      <hr className="w-full h-px border-t-0 bg-gray-200 mt-3.5" />
-
-      <div className="p-4 bg-[#FCFCFD] flex flex-col gap-4">
-        {fields.map((day, index) => (
-          <div
-            key={day.day}
-            className="flex flex-col gap-1 border-b border-[#F5F5F5] pb-3.5"
-          >
-            <div className="flex max-[1300px]:flex-col items-center justify-between">
-              <div className="w-full flex items-center gap-3">
-                <Controller
-                  name="available_days"
-                  control={control}
-                  render={() => (
-                    <Checkbox
-                      id={`dia-${day.day}`}
-                      className="w-6 h-6 
+        <div className="flex flex-col">
+          {fields.map((day, index) => (
+            <div
+              key={day.day}
+              className="flex flex-col gap-3 border-t border-[#F1EEE8] px-7 py-4 first:border-t-0 max-md:px-5"
+            >
+              <div className="flex min-h-11 flex-wrap items-center justify-between gap-3">
+                <div className="flex min-w-[150px] items-center gap-3">
+                  <Controller
+                    name="available_days"
+                    control={control}
+                    render={() => (
+                      <Checkbox
+                        id={`dia-${day.day}`}
+                        className="w-6 h-6 
              border border-gray-300 
              data-[state=checked]:bg-[#348C98] 
              data-[state=checked]:text-white 
              data-[state=checked]:border-transparent 
              focus-visible:ring-0 
              focus-visible:ring-offset-0"
-                      checked={day.available}
-                      onCheckedChange={() => {
-                        const newAvailable = !day.available
-                        update(index, {
-                          ...day,
-                          available: newAvailable,
-                          start_time: newAvailable
-                            ? day.start_time &&
-                              /^([01]\d|2[0-3]):([0-5]\d)$/.test(day.start_time)
-                              ? day.start_time
-                              : "08:00"
-                            : "",
-                          end_time: newAvailable
-                            ? day.end_time &&
-                              /^([01]\d|2[0-3]):([0-5]\d)$/.test(day.end_time)
-                              ? day.end_time
-                              : "12:00"
-                            : "",
-                          online: newAvailable ? true : false,
-                          in_person: newAvailable ? true : false,
-                          shift2_available: newAvailable
-                            ? day.shift2_available
-                            : false,
-                          shift2_start_time:
-                            newAvailable && day.shift2_available
-                              ? day.shift2_start_time &&
-                                /^([01]\d|2[0-3]):([0-5]\d)$/.test(
-                                  day.shift2_start_time
-                                )
-                                ? day.shift2_start_time
-                                : "14:00"
-                              : "",
-                          shift2_end_time:
-                            newAvailable && day.shift2_available
-                              ? day.shift2_end_time &&
-                                /^([01]\d|2[0-3]):([0-5]\d)$/.test(
-                                  day.shift2_end_time
-                                )
-                                ? day.shift2_end_time
-                                : "18:00"
-                              : "",
-                        })
-                      }}
-                    />
-                  )}
-                />
-
-                <label
-                  htmlFor={`dia-${day.day}`}
-                  className="text-sm text-[#3D3D3D] font-semibold"
-                >
-                  {translateWeekdayToLocale(day.day)}
-                </label>
-              </div>
-
-              {day.available && (
-                <div className="flex max-xl:flex-col gap-2 items-end">
-                  <div className="flex flex-col gap-2">
-                    <Controller
-                      name="available_days"
-                      control={control}
-                      render={() => (
-                        <TimeInput
-                          label="Começa"
-                          value={day.start_time}
-                          onChange={(e) => {
-                            update(index, {
-                              ...day,
-                              start_time: e,
-                            })
-                          }}
-                          className="w-[75px]"
-                        />
-                      )}
-                    />
-
-                    {errors?.available_days?.[index]?.start_time && (
-                      <p className="text-xs font-medium text-red-500 dark:text-red-400">
-                        {errors?.available_days?.[index]?.start_time?.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <Controller
-                      name="title"
-                      control={control}
-                      render={() => (
-                        <TimeInput
-                          label="Termina"
-                          value={day.end_time}
-                          onChange={(e) => {
-                            update(index, {
-                              ...day,
-                              end_time: e,
-                            })
-                          }}
-                          className="w-[75px]"
-                        />
-                      )}
-                    />
-
-                    {errors?.available_days?.[index]?.end_time && (
-                      <p className="text-xs font-medium text-red-500 dark:text-red-400">
-                        {errors?.available_days?.[index]?.end_time?.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col gap-2 max-md:ml-0 md:ml-4">
-                    <label className="text-xs text-[#707070] font-medium">
-                      Modalidade
-                    </label>
-                    <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
-                      <CustomCheckbox
-                        label="Online"
-                        checked={day.online || false}
-                        onChange={(checked) => {
+                        checked={day.available}
+                        onCheckedChange={() => {
+                          const newAvailable = !day.available
                           update(index, {
                             ...day,
-                            online: checked,
+                            available: newAvailable,
+                            start_time: newAvailable
+                              ? day.start_time &&
+                                /^([01]\d|2[0-3]):([0-5]\d)$/.test(
+                                  day.start_time
+                                )
+                                ? day.start_time
+                                : "08:00"
+                              : "",
+                            end_time: newAvailable
+                              ? day.end_time &&
+                                /^([01]\d|2[0-3]):([0-5]\d)$/.test(day.end_time)
+                                ? day.end_time
+                                : "12:00"
+                              : "",
+                            online: newAvailable ? true : false,
+                            in_person: newAvailable ? true : false,
+                            shift2_available: newAvailable
+                              ? day.shift2_available
+                              : false,
+                            shift2_start_time:
+                              newAvailable && day.shift2_available
+                                ? day.shift2_start_time &&
+                                  /^([01]\d|2[0-3]):([0-5]\d)$/.test(
+                                    day.shift2_start_time
+                                  )
+                                  ? day.shift2_start_time
+                                  : "14:00"
+                                : "",
+                            shift2_end_time:
+                              newAvailable && day.shift2_available
+                                ? day.shift2_end_time &&
+                                  /^([01]\d|2[0-3]):([0-5]\d)$/.test(
+                                    day.shift2_end_time
+                                  )
+                                  ? day.shift2_end_time
+                                  : "18:00"
+                                : "",
                           })
                         }}
                       />
-                      <CustomCheckbox
-                        label="Presencial"
-                        checked={day.in_person || false}
-                        onChange={(checked) => {
-                          update(index, {
-                            ...day,
-                            in_person: checked,
-                          })
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {day.available && (
-              <div className="pl-14 max-[1300px]:flex-col flex items-center justify-between">
-                <div className="w-full flex items-center gap-3">
-                  <Checkbox
-                    id={`turno2-${day.day}`}
-                    className="w-6 h-6 
-             border border-gray-300 
-             data-[state=checked]:bg-[#348C98] 
-             data-[state=checked]:text-white 
-             data-[state=checked]:border-transparent 
-             focus-visible:ring-0 
-             focus-visible:ring-offset-0"
-                    checked={day.shift2_available}
-                    onCheckedChange={() => {
-                      const newShift2 = !day.shift2_available
-                      update(index, {
-                        ...day,
-                        shift2_available: newShift2,
-                        shift2_start_time: newShift2
-                          ? day.shift2_start_time &&
-                            /^([01]\d|2[0-3]):([0-5]\d)$/.test(
-                              day.shift2_start_time
-                            )
-                            ? day.shift2_start_time
-                            : "14:00"
-                          : "",
-                        shift2_end_time: newShift2
-                          ? day.shift2_end_time &&
-                            /^([01]\d|2[0-3]):([0-5]\d)$/.test(
-                              day.shift2_end_time
-                            )
-                            ? day.shift2_end_time
-                            : "18:00"
-                          : "",
-                        shift2_online: newShift2 ? true : false,
-                        shift2_in_person: newShift2 ? true : false,
-                      })
-                    }}
+                    )}
                   />
 
                   <label
-                    htmlFor={`turno2-${day.day}`}
-                    className="text-sm text-[#3D3D3D] font-semibold"
+                    htmlFor={`dia-${day.day}`}
+                    className="cursor-pointer text-[14px] font-medium text-tinta"
                   >
-                    Dois turnos
+                    {translateWeekdayToLocale(day.day)}
                   </label>
                 </div>
 
-                {day.shift2_available && (
-                  <div className="flex max-xl:flex-col gap-2 items-end">
+                {day.available && (
+                  <div className="flex flex-wrap items-end gap-3">
                     <div className="flex flex-col gap-2">
                       <Controller
                         name="available_days"
@@ -481,11 +356,11 @@ export function FormComponent({
                         render={() => (
                           <TimeInput
                             label="Começa"
-                            value={day.shift2_start_time}
+                            value={day.start_time}
                             onChange={(e) => {
                               update(index, {
                                 ...day,
-                                shift2_start_time: e,
+                                start_time: e,
                               })
                             }}
                             className="w-[75px]"
@@ -493,12 +368,9 @@ export function FormComponent({
                         )}
                       />
 
-                      {errors?.available_days?.[index]?.shift2_start_time && (
+                      {errors?.available_days?.[index]?.start_time && (
                         <p className="text-xs font-medium text-red-500 dark:text-red-400">
-                          {
-                            errors?.available_days?.[index]?.shift2_start_time
-                              ?.message
-                          }
+                          {errors?.available_days?.[index]?.start_time?.message}
                         </p>
                       )}
                     </div>
@@ -510,11 +382,11 @@ export function FormComponent({
                         render={() => (
                           <TimeInput
                             label="Termina"
-                            value={day.shift2_end_time}
+                            value={day.end_time}
                             onChange={(e) => {
                               update(index, {
                                 ...day,
-                                shift2_end_time: e,
+                                end_time: e,
                               })
                             }}
                             className="w-[75px]"
@@ -522,38 +394,35 @@ export function FormComponent({
                         )}
                       />
 
-                      {errors?.available_days?.[index]?.shift2_end_time && (
+                      {errors?.available_days?.[index]?.end_time && (
                         <p className="text-xs font-medium text-red-500 dark:text-red-400">
-                          {
-                            errors?.available_days?.[index]?.shift2_end_time
-                              ?.message
-                          }
+                          {errors?.available_days?.[index]?.end_time?.message}
                         </p>
                       )}
                     </div>
 
-                    <div className="flex flex-col gap-2 max-md:ml-0 md:ml-4">
-                      <label className="text-xs text-[#707070] font-medium">
+                    <div className="flex flex-col gap-2 md:ml-3">
+                      <label className="text-xs font-medium text-tinta-2">
                         Modalidade
                       </label>
                       <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
                         <CustomCheckbox
                           label="Online"
-                          checked={day.shift2_online || false}
+                          checked={day.online || false}
                           onChange={(checked) => {
                             update(index, {
                               ...day,
-                              shift2_online: checked,
+                              online: checked,
                             })
                           }}
                         />
                         <CustomCheckbox
                           label="Presencial"
-                          checked={day.shift2_in_person || false}
+                          checked={day.in_person || false}
                           onChange={(checked) => {
                             update(index, {
                               ...day,
-                              shift2_in_person: checked,
+                              in_person: checked,
                             })
                           }}
                         />
@@ -562,19 +431,159 @@ export function FormComponent({
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        ))}
-      </div>
 
-      <div className="w-full flex items-center justify-end max-md:flex-col max-md:gap-4 mt-8 max-md:pb-10">
+              {day.available && (
+                <div className="flex min-h-11 flex-wrap items-center justify-between gap-3 pl-8">
+                  <div className="flex min-w-[118px] items-center gap-3">
+                    <Checkbox
+                      id={`turno2-${day.day}`}
+                      className="w-6 h-6 
+             border border-gray-300 
+             data-[state=checked]:bg-[#348C98] 
+             data-[state=checked]:text-white 
+             data-[state=checked]:border-transparent 
+             focus-visible:ring-0 
+             focus-visible:ring-offset-0"
+                      checked={day.shift2_available}
+                      onCheckedChange={() => {
+                        const newShift2 = !day.shift2_available
+                        update(index, {
+                          ...day,
+                          shift2_available: newShift2,
+                          shift2_start_time: newShift2
+                            ? day.shift2_start_time &&
+                              /^([01]\d|2[0-3]):([0-5]\d)$/.test(
+                                day.shift2_start_time
+                              )
+                              ? day.shift2_start_time
+                              : "14:00"
+                            : "",
+                          shift2_end_time: newShift2
+                            ? day.shift2_end_time &&
+                              /^([01]\d|2[0-3]):([0-5]\d)$/.test(
+                                day.shift2_end_time
+                              )
+                              ? day.shift2_end_time
+                              : "18:00"
+                            : "",
+                          shift2_online: newShift2 ? true : false,
+                          shift2_in_person: newShift2 ? true : false,
+                        })
+                      }}
+                    />
+
+                    <label
+                      htmlFor={`turno2-${day.day}`}
+                      className="cursor-pointer text-[14px] font-medium text-tinta"
+                    >
+                      Dois turnos
+                    </label>
+                  </div>
+
+                  {day.shift2_available && (
+                    <div className="flex flex-wrap items-end gap-3">
+                      <div className="flex flex-col gap-2">
+                        <Controller
+                          name="available_days"
+                          control={control}
+                          render={() => (
+                            <TimeInput
+                              label="Começa"
+                              value={day.shift2_start_time}
+                              onChange={(e) => {
+                                update(index, {
+                                  ...day,
+                                  shift2_start_time: e,
+                                })
+                              }}
+                              className="w-[75px]"
+                            />
+                          )}
+                        />
+
+                        {errors?.available_days?.[index]?.shift2_start_time && (
+                          <p className="text-xs font-medium text-red-500 dark:text-red-400">
+                            {
+                              errors?.available_days?.[index]?.shift2_start_time
+                                ?.message
+                            }
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Controller
+                          name="title"
+                          control={control}
+                          render={() => (
+                            <TimeInput
+                              label="Termina"
+                              value={day.shift2_end_time}
+                              onChange={(e) => {
+                                update(index, {
+                                  ...day,
+                                  shift2_end_time: e,
+                                })
+                              }}
+                              className="w-[75px]"
+                            />
+                          )}
+                        />
+
+                        {errors?.available_days?.[index]?.shift2_end_time && (
+                          <p className="text-xs font-medium text-red-500 dark:text-red-400">
+                            {
+                              errors?.available_days?.[index]?.shift2_end_time
+                                ?.message
+                            }
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2 md:ml-3">
+                        <label className="text-xs font-medium text-tinta-2">
+                          Modalidade
+                        </label>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
+                          <CustomCheckbox
+                            label="Online"
+                            checked={day.shift2_online || false}
+                            onChange={(checked) => {
+                              update(index, {
+                                ...day,
+                                shift2_online: checked,
+                              })
+                            }}
+                          />
+                          <CustomCheckbox
+                            label="Presencial"
+                            checked={day.shift2_in_person || false}
+                            onChange={(checked) => {
+                              update(index, {
+                                ...day,
+                                shift2_in_person: checked,
+                              })
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </Cartao>
+
+      <div className="flex items-center justify-end max-md:flex-col max-md:items-stretch">
         <Button
           type="submit"
           disabled={isSubmitting}
           isLoading={isSubmitting}
-          className="px-10 cursor-pointer max-md:w-full"
+          className="px-5"
           variant="primary"
-          iconLeft={<Check />}
+          iconLeft={<Check size={16} />}
         >
           Salvar
         </Button>

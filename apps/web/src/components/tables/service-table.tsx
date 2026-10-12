@@ -19,7 +19,12 @@ import { EmptySearch } from "../empty-search"
 import { useService } from "@/http/hooks/service"
 import { translateServiceArea } from "@/utils/service-area"
 
-export function ServiceTable() {
+interface ServiceTableProps {
+  /** Sem a moldura própria — para quando a tabela já está num cartão. */
+  semMoldura?: boolean
+}
+
+export function ServiceTable({ semMoldura = false }: ServiceTableProps = {}) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
@@ -52,8 +57,8 @@ export function ServiceTable() {
 
   return (
     <>
-      <div className="mt-6 w-full">
-        <TableCard>
+      <div className={semMoldura ? "w-full" : "mt-5 w-full"}>
+        <TableCard semMoldura={semMoldura}>
           <Table>
             <TableHeader className="max-lg:hidden">
               <TableRow>
@@ -68,14 +73,14 @@ export function ServiceTable() {
                 <TableRow key={service?._id}>
                   <TableCell className="font-medium">
                     <div className="flex gap-2.5 items-center">
-                      <div className="w-11 h-11 flex items-center justify-center rounded-[12px] bg-[#ECF7F8]">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-nevoa">
                         <Icon
                           icon="octicon:law-16"
-                          className="w-6 h-6 text-[#348C98]"
+                          className="h-4 w-4 text-turquesa-profundo"
                         />
                       </div>
 
-                      <p className="text-sm text-[#707070]">
+                      <p className="text-[13.5px] font-medium text-tinta">
                         {(service?.title ?? "").length > 20
                           ? `${service?.title?.substring(0, 20)}...`
                           : service?.title}
@@ -84,7 +89,7 @@ export function ServiceTable() {
                   </TableCell>
 
                   <TableCell className="hidden lg:table-cell">
-                    <p className="text-base text-[#707070]">
+                    <p className="text-[13.5px] text-tinta-2">
                       {translateServiceArea(service?.area)}
                     </p>
                   </TableCell>
@@ -95,22 +100,12 @@ export function ServiceTable() {
                         {
                           label: "Editar",
                           onClick: () => handleAddEditServiceId(service?._id),
-                          icon: (
-                            <Icon
-                              icon="mdi:edit"
-                              className="h-[18px] w-[18px]"
-                            />
-                          ),
+                          icon: <Icon icon="mdi:edit" className="h-4 w-4" />,
                         },
                         {
                           label: "Excluir",
                           onClick: () => handleAddDeleteServiceId(service?._id),
-                          icon: (
-                            <Icon
-                              icon="mdi:delete"
-                              className="h-[18px] w-[18px]"
-                            />
-                          ),
+                          icon: <Icon icon="mdi:delete" className="h-4 w-4" />,
                           danger: true,
                         },
                       ]}

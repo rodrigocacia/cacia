@@ -19,17 +19,23 @@ import {
   subDays,
   isSameMonth,
   isSameDay,
+  isToday,
   parseISO,
 } from "date-fns"
 
 import { ptBR } from "date-fns/locale"
 
-import { Event, EventType } from "@/types/event"
+import { Event } from "@/types/event"
+
+import { ehPrazo } from "./estilo-do-evento"
 
 import { useCalendarStore } from "@/stores/use-calendar-store"
 import { useRouter, useSearchParams } from "next/navigation"
 
-const daysOfWeek = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"]
+const daysOfWeek = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
+
+const BOTAO_NAV =
+  "flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-filete-forte bg-white text-tinta-2 transition-colors hover:bg-gray-100 hover:text-tinta"
 
 interface CalendarMonthProps {
   events: Event[]
@@ -137,84 +143,94 @@ export function CalendarMonth({ events }: CalendarMonthProps) {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg text-[#3D3D3D]">
-          <b>{getFormattedTitleDay()}</b> {getFormattedTitle()}
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h2 className="font-display text-[22px] leading-none text-tinta first-letter:uppercase">
+          {getFormattedTitleDay()}{" "}
+          <span className="text-tinta-3">{getFormattedTitle()}</span>
         </h2>
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <button
-            className="cursor-pointer p-2 rounded-full bg-[#ECF7F8] flex items-center justify-center"
+            type="button"
+            aria-label="Anterior"
+            className={BOTAO_NAV}
             onClick={() => handleNavigation("prev")}
           >
-            <ChevronLeft className="w-4 h-4 text-[#348C98]" />
+            <ChevronLeft className="h-4 w-4" />
           </button>
           <button
-            className="cursor-pointer p-2 rounded-full bg-[#ECF7F8] flex items-center justify-center"
+            type="button"
+            aria-label="Próximo"
+            className={BOTAO_NAV}
             onClick={() => handleNavigation("next")}
           >
-            <ChevronRight className="w-4 h-4 text-[#348C98]" />
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 text-center text-sm text-[#9CA3AF] font-semibold">
+      <div className="grid grid-cols-7 text-center">
         {daysOfWeek.map((day) => (
-          <div key={day}>{day}</div>
+          <div key={day} className="rotulo py-1.5">
+            {day}
+          </div>
         ))}
       </div>
 
-      <div className="mt-2 space-y-1">
+      <div className="mt-1 space-y-0.5">
         {weeks.map((week, i) => (
-          <div key={i} className="grid grid-cols-7">
+          <div key={i} className="grid grid-cols-7 justify-items-center">
             {week.map((day, j) => {
-              const eventsList = Object.values(
-                events
-                  .filter((event) => isSameDay(parseISO(event.start_time), day))
-                  .reduce(
-                    (acc, event) => {
-                      if (!acc[event.type]) {
-                        acc[event.type] = event
-                      }
-                      return acc
-                    },
-                    {} as Record<EventType, (typeof events)[0]>
-                  )
+              const doDia = events.filter((event) =>
+                isSameDay(parseISO(event.start_time), day)
               )
+              const temPrazo = doDia.some((event) => ehPrazo(event.type))
+              const temOutro = doDia.some((event) => !ehPrazo(event.type))
               const isSelected = isSameDay(day, selectedDate)
               const isInactive = !isSameMonth(day, currentMonth)
+              const hoje = isToday(day)
 
               return (
-                <div
+                <button
+                  type="button"
                   key={j}
                   onClick={() => handleSelectDate(day)}
+                  aria-pressed={isSelected}
+                  aria-label={format(day, "d 'de' MMMM", { locale: ptBR })}
                   className={clsx(
-                    "flex flex-col w-[30px] h-[30px] items-center justify-center cursor-pointer rounded-[8px] max-lg:rounded-[10px] text-sm font-medium",
+                    "tabular relative flex h-9 w-9 cursor-pointer flex-col items-center justify-center rounded-md text-[13px] transition-colors",
                     {
-                      "bg-[#348C98] text-white": isSelected,
+                      "bg-acao font-semibold text-white": isSelected,
+                      "font-semibold text-turquesa-profundo ring-1 ring-acao ring-inset":
+                        hoje && !isSelected,
                       "hover:bg-gray-100": !isSelected,
-                      "text-[#D1D5DB]": isInactive,
-                      "text-[#3D3D3D]": !isInactive,
+                      "text-gray-400": isInactive && !isSelected,
+                      "text-tinta": !isInactive && !isSelected && !hoje,
                     }
                   )}
                 >
                   {format(day, "d")}
 
-                  <div className="flex gap-[2px] mt-[2px]">
-                    {eventsList.map((event, i) => (
-                      <span
-                        key={i}
-                        className={clsx("w-[4px] h-[4px] rounded-full", {
-                          "bg-[#9333EA]": event.type === EventType.HEARING,
-                          "bg-[#16A31B]": event.type === EventType.DEADLINE,
-                          "bg-[#EA820C]": event.type === EventType.INQUIRY,
-                          "bg-[#2563EB]": event.type === EventType.MEETING,
-                          "bg-[#1E40AF]": event.type === EventType.SERVICE,
-                          "bg-[#158f89]": event.type === EventType.COMMITMENT,
-                        })}
-                      />
-                    ))}
-                  </div>
-                </div>
+                  {(temPrazo || temOutro) && (
+                    <span className="absolute bottom-1 flex gap-[2px]">
+                      {temOutro && (
+                        <span
+                          className={clsx(
+                            "h-1 w-1 rounded-full",
+                            isSelected ? "bg-white" : "bg-acao"
+                          )}
+                        />
+                      )}
+                      {temPrazo && (
+                        <span
+                          className={clsx(
+                            "h-1 w-1 rounded-full",
+                            isSelected ? "bg-white" : "bg-ambar-ponto"
+                          )}
+                        />
+                      )}
+                    </span>
+                  )}
+                </button>
               )
             })}
           </div>

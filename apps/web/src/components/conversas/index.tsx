@@ -105,10 +105,10 @@ export function CaixaDeConversas() {
     doContato.data.data.length === 0
 
   return (
-    <div className="flex h-[calc(100dvh-14rem)] min-h-[480px] overflow-hidden rounded-2xl bg-white ring-1 ring-[#ECECF1] max-lg:h-[calc(100dvh-9rem)] max-lg:rounded-none">
+    <div className="-mx-8 -mt-6 -mb-12 flex h-[calc(100svh-68px)] min-h-[480px] overflow-hidden max-lg:-mx-4 max-lg:-mb-0 max-lg:h-[calc(100dvh-52px)] md:rounded-b-[14px]">
       <aside
         className={clsx(
-          "w-full shrink-0 border-r border-[#ECECF1] lg:w-[340px]",
+          "w-full shrink-0 border-r border-[#ECE8E1] lg:w-[340px]",
           selecionada && "max-lg:hidden"
         )}
       >
@@ -134,7 +134,7 @@ export function CaixaDeConversas() {
             aoMudar={recarregar}
           />
         ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-2 bg-[#F7F8FA] p-6 text-center text-sm text-zinc-500">
+          <div className="flex h-full flex-col items-center justify-center gap-2 bg-papel-2 p-6 text-center text-sm text-tinta-3">
             {aberta.error ? (
               <Icon
                 icon="mdi:alert-circle-outline"

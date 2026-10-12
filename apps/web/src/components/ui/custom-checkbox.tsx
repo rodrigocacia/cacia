@@ -22,10 +22,10 @@ export const CustomCheckbox = forwardRef<
         checked={checked}
         onCheckedChange={(value) => onChange(value === true)}
         disabled={disabled}
-        className="data-[state=checked]:bg-[#348C98] data-[state=checked]:border-[#348C98]"
+        className="rounded-[5px] border-filete-forte data-[state=checked]:border-acao data-[state=checked]:bg-acao data-[state=checked]:text-white"
       />
       <label
-        className={`text-sm font-medium text-[#3D3D3D] ${
+        className={`text-[14px] text-tinta ${
           disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
         }`}
         onClick={() => !disabled && onChange(!checked)}
@@ -51,7 +51,7 @@ export const CustomCheckboxGroup = ({
 }: CustomCheckboxGroupProps) => {
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
-      <label className="text-sm font-medium text-[#3D3D3D]">{label}</label>
+      <label className="text-[13px] font-medium text-tinta-2">{label}</label>
       <div className="flex flex-col gap-3">{children}</div>
     </div>
   )

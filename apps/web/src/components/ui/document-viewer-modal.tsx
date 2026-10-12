@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/custom-button"
 import { useCustomers } from "@/http/hooks/customer"
 import { useLeads } from "@/http/hooks/lead"
 import { updateDocument } from "@/http/document/update-document"
-import { formatName } from "@/utils/formatters"
+import { nomeParaExibir } from "@/utils/formatters"
 import { Toast } from "@/components/ui/toast"
 
 export interface DocumentViewer {
@@ -204,7 +204,7 @@ export function DocumentViewerModal({
                         options={
                           allLeads?.map((lead) => ({
                             value: lead._id,
-                            label: formatName(lead.name),
+                            label: nomeParaExibir(lead.name),
                           })) || []
                         }
                         value={selectedLeadId}
@@ -221,7 +221,7 @@ export function DocumentViewerModal({
                         options={
                           customers?.map((customer) => ({
                             value: customer._id,
-                            label: formatName(customer.name),
+                            label: nomeParaExibir(customer.name),
                           })) || []
                         }
                         value={selectedCustomerId}

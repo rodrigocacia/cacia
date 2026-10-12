@@ -1,13 +1,15 @@
 "use client"
 
-import { EmptySearch } from "@/components/empty-search"
-import { Icon } from "@/components/icone"
-import { CardAgenda } from "./components/card-agenda"
-import { Button } from "@/components/ui/custom-button"
 import Link from "next/link"
-import { useCalendar } from "@/http/hooks/calendar"
 import { useSearchParams } from "next/navigation"
+import { Plus } from "lucide-react"
+
+import { EmptySearch } from "@/components/empty-search"
+import { useCalendar } from "@/http/hooks/calendar"
 import { Spinner } from "@/components/ui/sppiner"
+
+import { Cartao } from "../../_ui/cartao"
+import { CardAgenda } from "./components/card-agenda"
 
 export function AgendaDetail() {
   const params = useSearchParams()
@@ -18,61 +20,45 @@ export function AgendaDetail() {
 
   if (isLoading) {
     return (
-      <div className="p-8 max-md:p-0 pb-4 md:rounded-2xl md:shadow-sm">
+      <Cartao titulo="Agendas">
         <Spinner />
-      </div>
+      </Cartao>
     )
   }
 
   return (
-    <div className="p-8 max-md:p-0 pb-4 md:rounded-2xl md:shadow-sm">
-      <div className="flex items-center gap-3 max-md:mt-4">
-        <Icon icon="mdi:calendar-check" className="w-8 h-8 text-[#BDBDBD]" />
-
-        <h3 className="text-[20px] text-[#707070] font-bold">Agendas</h3>
-      </div>
-
-      <hr className="w-full my-4 max-md:my-2 h-px border-t-0 bg-gray-200" />
-
-      <div className="w-full flex items-center gap-1 mt-[22px]">
-        <Icon icon="mdi:calendar-check" className="text-[#BDBDBD] w-5 h-5" />
-
-        <h2 className="text-sm text-[#3D3D3D] font-bold">
-          Todas as agendas ({calendar?.length})
-        </h2>
-      </div>
-
-      <div className="h-full w-full mt-4 flex flex-col justify-between gap-8">
-        <div className="w-full flex flex-col gap-4">
-          {calendar.length === 0 ? (
-            <EmptySearch title="Sem agendas cadastradas" subtitle="" />
-          ) : null}
-
-          {calendar.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 max-[900px]:grid-cols-1">
-              {calendar.map((agenda) => (
-                <CardAgenda key={agenda._id} agenda={agenda} />
-              ))}
-            </div>
-          ) : null}
+    <Cartao
+      titulo={
+        <span className="flex items-baseline gap-2">
+          Agendas
+          <span className="font-mono text-xs font-normal text-tinta-3 tabular">
+            {calendar?.length}
+          </span>
+        </span>
+      }
+      descricao="Os horários em que o assistente pode marcar consultas e compromissos."
+      acao={
+        <Link
+          href="/setting/agenda/new"
+          className="inline-flex h-9 items-center gap-2 rounded-[9px] bg-acao px-3.5 text-[13.5px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition hover:bg-acao-escura"
+        >
+          <Plus size={15} strokeWidth={2} aria-hidden />
+          Nova agenda
+        </Link>
+      }
+      semRecuo
+    >
+      {calendar.length === 0 ? (
+        <div className="p-7 max-md:p-5">
+          <EmptySearch title="Sem agendas cadastradas" subtitle="" />
         </div>
-
-        <div className="w-full flex-1 flex items-center justify-end max-md:justify-end max-md:items-end">
-          <Link href="/setting/agenda/new">
-            <Button
-              className="cursor-pointer max-md:rounded-full max-md:flex max-md:justify-center max-md:items-center"
-              iconLeft={
-                <Icon
-                  icon="mdi:plus"
-                  className="cursor-pointer max-md:hidden"
-                />
-              }
-            >
-              <span className="max-md:hidden">Nova agenda</span>
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </div>
+      ) : (
+        <ul className="flex flex-col">
+          {calendar.map((agenda) => (
+            <CardAgenda key={agenda._id} agenda={agenda} />
+          ))}
+        </ul>
+      )}
+    </Cartao>
   )
 }

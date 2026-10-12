@@ -15,7 +15,7 @@ export function HeaderToGoBack({ link, bgColor, image }: HeaderToGoBackProps) {
   return (
     <header
       className={`w-full ${
-        image ? image : bgColor ? "bg-[#ECF7F8]" : "bg-[#BBE2E7]"
+        image ? image : bgColor ? "bg-[#EEF6F7]" : "bg-[#BBE2E7]"
       } py-4 px-4 flex items-center justify-between`}
     >
       <button

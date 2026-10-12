@@ -15,7 +15,7 @@ import { updateOffice } from "@/http/office/udpate-office"
 import { Toast } from "@/components/ui/toast"
 
 import { Check } from "lucide-react"
-import { Icon } from "@/components/icone"
+import { ChipSituacao } from "./partes-conexao"
 import { Switch } from "@/components/ui/switch"
 import { formatDocument } from "@/utils/formatters"
 import { mensagemDeErro } from "@/utils/error-handlers"
@@ -80,7 +80,7 @@ export function FormOficialApi() {
     <div className="w-full h-full">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full mt-6 flex flex-col justify-between gap-8 pb-10"
+        className="mt-6 flex w-full flex-col justify-between gap-6"
       >
         <div className="w-full flex flex-col gap-4">
           <Input
@@ -117,38 +117,32 @@ export function FormOficialApi() {
             </div>
           </div>
 
-          <div className="w-full flex justify-between bg-[#ECF7F8] px-3 py-4 rounded-[12px]">
-            <div className="flex flex-col gap-2">
-              <h4 className="text-base text-[#707070] font-semibold">
+          <div className="mt-2 flex items-center justify-between gap-6 border-t border-filete pt-5">
+            <div className="flex min-w-0 flex-col gap-1.5">
+              <span
+                id="status-conexao-oficial"
+                className="text-[14px] font-medium text-tinta"
+              >
                 Status da conexão
-              </h4>
-
-              <p className="text-sm text-[#707070]">
+              </span>
+              <p className="text-[13px] text-tinta-3">
                 Receba alertas de novos agendamentos
               </p>
-
-              <div className="w-fit mt-2 flex items-center gap-1.5 bg-[#EDFDEE] rounded-full px-2.5 py-[7px]">
-                <Icon
-                  icon="ri:whatsapp-fill"
-                  className="text-[#16A31B] w-4 h-4"
-                />
-
-                <span className="text-xs text-[#16A31B] font-semibold">
-                  WhatsApp habilitado
-                </span>
-              </div>
+              <ChipSituacao situacao="conectado">
+                WhatsApp habilitado
+              </ChipSituacao>
             </div>
 
-            <Switch />
+            <Switch aria-labelledby="status-conexao-oficial" />
           </div>
         </div>
 
-        <div className="w-full flex items-center justify-end max-md:flex-col max-md:gap-4 mt-8 max-md:pb-10">
+        <div className="flex w-full items-center justify-end border-t border-filete pt-6 max-md:flex-col max-md:gap-4">
           <Button
             type="submit"
             disabled={isSubmitting}
             isLoading={isSubmitting}
-            className="px-10 cursor-pointer max-md:w-full"
+            className="max-md:w-full"
             variant="primary"
             iconLeft={<Check />}
           >

@@ -1,15 +1,11 @@
-import { Painel } from "./painel"
+import { Header } from "@/components/header"
+import { Inicio } from "@/components/inicio"
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: Promise<{
-    period?: string
-    startDate?: string
-    endDate?: string
-  }>
-}) {
-  const { period, startDate, endDate } = await searchParams
-
-  return <Painel period={period} startDate={startDate} endDate={endDate} />
+export default function DashboardPage() {
+  return (
+    <div className="w-full max-lg:px-4">
+      <Header title="Início" />
+      <Inicio />
+    </div>
+  )
 }

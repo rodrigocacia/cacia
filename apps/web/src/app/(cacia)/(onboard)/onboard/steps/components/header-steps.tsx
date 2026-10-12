@@ -1,47 +1,39 @@
 "use client"
 
-import Image from "next/image"
-
 import { useOnboardingStore } from "@/stores/use-onboard-store"
 
-import { stepsOnboard } from "@/constants/steps"
-
-import { Steps } from "@/components/ui/steps"
+import { PASSOS_DO_ONBOARDING, TOTAL_DE_PASSOS, numeroDoPasso } from "./passos"
 
 interface HeaderStepsProps {
   customTitle?: string
 }
 
+/**
+ * Abertura do painel de cada etapa: número da etapa em mono, a pergunta em
+ * serifa e uma linha de apoio. O progresso fica na lista do painel escuro.
+ */
 export function HeaderSteps({ customTitle }: HeaderStepsProps) {
   const { step } = useOnboardingStore()
 
+  const atual = step - 1
+  const etapa = PASSOS_DO_ONBOARDING[atual]
+
   return (
-    <div className="w-full flex flex-col gap-10">
-      <div className="w-full max-lg:hidden">
-        <Image src="/logo-cacia.png" alt="mockup" width={200} height={61} />
-      </div>
+    <div className="flex w-full flex-col gap-2.5 pb-7">
+      <span className="rotulo">
+        Etapa {numeroDoPasso(atual)} de{" "}
+        {String(TOTAL_DE_PASSOS).padStart(2, "0")}
+      </span>
 
-      <div className="flex flex-col gap-3.5">
-        <h3 className="text-2xl text-[#3D3D3D] font-semibold">
-          Primeiros passos
-        </h3>
+      <h1 className="font-display text-[38px] leading-[1.08] tracking-[-0.02em] text-tinta max-md:text-[30px]">
+        {customTitle || etapa?.titulo}
+      </h1>
 
-        <h3 className="text-lg text-[#BDBDBD] font-semibold">
-          {step === 1
-            ? "Eu organizo os compromissos. Você define como quer atender."
-            : step === 2
-              ? "Personalize como vou falar com seus leads e clientes."
-              : step === 3
-                ? "Personalize minhas notificações e recados para você."
-                : "Me abasteça com conhecimento que eu cuido do resto!"}
-        </h3>
-      </div>
-
-      <Steps
-        steps={stepsOnboard}
-        currentStep={step - 1}
-        customTitle={customTitle}
-      />
+      {etapa?.descricao && (
+        <p className="text-[14.5px] leading-relaxed text-tinta-2">
+          {etapa.descricao}
+        </p>
+      )}
     </div>
   )
 }

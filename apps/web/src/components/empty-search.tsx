@@ -1,4 +1,4 @@
-import { Icon } from "@/components/icone"
+import { SearchX } from "lucide-react"
 
 interface EmptySearchProps {
   title: string
@@ -7,13 +7,15 @@ interface EmptySearchProps {
 
 export function EmptySearch({ title, subtitle }: EmptySearchProps) {
   return (
-    <div className="w-full flex flex-col items-center justify-center mt-12 gap-3.5">
-      <Icon icon="mdi:clipboard-search" className="w-20 h-20 text-[#BBE2E7]" />
+    <div className="mt-12 flex w-full flex-col items-center justify-center gap-3 text-center">
+      <span className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-papel-2 text-tinta-3">
+        <SearchX size={20} strokeWidth={1.7} aria-hidden />
+      </span>
 
-      <div className="w-full flex flex-col items-center gap-2.5">
-        <h3 className="text-base text-[#BDBDBD] font-semibold">{title}</h3>
+      <div className="flex w-full flex-col items-center gap-1">
+        <h3 className="text-[14.5px] font-semibold text-tinta">{title}</h3>
 
-        <p className="text-sm text-[#BDBDBD]">{subtitle}</p>
+        <p className="text-[13.5px] text-tinta-3">{subtitle}</p>
       </div>
     </div>
   )

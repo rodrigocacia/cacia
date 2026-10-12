@@ -132,18 +132,24 @@ export function ClientDocumentGrid({ folders }: ClientDocumentGridProps) {
 
   return (
     <>
-      <div className="w-full flex flex-col gap-4 mt-6">
-        <div className="grid grid-cols-3 gap-3  max-xl:grid-cols-2 max-lg:grid-cols-1">
-          {folders?.map((folder) => (
-            <div
-              key={folder?._id}
-              onClick={() => handleItemClick(folder)}
-              style={{ cursor: "pointer" }}
-            >
-              <CardDocument folder={folder} onDelete={handleDeleteClick} />
-            </div>
-          ))}
+      <div className="mt-5 w-full overflow-hidden rounded-[14px] border border-filete bg-white">
+        <div className="flex items-center gap-2.5 border-b border-filete bg-papel px-5 py-2.5">
+          <span className="rotulo">Todas as pastas</span>
+          <span className="font-mono text-[11px] text-tinta-3 tabular">
+            {folders.length}
+          </span>
         </div>
+
+        <ul className="flex flex-col">
+          {folders?.map((folder) => (
+            <CardDocument
+              key={folder?._id}
+              folder={folder}
+              onOpen={() => handleItemClick(folder)}
+              onDelete={handleDeleteClick}
+            />
+          ))}
+        </ul>
       </div>
 
       <DocumentViewerModal

@@ -9,7 +9,7 @@ export const leadFilters = [
     icon: (
       <Icon
         icon="mdi:folder-clock-outline"
-        className="text-[#BDBDBD] w-4 h-4"
+        className="text-[#A39C93] w-4 h-4"
       />
     ),
   },
@@ -17,7 +17,7 @@ export const leadFilters = [
     id: "2",
     name: "Em contato",
     status: "IN_CONTACT",
-    icon: <Icon icon="mdi:message-fast" className="text-[#BDBDBD] w-4 h-4" />,
+    icon: <Icon icon="mdi:message-fast" className="text-[#A39C93] w-4 h-4" />,
   },
   {
     id: "3",
@@ -26,7 +26,7 @@ export const leadFilters = [
     icon: (
       <Icon
         icon="mdi:account-check-outline"
-        className="text-[#BDBDBD] w-4 h-4"
+        className="text-[#A39C93] w-4 h-4"
       />
     ),
   },
@@ -37,7 +37,7 @@ export const leadFilters = [
     icon: (
       <Icon
         icon="mdi:close-circle-outline"
-        className="text-[#BDBDBD] w-4 h-4"
+        className="text-[#A39C93] w-4 h-4"
       />
     ),
   },

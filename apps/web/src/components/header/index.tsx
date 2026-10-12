@@ -1,85 +1,61 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Icon } from "@/components/icone"
-
 import { SidebarTrigger } from "../ui/sidebar"
-import { CustomAvatar } from "../ui/custom-avatar"
-import { getCurrentUser } from "@/auth/auth"
-import Link from "next/link"
 import { getNotificationUnreadCount } from "@/http/notification/get-notification-unread-count"
 import { NotificationsCount } from "./components/notifications-count"
 import { SWRConfig } from "swr"
-import { formatName } from "@/utils/formatters"
+import { nomeParaExibir } from "@/utils/formatters"
 
 interface HeaderProps {
   title?: string
   name?: string
 }
 
+/**
+ * Faixa do topo do painel: onde se está e os avisos.
+ *
+ * Fina e presa ao topo enquanto a página rola. O nome e o usuário saíram
+ * daqui para o menu lateral; o título grande de cada tela fica com a própria
+ * tela (PageHeader), em serifa.
+ *
+ * As margens negativas desfazem o recuo do painel, para que o filete de
+ * baixo corra de ponta a ponta.
+ */
 export async function Header({ title, name }: HeaderProps) {
-  const user: any = await getCurrentUser()
-
   const notificationunread = await getNotificationUnreadCount()
 
   return (
-    <div className="w-full h-[80px] min-h-12">
-      <div className="h-full w-full min-h-12 px-4 rounded-4xl shadow-md bg-white flex items-center justify-between max-md:px-0 max-md:rounded-none max-md:shadow-none max-md:bg-transparent md:fixed md:top-0 md:left-(--sidebar-width) md:right-0 md:z-30 md:h-[80px] md:w-auto md:rounded-none md:px-8">
-        <div className="flex items-center gap-6">
-          <div className="w-[56px] h-[56px] flex items-center justify-center rounded-[14px] bg-white shadow-md lg:hidden">
-            <SidebarTrigger />
-          </div>
+    <div className="sticky top-0 z-30 -mx-8 mb-6 flex h-[52px] items-center gap-3 border-b border-filete bg-papel/85 px-8 backdrop-blur max-lg:-mx-4 max-lg:px-4 md:rounded-t-[14px]">
+      <SidebarTrigger className="-ml-1 lg:hidden" />
 
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl max-md:text-xl font-bold text-[#3D3D3D]">
-              {title ?? ""}
-            </h1>
+      <div className="flex min-w-0 flex-grow items-center gap-2 text-[13px]">
+        {title ? (
+          <span className={name ? "text-tinta-3" : "font-medium text-tinta"}>
+            {title}
+          </span>
+        ) : null}
 
-            {name ? (
-              <div className="flex items-center pl-4 border-l-2 py-1.5 border-[#F6F6F9]">
-                <p className="text-xl text-[#707070] font-bold">
-                  {formatName(name)}
-                </p>
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="flex gap-6 items-center">
-          <SWRConfig
-            value={{
-              fallback: {
-                notificationunread: notificationunread,
-              },
-              revalidateOnFocus: false,
-              revalidateIfStale: false,
-              revalidateOnReconnect: false,
-              refreshInterval: 5000,
-            }}
-          >
-            <NotificationsCount />
-          </SWRConfig>
-
-          <Link href="/profile/my-data" className="flex items-center gap-4">
-            <CustomAvatar name={user?.name} size="md" />
-
-            <div className="flex max-md:hidden">
-              <div className="flex flex-col">
-                <h3 className="text-base text-[#707070] font-semibold">
-                  {formatName(user?.name)}
-                </h3>
-
-                <p className="text-sm text-[#707070]">{user?.email}</p>
-              </div>
-
-              <div className="h-full flex items-start justify-start">
-                <Icon
-                  icon="mdi:arrow-down-drop"
-                  className="w-6 h-6 text-[#BDBDBD]"
-                />
-              </div>
-            </div>
-          </Link>
-        </div>
+        {name ? (
+          <>
+            <span className="text-gray-400">/</span>
+            <span className="truncate font-medium text-tinta">
+              {nomeParaExibir(name)}
+            </span>
+          </>
+        ) : null}
       </div>
+
+      <SWRConfig
+        value={{
+          fallback: {
+            notificationunread: notificationunread,
+          },
+          revalidateOnFocus: false,
+          revalidateIfStale: false,
+          revalidateOnReconnect: false,
+          refreshInterval: 5000,
+        }}
+      >
+        <NotificationsCount />
+      </SWRConfig>
     </div>
   )
 }

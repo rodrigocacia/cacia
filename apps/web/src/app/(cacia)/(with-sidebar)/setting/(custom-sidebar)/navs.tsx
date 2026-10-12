@@ -1,83 +1,78 @@
-import { Icon } from "@/components/icone"
-import { BiCalendarCheck } from "react-icons/bi"
+import {
+  BarChart3,
+  Bell,
+  Bot,
+  Briefcase,
+  CalendarCheck,
+  CircleHelp,
+  Columns3,
+  Gavel,
+  Headset,
+  Plug,
+  Scale,
+  Sparkles,
+  Tags,
+} from "lucide-react"
 
-export const NavLinks = [
+import type { GrupoDaNav } from "../_ui/nav-secoes"
+
+// As rotas não mudam; só a forma de apresentá-las, agrupadas pelo assunto.
+export const GruposDeConfiguracao: GrupoDaNav[] = [
   {
-    id: 1,
-    name: "Dados profissionais",
-    icon: <Icon icon="mdi:work-outline" className="w-5 h-5" />,
-    path: "/setting/professional-data",
+    rotulo: "Escritório",
+    itens: [
+      {
+        nome: "Dados profissionais",
+        icone: Briefcase,
+        path: "/setting/professional-data",
+      },
+      { nome: "Agendas", icone: CalendarCheck, path: "/setting/agenda" },
+      { nome: "Serviços oferecidos", icone: Scale, path: "/setting/service" },
+      {
+        nome: "Dúvidas frequentes",
+        icone: CircleHelp,
+        path: "/setting/question",
+      },
+    ],
   },
   {
-    id: 2,
-    name: "Agendas",
-    icon: <BiCalendarCheck className="w-5 h-5" />,
-    path: "/setting/agenda",
+    rotulo: "Assistente",
+    itens: [
+      { nome: "Atendimento", icone: Headset, path: "/setting/ia-service" },
+      { nome: "Assistente pessoal", icone: Bot, path: "/setting/ia-assistent" },
+      {
+        nome: "Consulta jurídica",
+        icone: Gavel,
+        path: "/setting/legal-consultation",
+      },
+      {
+        nome: "Conexão WhatsApp",
+        icone: Plug,
+        path: "/setting/whatsapp-connection",
+      },
+    ],
   },
   {
-    id: 3,
-    name: "I.A. Atendimento",
-    icon: <Icon icon="mdi:assistant" className="w-5 h-5" />,
-    path: "/setting/ia-service",
+    rotulo: "Funil",
+    itens: [
+      { nome: "Funil de vendas", icone: Columns3, path: "/setting/funil" },
+      { nome: "Etiquetas", icone: Tags, path: "/setting/etiquetas" },
+      {
+        nome: "Assistente no funil",
+        icone: Sparkles,
+        path: "/setting/ia-funil",
+      },
+    ],
   },
   {
-    id: 4,
-    name: "I.A. Assistente",
-    icon: <Icon icon="mdi:robot" />,
-    path: "/setting/ia-assistent",
-  },
-  {
-    id: 5,
-    name: "Consulta jurídica",
-    icon: <Icon icon="octicon:law-16" />,
-    path: "/setting/legal-consultation",
-  },
-  {
-    id: 6,
-    name: "Conexão WhatsApp",
-    icon: <Icon icon="mdi:plug" />,
-    path: "/setting/whatsapp-connection",
-  },
-  {
-    id: 7,
-    name: "Serviços oferecidos",
-    icon: <Icon icon="octicon:law-16" />,
-    path: "/setting/service",
-  },
-  {
-    id: 8,
-    name: "Dúvidas frequentes",
-    icon: <Icon icon="mingcute:question-fill" />,
-    path: "/setting/question",
-  },
-  {
-    id: 9,
-    name: "Funil de vendas",
-    icon: <Icon icon="mdi:view-column-outline" />,
-    path: "/setting/funil",
-  },
-  {
-    id: 10,
-    name: "Etiquetas",
-    icon: <Icon icon="mdi:tag-multiple-outline" />,
-    path: "/setting/etiquetas",
-  },
-  {
-    id: 11,
-    name: "I.A. no funil",
-    icon: <Icon icon="mdi:robot-outline" />,
-    path: "/setting/ia-funil",
-  },
-  {
-    id: 12,
-    name: "Notificações",
-    icon: <Icon icon="mdi:message-notification" />,
-    path: "/setting/notifications",
-  },
-  {
-    id: 13,
-    name: "Consumo de IA",
-    icon: <Icon icon="mdi:chart-bar" />,
-    path: "/setting/ai-usage",
+    rotulo: "Conta",
+    itens: [
+      { nome: "Notificações", icone: Bell, path: "/setting/notifications" },
+      {
+        nome: "Consumo do assistente",
+        icone: BarChart3,
+        path: "/setting/ai-usage",
+      },
+    ],
   },
 ]

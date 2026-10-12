@@ -8,9 +8,25 @@ import { ReactNode } from "react"
  * o fundo. Aqui a sombra e o arredondamento ficam na borda de fora e as
  * linhas se separam por um filete de 1px.
  */
-export function TableCard({ children }: { children: ReactNode }) {
+export function TableCard({
+  children,
+  semMoldura,
+}: {
+  children: ReactNode
+  /**
+   * Sem borda nem cantos: para quando a tabela já está dentro de um cartão
+   * (telas de configuração) e a moldura viraria cartão dentro de cartão.
+   */
+  semMoldura?: boolean
+}) {
   return (
-    <div className="w-full overflow-hidden rounded-2xl bg-white ring-1 ring-[#ECECF1]">
+    <div
+      className={
+        semMoldura
+          ? "w-full overflow-hidden"
+          : "w-full overflow-hidden rounded-[14px] border border-filete bg-white"
+      }
+    >
       {children}
     </div>
   )
@@ -18,5 +34,5 @@ export function TableCard({ children }: { children: ReactNode }) {
 
 /** Rodapé do cartão, para a paginação. */
 export function TableCardFooter({ children }: { children: ReactNode }) {
-  return <div className="border-t border-[#F1F1F5] px-4 py-3.5">{children}</div>
+  return <div className="border-t border-filete px-4 py-3">{children}</div>
 }

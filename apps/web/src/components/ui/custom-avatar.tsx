@@ -20,39 +20,16 @@ export function CustomAvatar({
     return parts[0][0] + parts[parts.length - 1][0]
   }
 
-  const getBackgroundColor = (name: string) => {
-    const colors = [
-      "bg-[#348C98]",
-      "bg-[#3BAB93]",
-      "bg-[#3B59AB]",
-      "bg-[#91AB3B]",
-      "bg-[#AB483B]",
-      "bg-[#3B9DAB]",
-    ]
-    const hash = Array.from(name).reduce(
-      (acc, char) => acc + char.charCodeAt(0),
-      0
-    )
-    return colors[hash % colors.length]
-  }
-
-  const backgroundColor = getBackgroundColor(name)
-
   const sizeClasses = {
-    sm: "w-8 h-8 text-sm",
-    md: "w-12 h-12 text-base",
+    sm: "w-8 h-8 text-xs",
+    md: "w-12 h-12 text-[15px]",
     xs: "w-[100px] h-[100px] text-2xl",
     lg: "w-[140px] h-[140px] text-3xl",
   }
 
   return (
     <Avatar className={cn(sizeClasses[size], className)}>
-      <AvatarFallback
-        className={cn(
-          "flex items-center justify-center font-semibold text-white",
-          backgroundColor
-        )}
-      >
+      <AvatarFallback className="flex items-center justify-center bg-nevoa font-semibold text-turquesa-profundo uppercase">
         {getInitials(name)}
       </AvatarFallback>
     </Avatar>

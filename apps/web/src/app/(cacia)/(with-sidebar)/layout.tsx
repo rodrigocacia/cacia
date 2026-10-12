@@ -15,7 +15,7 @@ export default async function DashboardLayout({ children }: PropsWithChildren) {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="bg-ink">
       <AppSidebar />
 
       {/*
@@ -33,7 +33,12 @@ export default async function DashboardLayout({ children }: PropsWithChildren) {
         tabela) rola dentro do próprio contêiner, que é onde a rolagem faz
         sentido.
       */}
-      <main className="px-8 w-full min-w-0 pb-12 max-lg:pb-0 pt-8 bg-[#FCFCFD] lg:px-8 max-lg:px-0 max-lg:pt-0">
+      {/*
+        O painel de papel encaixado na moldura nanquim (direção visual 02).
+        A rolagem continua sendo a da janela: o menu lateral é fixo, e trocar
+        o contêiner de rolagem quebraria o que já mede a posição na página.
+      */}
+      <main className="relative w-full min-w-0 bg-papel px-8 pb-12 max-lg:px-0 max-lg:pb-0 md:my-2 md:mr-2 md:min-h-[calc(100svh-16px)] md:rounded-[14px]">
         {children}
       </main>
     </SidebarProvider>

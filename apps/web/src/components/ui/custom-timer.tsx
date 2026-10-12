@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { MdAccessTime } from "react-icons/md"
+import { Clock } from "lucide-react"
 
 interface TimeInputProps {
   value?: string
@@ -65,24 +65,31 @@ export function TimeInput({
   }
 
   return (
-    <div className="w-full flex items-center gap-4">
+    <div className="flex w-full flex-col gap-1.5">
       {label && (
-        <label className="block text-[#707070] text-lg font-light">
+        <label className="block text-xs font-medium text-tinta-2">
           {label}
         </label>
       )}
 
-      <div className="flex items-center bg-[#FCFCFD] border border-[#F6F6F9] rounded-2xl px-4 py-3 w-full">
-        <MdAccessTime className="text-[#348C98] mr-2 h-5 w-5" />
+      <div className="flex h-11 w-full items-center rounded-[10px] border border-filete-forte bg-white px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-acao focus-within:shadow-[0_0_0_3px_#D7EBEE]">
+        <Clock
+          size={16}
+          strokeWidth={1.7}
+          aria-hidden
+          className="mr-2 shrink-0 text-tinta-3"
+        />
         <input
           type="text"
+          inputMode="numeric"
+          aria-label={label || "Horário"}
           value={value}
           onChange={handleInputChange}
           onBlur={handleBlur}
           placeholder="HH:MM"
           maxLength={5}
           className={cn(
-            "bg-transparent outline-none w-full text-base text-gray-700 font-semibold placeholder:text-gray-400",
+            "tabular w-full bg-transparent text-[15px] text-tinta outline-none placeholder:text-gray-400",
             className
           )}
         />

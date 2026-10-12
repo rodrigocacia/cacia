@@ -49,26 +49,37 @@ export async function NextEvents({
     )
 
   return (
-    <div className="w-full flex flex-col">
-      <h2 className="text-[18px] text-[#3D3D3D] max-lg:hidden">
-        <b>Próximos</b> eventos
-      </h2>
-
-      <div className="w-full flex flex-col max-h-[calc(100vh-690px)] overflow-y-scroll gap-1.5 mt-3.5 max-lg:hidden">
-        {futureEvents.map((event) => (
-          <CardEvent
-            key={event?._id}
-            id={event?._id}
-            variant={event?.type}
-            start_time={event?.start_time}
-            end_time={event?.end_time}
-            title={event?.title}
-            lead={event?.lead}
-            customer={event?.customer}
-            process={event?.process}
-          />
-        ))}
+    <div className="flex w-full flex-col max-lg:hidden">
+      <div className="flex items-center gap-2.5 border-b border-filete px-5 py-4">
+        <h2 className="text-[14.5px] font-semibold tracking-[-0.01em] text-tinta">
+          Próximos eventos
+        </h2>
+        <span className="font-mono text-[11px] text-tinta-3 tabular">
+          {futureEvents.length}
+        </span>
       </div>
+
+      {futureEvents.length === 0 ? (
+        <p className="px-5 py-8 text-center text-[13px] text-tinta-3">
+          Nada marcado para os próximos 30 dias.
+        </p>
+      ) : (
+        <div className="flex max-h-[calc(100vh-640px)] min-h-[160px] w-full flex-col gap-1.5 overflow-y-auto p-3">
+          {futureEvents.map((event) => (
+            <CardEvent
+              key={event?._id}
+              id={event?._id}
+              variant={event?.type}
+              start_time={event?.start_time}
+              end_time={event?.end_time}
+              title={event?.title}
+              lead={event?.lead}
+              customer={event?.customer}
+              process={event?.process}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

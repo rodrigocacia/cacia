@@ -34,7 +34,11 @@ RUN pnpm --filter @cacia/database generate \
  && pnpm --filter @cacia/database build \
  && pnpm --filter @cacia/api build
 
-RUN pnpm install --frozen-lockfile --prod
+# Sem CI=true, o pnpm aborta ao recriar node_modules fora de um terminal.
+# --ignore-scripts: o postinstall do database roda `prisma generate`, e o
+# prisma é devDependency; o client já foi gerado acima, em
+# packages/database/generated (fora do node_modules, sobrevive a esta etapa).
+RUN CI=true pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # ---------- runtime ---------------------------------------------------------
 FROM node:22-alpine AS runtime

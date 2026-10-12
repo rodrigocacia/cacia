@@ -1,7 +1,5 @@
 "use client"
 
-import { Icon } from "@/components/icone"
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +9,17 @@ import {
 
 import { Button } from "@/components/ui/button"
 
-import { MoreVertical } from "lucide-react"
+import {
+  Bell,
+  CalendarDays,
+  Eye,
+  FileCheck,
+  MailWarning,
+  MoreVertical,
+  RefreshCw,
+  Trash2,
+  type LucideIcon,
+} from "lucide-react"
 import { CustomPagination } from "@/components/ui/custom-pagination"
 
 import {
@@ -32,10 +40,12 @@ import { DialogDeleteNotification } from "./components/dialog-delete-notificatio
 import { Toast } from "@/components/ui/toast"
 import { updateStatusNotificationForDelivery } from "@/http/notification/update-status-notification-for-delivery"
 
-const icons = {
-  process_update: "uim:process",
-  new_event: "mdi:calendar",
-  confirm_doc: "mdi:file-document-check",
+import { Cartao } from "../setting/_ui/cartao"
+
+const icons: Record<string, LucideIcon> = {
+  process_update: RefreshCw,
+  new_event: CalendarDays,
+  confirm_doc: FileCheck,
 }
 
 const notificationTypes = {
@@ -99,17 +109,19 @@ export function NotificationList({
 
   if (isLoading)
     return (
-      <div className="w-full p-8 max-md:p-0 md:rounded-2xl md:shadow-sm">
+      <Cartao titulo="Notificações">
         <Spinner />
-      </div>
+      </Cartao>
     )
 
   if (totalItems === 0) {
     return (
-      <EmptySearch
-        title="Nenhum resultado encontrado!"
-        subtitle="Não há notificações que correspondam à pesquisa."
-      />
+      <Cartao titulo="Notificações">
+        <EmptySearch
+          title="Nenhum resultado encontrado!"
+          subtitle="Não há notificações que correspondam à pesquisa."
+        />
+      </Cartao>
     )
   }
 
@@ -162,26 +174,25 @@ export function NotificationList({
   }
 
   return (
-    <div className="w-full p-8 max-md:p-0 md:rounded-2xl md:shadow-sm">
-      <div className="w-full flex items-center gap-3 max-md:hidden">
-        <Icon icon="mdi:notifications" className="text-[#BDBDBD] w-8 h-8" />
-
-        <h3 className="text-[20px] text-[#707070] font-bold">
-          Todas as notificações
-        </h3>
-      </div>
-
-      <hr className="w-full my-6 max-md:my-2 h-px border-t-0 bg-gray-200 max-md:hidden" />
-
-      <div className="flex items-center gap-1 max-md:mt-6">
-        <Icon icon="mingcute:alert-fill" className="text-[#BDBDBD] w-5 h-5" />
-
-        <h2 className="text-sm text-[#3D3D3D] font-semibold">
-          Não lidas ({notificationUnreadCount})
-        </h2>
-      </div>
-
-      <div className="flex flex-col gap-4 mt-4">
+    <Cartao
+      titulo={
+        <span className="flex items-baseline gap-2">
+          Notificações
+          <span className="font-mono text-xs font-normal text-tinta-3 tabular">
+            {totalItems}
+          </span>
+        </span>
+      }
+      descricao={
+        <span className="tabular">
+          {notificationUnreadCount === 1
+            ? "1 não lida"
+            : `${notificationUnreadCount} não lidas`}
+        </span>
+      }
+      semRecuo
+    >
+      <ul className="flex flex-col">
         {notifications.map((notification) => {
           const formatted = format(
             new Date(notification.created_at),
@@ -191,61 +202,82 @@ export function NotificationList({
             }
           )
 
-          const notificationContent = (
-            <div className="flex items-center justify-between rounded-[12px] border border-[#F6F6F9] shadow-sm py-3 px-2">
-              <div className="flex items-center gap-2.5">
-                <div
+          const lida = notification.status === "open"
+          const Icone = icons[notification.type] ?? Bell
+
+          const abrir = () =>
+            notification.type === NotificationType.CONFIRM_DOC
+              ? handleNotificationClick(notification)
+              : changeStatusNotification(
+                  notification._id,
+                  notification.type,
+                  notification.type_id
+                )
+
+          return (
+            <li
+              key={notification._id}
+              className="flex items-center gap-1 border-t border-[#F1EEE8] pr-4 first:border-t-0 max-md:pr-2"
+            >
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={abrir}
+                onKeyDown={(evento) => {
+                  if (evento.key === "Enter" || evento.key === " ") {
+                    evento.preventDefault()
+                    abrir()
+                  }
+                }}
+                className="flex min-w-0 flex-grow cursor-pointer items-center gap-3 py-3.5 pl-7 transition-colors outline-none hover:bg-[#FBFAF7] focus-visible:bg-[#FBFAF7] max-md:pl-5"
+              >
+                <span
                   className={clsx(
-                    "flex items-center justify-center bg-[#ECF7F8] p-2.5 rounded-[12px]",
-                    notification.status === "open" && "opacity-65"
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]",
+                    lida
+                      ? "bg-[#F6F4EF] text-tinta-3"
+                      : "bg-nevoa text-turquesa-profundo"
                   )}
                 >
-                  {icons[notification.type as keyof typeof icons] && (
-                    <Icon
-                      icon={
-                        icons[notification.type as keyof typeof icons] ??
-                        "mdi:question-mark"
-                      }
-                      className={clsx(
-                        "w-6 h-6",
-                        notification.status === "open"
-                          ? "text-[#BDBDBD]"
-                          : "text-[#348C98]"
-                      )}
-                    />
-                  )}
-                </div>
-                <div>
-                  <h4
-                    className={clsx(
-                      "text-base text-[#707070] font-semibold",
-                      notification.status === "open" && "opacity-65"
+                  <Icone size={17} strokeWidth={1.7} aria-hidden />
+                </span>
+
+                <div className="flex min-w-0 flex-col gap-0.5">
+                  <span className="flex items-center gap-2">
+                    {!lida && (
+                      <span
+                        aria-label="Não lida"
+                        className="h-1.5 w-1.5 shrink-0 rounded-full bg-acao"
+                      />
                     )}
-                  >
-                    {
-                      notificationTypes[
-                        notification.type as keyof typeof notificationTypes
-                      ]
-                    }{" "}
-                    - {notification.type_title}
-                  </h4>
-                  <div className="flex">
-                    <p
+                    <span
                       className={clsx(
-                        "text-[12px] text-[#707070]",
-                        notification.status === "open" && "opacity-65"
+                        "truncate text-[14px]",
+                        lida ? "text-tinta-2" : "font-medium text-tinta"
                       )}
                     >
-                      {formatted} | {notification.type_detail}
-                    </p>
-                  </div>
+                      {
+                        notificationTypes[
+                          notification.type as keyof typeof notificationTypes
+                        ]
+                      }{" "}
+                      · {notification.type_title}
+                    </span>
+                  </span>
+                  <p className="truncate text-[12.5px] text-tinta-3">
+                    {formatted} · {notification.type_detail}
+                  </p>
                 </div>
               </div>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">Open menu</span>
-                    <MoreVertical />
+                  <Button
+                    variant="ghost"
+                    className="h-8 w-8 shrink-0 p-0 text-tinta-3 hover:text-tinta"
+                  >
+                    <span className="sr-only">Abrir menu</span>
+                    <MoreVertical size={16} />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -258,14 +290,11 @@ export function NotificationList({
                       )
                     }
                   >
-                    <div className="flex items-center gap-2">
-                      <Icon icon="mdi:eye" className="text-[#348C98] w-5 h-5" />
-
-                      <p className="text-base text-[#3D3D3D]">Ver</p>
-                    </div>
+                    <Eye size={15} strokeWidth={1.7} className="text-tinta-3" />
+                    <span className="text-[13.5px] text-tinta">Ver</span>
                   </DropdownMenuItem>
 
-                  {notification.status === "open" && (
+                  {lida && (
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.preventDefault()
@@ -276,16 +305,14 @@ export function NotificationList({
                         )
                       }}
                     >
-                      <div className="flex items-center gap-2">
-                        <Icon
-                          icon="mdi:alert"
-                          className="text-[#348C98] w-5 h-5"
-                        />
-
-                        <p className="text-base text-[#3D3D3D]">
-                          Marcar não lida
-                        </p>
-                      </div>
+                      <MailWarning
+                        size={15}
+                        strokeWidth={1.7}
+                        className="text-tinta-3"
+                      />
+                      <span className="text-[13.5px] text-tinta">
+                        Marcar não lida
+                      </span>
                     </DropdownMenuItem>
                   )}
 
@@ -297,47 +324,23 @@ export function NotificationList({
                       handleAddDeleteNotificationId(notification._id)
                     }}
                   >
-                    <div className="flex items-center gap-2">
-                      <Icon
-                        icon="mdi:delete"
-                        className="text-[#DC2626] w-5 h-5"
-                      />
-
-                      <p className="text-base text-[#3D3D3D]">Excluir</p>
-                    </div>
+                    <Trash2
+                      size={15}
+                      strokeWidth={1.7}
+                      className="text-[#A23B2A]"
+                    />
+                    <span className="text-[13.5px] text-[#A23B2A]">
+                      Excluir
+                    </span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
-          )
-
-          return notification.type === NotificationType.CONFIRM_DOC ? (
-            <div
-              key={notification._id}
-              onClick={() => handleNotificationClick(notification)}
-              className="cursor-pointer"
-            >
-              {notificationContent}
-            </div>
-          ) : (
-            <div
-              key={notification._id}
-              onClick={() =>
-                changeStatusNotification(
-                  notification._id,
-                  notification.type,
-                  notification.type_id
-                )
-              }
-              className="cursor-pointer"
-            >
-              {notificationContent}
-            </div>
+            </li>
           )
         })}
-      </div>
+      </ul>
 
-      <div className="w-full mt-10">
+      <div className="w-full border-t border-filete px-7 py-4 max-md:px-5">
         <CustomPagination
           totalItems={totalItems}
           totalPages={totalPages}
@@ -378,6 +381,6 @@ export function NotificationList({
           description="A notificação foi excluída com sucesso."
         />
       )}
-    </div>
+    </Cartao>
   )
 }

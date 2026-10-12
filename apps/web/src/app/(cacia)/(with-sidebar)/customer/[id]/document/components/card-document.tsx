@@ -1,15 +1,7 @@
-import { Icon } from "@/components/icone"
+import { Eye, Trash2 } from "lucide-react"
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-
-import { Button } from "@/components/ui/button"
+import { RowActions } from "@/components/ui/row-actions"
 import { ExtensionIcon } from "@/components/ui/extension-icon"
-import { MoreVertical } from "lucide-react"
 import { Customer } from "@/types/customer"
 import { Process } from "@/types/process"
 import { formatProcess } from "@/utils/formatters"
@@ -43,90 +35,69 @@ export function CardDocument({
 }: CardDocumentProps) {
   const formattedDate = format(
     new Date(document.updated_at ?? document.created_at ?? new Date()),
-    "d 'de' MMMM, yyyy",
+    "dd MMM yyyy",
     { locale: ptBR }
   )
 
   return (
-    <div className="bg-white px-2 py-3 flex items-center justify-between gap-2.5 border border-[#F6F6F9] rounded-[12px]">
-      <div
+    <li className="group/row flex min-h-14 items-center gap-3 border-b border-[#F1EEE8] px-5 py-2.5 transition-colors last:border-b-0 hover:bg-papel">
+      <button
+        type="button"
         onClick={() => handleOpenDialog?.(document)}
-        className="cursor-pointer flex gap-2.5"
+        className="flex min-w-0 flex-grow cursor-pointer items-center gap-3 text-left"
       >
-        <div className="w-11 h-11 flex items-center justify-center rounded-[12px] bg-[#ECF7F8]">
-          <ExtensionIcon type={document.type} extension={document.extension} />
-        </div>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-papel-2">
+          <ExtensionIcon
+            type={document.type}
+            extension={document.extension}
+            className="h-[18px] w-[18px]"
+          />
+        </span>
 
-        <div className="flex flex-col gap-2">
-          <h3 className=" text-sm text-[#707070] font-semibold">
+        <span className="flex min-w-0 flex-col">
+          <span className="truncate text-[13.5px] font-medium text-tinta">
             {document?.title}.{document?.extension}
-          </h3>
+          </span>
+          <span className="tabular truncate text-xs text-tinta-3">
+            {[
+              customer?.name,
+              document?.process?.number
+                ? `Processo ${formatProcess(document.process.number)}`
+                : null,
+              formattedDate,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        </span>
+      </button>
 
-          <div className="w-full flex items-center gap-2">
-            <p className="text-xs text-[#707070] pr-2.5 border-r border-[#EFEFEF]">
-              {customer?.name}
-            </p>
+      {document.type === DocumentType.CREATE && document.status && (
+        <DocumentStatusBadge
+          status={document.status as DocumentStatus}
+          className="max-sm:hidden"
+        />
+      )}
 
-            <div className="flex items-center gap-[3px]">
-              <Icon
-                icon="mdi:folder-text-outline"
-                className="w-3 h-3 text-[#BDBDBD]"
-              />
-
-              <span className="text-[10px] text-[#707070]">
-                Processo:{" "}
-                {document?.process?.number
-                  ? formatProcess(document.process.number)
-                  : "N/A"}
-              </span>
-            </div>
-          </div>
-
-          <div className="w-full flex items-center gap-2">
-            <p className="text-[10px] text-[#707070]">
-              <span>{formattedDate ?? ""}</span>
-            </p>
-            {document.type === DocumentType.CREATE && document.status && (
-              <DocumentStatusBadge
-                status={document.status as DocumentStatus}
-                className="text-xs"
-              />
-            )}
-          </div>
-        </div>
-      </div>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreVertical />
-          </Button>
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => handleOpenDialog?.(document)}>
-            <div className="flex items-center gap-2">
-              <Icon icon="mdi:eye" className="text-[#BDBDBD] w-5 h-5" />
-              <p className="text-base text-[#3D3D3D]">Ver</p>
-            </div>
-          </DropdownMenuItem>
-
-          {onDelete && (
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete(document._id, document.title)
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <Icon icon="mdi:delete" className="text-[#DC2626] w-5 h-5" />
-                <p className="text-base text-[#3D3D3D]">Excluir</p>
-              </div>
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+      <RowActions
+        actions={[
+          {
+            label: "Ver",
+            onClick: () => handleOpenDialog?.(document),
+            icon: <Eye strokeWidth={1.7} />,
+          },
+          ...(onDelete
+            ? [
+                {
+                  label: "Excluir",
+                  onClick: () => onDelete(document._id, document.title),
+                  icon: <Trash2 strokeWidth={1.7} />,
+                  danger: true,
+                },
+              ]
+            : []),
+        ]}
+      />
+    </li>
   )
 }

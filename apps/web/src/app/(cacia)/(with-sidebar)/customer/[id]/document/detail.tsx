@@ -1,13 +1,12 @@
 "use client"
 
-import { Icon } from "@/components/icone"
 import { useState, useCallback, Suspense, useMemo } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 
 import { Customer } from "@/types/customer"
 import { DocumentType, DocumentStatus } from "@/types/document"
 
-import { EmptySearch } from "@/components/empty-search"
+import { Painel, Vazio } from "@/components/tables/ficha"
 import {
   DocumentViewerModal,
   DocumentViewer,
@@ -189,19 +188,8 @@ export function DocumentDetail({ documents, customer }: DocumentDetailProps) {
 
   return (
     <>
-      <div className="p-8 pb-4 max-md:p-0 md:rounded-2xl md:shadow-sm">
-        <div className="w-full flex items-center gap-3 max-md:hidden">
-          <Icon
-            icon="mdi:folder-text-outline"
-            className="text-[#BDBDBD] w-8 h-8"
-          />
-
-          <h3 className="text-[20px] text-[#707070] font-bold">Documentos</h3>
-        </div>
-
-        <hr className="w-full my-6 max-md:my-2 h-px border-t-0 bg-gray-200 max-md:hidden" />
-
-        <div className="flex max-md:mt-4 max-md:flex-col flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-2.5 max-md:flex-col max-md:items-stretch">
           <Suspense fallback="Carregando...">
             <CustomSearchFilter placeholder="Buscar pelo nome do documento..." />
           </Suspense>
@@ -209,48 +197,32 @@ export function DocumentDetail({ documents, customer }: DocumentDetailProps) {
           <DocumentSortSelect />
         </div>
 
-        <div className="w-full flex items-center gap-1 mt-[22px]">
-          <Icon icon="mdi:file-document" className="text-[#BDBDBD] w-5 h-5" />
-
-          <h2 className="text-sm text-[#3D3D3D] font-bold">
-            {search
-              ? `Resultados da busca (${filteredDocuments?.length})`
-              : `Todos os arquivos (${filteredDocuments?.length})`}
-          </h2>
-        </div>
-
-        <div className="w-full mt-6 flex flex-col justify-between gap-8">
-          <div className="w-full flex flex-col gap-4">
-            {filteredDocuments?.length === 0 ? (
-              <EmptySearch
-                title={
-                  search
-                    ? "Nenhum documento encontrado"
-                    : "Sem documentos cadastrados"
-                }
-                subtitle={search ? `Nenhum resultado para "${search}"` : ""}
-              />
-            ) : null}
-
-            {filteredDocuments?.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 max-[1600px]:grid-cols-1">
-                {filteredDocuments?.map((document) => (
-                  <CardDocument
-                    key={document?._id}
-                    document={document}
-                    customer={customer}
-                    handleOpenDialog={handleOpenDialog}
-                    onDelete={handleDeleteClick}
-                  />
-                ))}
-              </div>
-            ) : null}
-          </div>
-
-          <div className="w-full flex items-center justify-end max-md:flex-col max-md:gap-4">
-            <Form location="customer" customerId={customer?._id} />
-          </div>
-        </div>
+        <Painel
+          titulo={search ? "Resultados da busca" : "Todos os arquivos"}
+          contagem={filteredDocuments?.length ?? 0}
+          acao={<Form location="customer" customerId={customer?._id} />}
+          semPreenchimento
+        >
+          {filteredDocuments?.length === 0 ? (
+            <Vazio>
+              {search
+                ? `Nenhum documento encontrado para "${search}".`
+                : "Este cliente ainda não tem documentos."}
+            </Vazio>
+          ) : (
+            <ul className="flex flex-col">
+              {filteredDocuments?.map((document) => (
+                <CardDocument
+                  key={document?._id}
+                  document={document}
+                  customer={customer}
+                  handleOpenDialog={handleOpenDialog}
+                  onDelete={handleDeleteClick}
+                />
+              ))}
+            </ul>
+          )}
+        </Painel>
       </div>
 
       <DocumentViewerModal

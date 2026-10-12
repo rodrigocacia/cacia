@@ -9,17 +9,17 @@ export default function TermosPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border p-8 max-lg:p-6">
-          <h1 className="text-3xl font-bold text-[#3D3D3D] mb-8">
+          <h1 className="text-3xl font-bold text-[#1B1916] mb-8">
             Termo de Uso – ADVAI
           </h1>
 
-          <div className="space-y-6 text-[#707070] leading-relaxed">
+          <div className="space-y-6 text-[#57514A] leading-relaxed">
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 1. Considerações Iniciais
               </h2>
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-[#3D3D3D]">
+                <h3 className="text-lg font-medium text-[#1B1916]">
                   1.1 Aceitação dos Termos
                 </h3>
                 <p>
@@ -33,12 +33,12 @@ export default function TermosPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 2. Descrição dos Serviços
               </h2>
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-medium text-[#3D3D3D] mb-2">
+                  <h3 className="text-lg font-medium text-[#1B1916] mb-2">
                     2.1 Funcionalidades da Assistente Cacia
                   </h3>
                   <p>
@@ -50,7 +50,7 @@ export default function TermosPage() {
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-[#3D3D3D] mb-2">
+                  <h3 className="text-lg font-medium text-[#1B1916] mb-2">
                     2.2 Funcionalidades da Plataforma Web e Mobile
                   </h3>
                   <p>
@@ -66,11 +66,11 @@ export default function TermosPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 3. Cadastro e Obrigações do Usuário
               </h2>
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-[#3D3D3D]">
+                <h3 className="text-lg font-medium text-[#1B1916]">
                   3.1 Responsabilidades do Advogado
                 </h3>
                 <p>
@@ -83,11 +83,11 @@ export default function TermosPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 4. Limitações e Isenções de Responsabilidade
               </h2>
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-[#3D3D3D]">
+                <h3 className="text-lg font-medium text-[#1B1916]">
                   4.1 Natureza dos Dados e Consultas
                 </h3>
                 <p>
@@ -100,11 +100,11 @@ export default function TermosPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 5. Propriedade Intelectual
               </h2>
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-[#3D3D3D]">
+                <h3 className="text-lg font-medium text-[#1B1916]">
                   5.1 Direitos da Plataforma
                 </h3>
                 <p>
@@ -117,11 +117,11 @@ export default function TermosPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 6. Encerramento e Cancelamento
               </h2>
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-[#3D3D3D]">
+                <h3 className="text-lg font-medium text-[#1B1916]">
                   6.1 Rescisão Contratual
                 </h3>
                 <p>
@@ -134,11 +134,11 @@ export default function TermosPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 7. Modificações no Termo de Uso
               </h2>
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-[#3D3D3D]">
+                <h3 className="text-lg font-medium text-[#1B1916]">
                   7.1 Atualizações
                 </h3>
                 <p>
@@ -150,11 +150,11 @@ export default function TermosPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-[#3D3D3D] mb-4">
+              <h2 className="text-xl font-semibold text-[#1B1916] mb-4">
                 8. Contato
               </h2>
               <div className="space-y-3">
-                <h3 className="text-lg font-medium text-[#3D3D3D]">
+                <h3 className="text-lg font-medium text-[#1B1916]">
                   8.1 Suporte
                 </h3>
                 <p>

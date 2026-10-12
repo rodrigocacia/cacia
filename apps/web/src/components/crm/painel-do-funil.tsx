@@ -109,7 +109,7 @@ export function PainelDoFunil() {
         <div className="ml-auto flex items-center gap-2">
           <Link
             href="/lead/import"
-            className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 transition hover:bg-zinc-50"
+            className="flex h-8 items-center gap-1.5 rounded-lg border border-filete-forte bg-white px-3 text-[13px] font-medium text-tinta transition hover:bg-gray-100"
           >
             <Icon icon="mdi:file-upload-outline" className="h-4 w-4" />
             Importar
@@ -117,7 +117,7 @@ export function PainelDoFunil() {
 
           <Link
             href="/setting/funil"
-            className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 transition hover:bg-zinc-50"
+            className="flex h-8 items-center gap-1.5 rounded-lg border border-filete-forte bg-white px-3 text-[13px] font-medium text-tinta transition hover:bg-gray-100"
           >
             <Icon icon="mdi:cog-outline" className="h-4 w-4" />
             Etapas

@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 
-import { Icon } from "@/components/icone"
+import { Plus, Trash2 } from "lucide-react"
+
 import { Spinner } from "@/components/ui/sppiner"
 import { Toast } from "@/components/ui/toast"
 import { EtiquetaBadge } from "@/components/crm/etiqueta"
@@ -13,6 +14,8 @@ import {
   removerEtiqueta,
 } from "@/http/crm/etiquetas"
 import { useEtiquetas } from "@/http/hooks/crm"
+
+import { Cartao } from "../../_ui/cartao"
 
 const CORES = [
   "#3B82F6",
@@ -64,14 +67,19 @@ export function PainelDeEtiquetas() {
   if (isLoading && etiquetas.length === 0) return <Spinner />
 
   return (
-    <div className="w-full">
-      <h1 className="text-lg font-semibold text-zinc-900">Etiquetas</h1>
-      <p className="mt-1 text-sm text-zinc-500">
-        Marcam leads e clientes por assunto ou perfil, e servem de filtro no
-        funil. Nada aqui entra no contexto da IA — são organização humana.
-      </p>
-
-      <div className="mt-5 flex gap-2">
+    <Cartao
+      titulo={
+        <span className="flex items-baseline gap-2">
+          Etiquetas
+          <span className="font-mono text-xs font-normal text-tinta-3 tabular">
+            {etiquetas.length}
+          </span>
+        </span>
+      }
+      descricao="Marcam leads e clientes por assunto ou perfil, e servem de filtro no funil. Nada aqui entra no contexto do assistente — são organização humana."
+      semRecuo
+    >
+      <div className="flex gap-2 border-b border-filete px-7 py-5 max-md:px-5">
         <input
           value={nova}
           onChange={(evento) => setNova(evento.target.value)}
@@ -79,26 +87,28 @@ export function PainelDeEtiquetas() {
             if (evento.key === "Enter") adicionar()
           }}
           maxLength={40}
+          aria-label="Nome da nova etiqueta"
           placeholder="Nome da nova etiqueta"
-          className="flex-1 rounded-lg border border-zinc-200 px-3 py-2 text-sm outline-none focus:border-zinc-400"
+          className="h-11 min-w-0 flex-1 rounded-[10px] border border-filete-forte bg-white px-3.5 text-[15px] text-tinta outline-none transition placeholder:text-gray-400 focus:border-acao focus:shadow-[0_0_0_3px_#D7EBEE]"
         />
 
         <button
           type="button"
           disabled={ocupado || nova.trim().length === 0}
           onClick={adicionar}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-40"
+          className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-[10px] bg-acao px-4 text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition hover:bg-acao-escura disabled:cursor-not-allowed disabled:opacity-50"
         >
+          <Plus size={16} strokeWidth={2} aria-hidden />
           Criar
         </button>
       </div>
 
       {etiquetas.length === 0 ? (
-        <p className="mt-6 text-sm text-zinc-500">
+        <p className="px-7 py-6 text-[13.5px] text-tinta-3 max-md:px-5">
           Nenhuma etiqueta cadastrada ainda.
         </p>
       ) : (
-        <ul className="mt-4 space-y-2">
+        <ul className="flex flex-col">
           {etiquetas.map((etiqueta) => {
             const usos =
               (etiqueta._count?.leads ?? 0) + (etiqueta._count?.customers ?? 0)
@@ -106,13 +116,14 @@ export function PainelDeEtiquetas() {
             return (
               <li
                 key={etiqueta.id}
-                className="flex flex-wrap items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3"
+                className="flex flex-wrap items-center gap-3 border-t border-[#F1EEE8] px-7 py-3 first:border-t-0 max-md:px-5"
               >
                 <EtiquetaBadge etiqueta={etiqueta} />
 
                 <input
                   defaultValue={etiqueta.name}
                   maxLength={40}
+                  aria-label={`Nome da etiqueta ${etiqueta.name}`}
                   onBlur={(evento) => {
                     const nome = evento.target.value.trim()
                     if (nome && nome !== etiqueta.name) {
@@ -121,52 +132,53 @@ export function PainelDeEtiquetas() {
                       )
                     }
                   }}
-                  className="min-w-32 flex-1 rounded-lg border border-transparent px-2 py-1 text-sm text-zinc-800 outline-none transition hover:border-zinc-200 focus:border-zinc-400"
+                  className="h-9 min-w-32 flex-1 rounded-[9px] border border-transparent px-2.5 text-[14px] text-tinta outline-none transition hover:border-filete-forte focus:border-acao focus:shadow-[0_0_0_3px_#D7EBEE]"
                 />
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   {CORES.map((cor) => (
                     <button
                       key={cor}
                       type="button"
                       aria-label={`Cor ${cor}`}
+                      aria-pressed={etiqueta.color.toUpperCase() === cor}
                       onClick={() =>
                         void executar(() =>
                           atualizarEtiqueta(etiqueta.id, { color: cor })
                         )
                       }
                       style={{ backgroundColor: cor }}
-                      className={`h-4 w-4 rounded-full transition ${
+                      className={`h-3.5 w-3.5 cursor-pointer rounded-full transition ${
                         etiqueta.color.toUpperCase() === cor
-                          ? "ring-2 ring-zinc-900 ring-offset-1"
-                          : "opacity-50 hover:opacity-100"
+                          ? "ring-2 ring-tinta ring-offset-2"
+                          : "opacity-40 hover:opacity-100"
                       }`}
                     />
                   ))}
                 </div>
 
-                <span className="text-xs text-zinc-500">
+                <span className="w-[72px] text-right font-mono text-[11.5px] text-tinta-3 tabular">
                   {usos === 0 ? "não usada" : `${usos} uso(s)`}
                 </span>
 
                 {confirmando === etiqueta.id ? (
-                  <span className="flex items-center gap-1.5 text-xs">
+                  <span className="flex items-center gap-1 text-[12.5px]">
                     <button
                       type="button"
                       onClick={() => {
                         setConfirmando(null)
                         void executar(() => removerEtiqueta(etiqueta.id))
                       }}
-                      className="font-medium text-red-600"
+                      className="h-8 cursor-pointer rounded-lg bg-[#FBEDEA] px-2.5 font-medium text-[#A23B2A] transition hover:bg-[#F6DDD7]"
                     >
-                      excluir mesmo
+                      Excluir mesmo
                     </button>
                     <button
                       type="button"
                       onClick={() => setConfirmando(null)}
-                      className="text-zinc-500"
+                      className="h-8 cursor-pointer rounded-lg px-2.5 text-tinta-2 transition hover:bg-gray-100"
                     >
-                      cancelar
+                      Cancelar
                     </button>
                   </span>
                 ) : (
@@ -175,9 +187,9 @@ export function PainelDeEtiquetas() {
                     disabled={ocupado}
                     onClick={() => setConfirmando(etiqueta.id)}
                     aria-label={`Excluir etiqueta ${etiqueta.name}`}
-                    className="text-zinc-400 transition hover:text-red-600 disabled:opacity-30"
+                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-tinta-3 transition hover:bg-[#FBEDEA] hover:text-[#A23B2A] disabled:cursor-default disabled:opacity-30"
                   >
-                    <Icon icon="mdi:trash-can-outline" className="h-4 w-4" />
+                    <Trash2 size={15} strokeWidth={1.7} />
                   </button>
                 )}
               </li>
@@ -186,7 +198,7 @@ export function PainelDeEtiquetas() {
         </ul>
       )}
 
-      <p className="mt-4 text-xs text-zinc-500">
+      <p className="border-t border-filete px-7 py-4 text-[12.5px] text-tinta-3 max-md:px-5">
         Excluir uma etiqueta a remove de todos os leads e clientes que a tinham.
         Não há como desfazer.
       </p>
@@ -199,6 +211,6 @@ export function PainelDeEtiquetas() {
           onClose={() => setErro(null)}
         />
       )}
-    </div>
+    </Cartao>
   )
 }

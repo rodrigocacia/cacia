@@ -40,14 +40,16 @@ export function CustomDateSelect({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-gray-600 text-base mb-2 font-semibold">
+        <label className="mb-[7px] block text-[13px] font-medium text-tinta-2">
           {label}
         </label>
       )}
 
       <div
-        className={`relative bg-[#FCFCFD] flex items-center justify-between w-full rounded-2xl border transition-colors duration-200 px-4 py-3 ${
-          disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+        className={`relative flex h-11 w-full items-center justify-between rounded-[10px] border border-filete-forte px-3.5 transition-[border-color,box-shadow] duration-150 focus-within:border-acao focus-within:shadow-[0_0_0_3px_#D7EBEE] ${
+          disabled
+            ? "cursor-not-allowed bg-gray-100 opacity-70"
+            : "cursor-pointer bg-white"
         }`}
         onClick={() => inputRef.current?.focus()}
       >
@@ -57,10 +59,10 @@ export function CustomDateSelect({
           aria-hidden
         >
           <MdCalendarToday
-            className={`h-5 w-5 ${value ? "text-[#348C98]" : "text-gray-400"}`}
+            className={`h-[17px] w-[17px] shrink-0 ${value ? "text-acao" : "text-gray-400"}`}
           />
           <span
-            className={`${value ? "text-gray-600" : "text-gray-400"} w-full text-left`}
+            className={`${value ? "text-tinta" : "text-gray-400"} w-full truncate text-left text-[15px]`}
           >
             {formattedLabel || placeholder}
           </span>

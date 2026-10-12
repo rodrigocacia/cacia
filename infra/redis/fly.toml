@@ -1,0 +1,27 @@
+# Redis — filas do worker (BullMQ) e memória de curto prazo da IA
+#
+# Deploy:  fly deploy -c infra/redis/fly.toml
+#
+# Só na rede privada: sem [http_service] e sem IP público. A API e o worker
+# conectam em cacia-redis-prod.internal:6379, sem TLS (a rede privada do Fly já
+# é cifrada), com a senha do secret REDIS_PASSWORD.
+#
+# noeviction é exigência do BullMQ: com outra política o Redis apagaria jobs
+# quando enchesse. appendonly guarda as filas no volume entre reinícios.
+
+app            = "cacia-redis-prod"
+primary_region = "gru"
+
+[build]
+  image = "redis:7-alpine"
+
+[experimental]
+  entrypoint = ["sh", "-c", "exec redis-server --dir /data --appendonly yes --maxmemory-policy noeviction --requirepass \"$REDIS_PASSWORD\""]
+
+[[mounts]]
+  source      = "redis_data"
+  destination = "/data"
+
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "512mb"

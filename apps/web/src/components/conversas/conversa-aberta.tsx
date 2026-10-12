@@ -54,23 +54,23 @@ const SITUACAO: Record<
   { rotulo: string; classe: string; icon: string }
 > = {
   ACTIVE: {
-    rotulo: "IA atendendo",
-    classe: "bg-[#E6F2F4] text-[#2A727C]",
+    rotulo: "Com a assistente",
+    classe: "bg-nevoa text-turquesa-profundo",
     icon: "mdi:robot-outline",
   },
   PENDING: {
-    rotulo: "Com a equipe",
-    classe: "bg-amber-50 text-amber-700",
+    rotulo: "Com você",
+    classe: "bg-ambar-fundo text-ambar",
     icon: "mdi:account-tie-outline",
   },
   COMPLETED: {
     rotulo: "Encerrada",
-    classe: "bg-zinc-100 text-zinc-600",
+    classe: "bg-gray-100 text-tinta-2",
     icon: "mdi:check-circle-outline",
   },
   CANCELLED: {
     rotulo: "Cancelada",
-    classe: "bg-zinc-100 text-zinc-600",
+    classe: "bg-gray-100 text-tinta-2",
     icon: "mdi:close-circle-outline",
   },
 }
@@ -118,7 +118,7 @@ function Estado({ mensagem }: { mensagem: Mensagem }) {
 function Balao({ mensagem, url }: { mensagem: Mensagem; url: string | null }) {
   if (mensagem.sender === "SYSTEM") {
     return (
-      <div className="my-2 text-center text-xs text-zinc-500">
+      <div className="my-2 self-center rounded-full bg-ambar-fundo px-3 py-1.5 text-center text-xs text-ambar">
         {mensagem.messageText}
       </div>
     )
@@ -134,16 +134,16 @@ function Balao({ mensagem, url }: { mensagem: Mensagem; url: string | null }) {
     <div className={clsx("flex", nossa ? "justify-end" : "justify-start")}>
       <div
         className={clsx(
-          "max-w-[78%] rounded-2xl px-3 py-2 text-sm shadow-sm",
-          !nossa &&
-            "rounded-bl-md bg-white text-zinc-800 ring-1 ring-[#ECECF1]",
-          escura && "rounded-br-md bg-[#2A727C] text-white",
-          daIa && !falhou && "rounded-br-md bg-[#E6F2F4] text-zinc-800",
-          falhou && "rounded-br-md bg-red-50 text-zinc-800 ring-1 ring-red-200"
+          "max-w-[62%] rounded-[14px] px-3.5 py-2.5 text-[14px] leading-normal max-md:max-w-[84%]",
+          !nossa && "rounded-bl-[4px] border border-filete bg-white text-tinta",
+          escura && "rounded-br-[4px] bg-grafite text-[#F5F2ED]",
+          daIa && !falhou && "rounded-br-[4px] bg-[#E4F0F1] text-[#173E43]",
+          falhou &&
+            "rounded-br-[4px] border border-red-200 bg-red-50 text-tinta"
         )}
       >
         {daIa && (
-          <div className="mb-0.5 flex items-center gap-1 text-[11px] font-semibold text-[#2A727C]">
+          <div className="mb-1 flex items-center gap-1 text-[11px] font-semibold text-turquesa-profundo">
             <Icon icon="mdi:robot-outline" className="h-3 w-3" />
             Assistente
           </div>
@@ -158,7 +158,7 @@ function Balao({ mensagem, url }: { mensagem: Mensagem; url: string | null }) {
         <div
           className={clsx(
             "mt-0.5 flex items-center justify-end gap-1 text-[10px]",
-            escura ? "text-white/70" : "text-zinc-400"
+            escura ? "text-white/60" : "text-tinta-3"
           )}
         >
           {format(new Date(mensagem.createdAt), "HH:mm")}
@@ -351,11 +351,11 @@ export function ConversaAberta({
   return (
     <div className="flex h-full min-h-0 flex-col">
       {/* Cabeçalho: quem é, em que etapa está, quem está respondendo */}
-      <div className="flex items-center gap-3 border-b border-[#ECECF1] px-4 py-3">
+      <div className="flex h-16 shrink-0 items-center gap-3 border-b border-filete bg-papel px-6">
         <button
           type="button"
           onClick={aoVoltar}
-          className="-ml-1 rounded-md p-1 text-zinc-500 hover:bg-zinc-100 lg:hidden"
+          className="-ml-1 rounded-md p-1 text-tinta-3 hover:bg-gray-100 lg:hidden"
           aria-label="Voltar para a lista"
         >
           <Icon icon="mdi:arrow-left" className="h-5 w-5" />
@@ -363,20 +363,23 @@ export function ConversaAberta({
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="truncate text-base font-semibold text-zinc-900">
+            <h2 className="truncate text-[15px] font-semibold text-tinta">
               {nome}
             </h2>
             {conversa.lead?.stage && (
               <span
-                className="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium text-white"
-                style={{ backgroundColor: conversa.lead.stage.color }}
+                className="inline-flex h-[22px] shrink-0 items-center gap-1.5 rounded-md border border-[#E3DED6] px-2 text-xs text-gray-800"
                 title="Etapa no funil"
               >
+                <span
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ backgroundColor: conversa.lead.stage.color }}
+                />
                 {conversa.lead.stage.name}
               </span>
             )}
           </div>
-          <p className="truncate text-xs text-zinc-500">
+          <p className="tabular truncate text-xs text-tinta-3">
             {telefone ? formatPhone(telefone) : "Sem telefone"}
             {conversa.customerId ? " · Cliente" : " · Lead"}
             {fichaHref && (
@@ -384,7 +387,7 @@ export function ConversaAberta({
                 {" · "}
                 <Link
                   href={fichaHref}
-                  className="text-[#2A727C] underline-offset-2 hover:underline"
+                  className="text-turquesa-profundo underline-offset-2 hover:underline"
                 >
                   {conversa.customerId ? "ver cliente" : "ver ficha do lead"}
                 </Link>
@@ -408,7 +411,7 @@ export function ConversaAberta({
             type="button"
             disabled={trocandoModo}
             onClick={() => trocarModo("assumir")}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#24211E] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-black disabled:opacity-60"
+            className="inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-tinta px-3 text-[13px] font-semibold text-papel transition hover:bg-grafite disabled:opacity-60"
             aria-label="Assumir conversa"
           >
             <Icon
@@ -422,11 +425,11 @@ export function ConversaAberta({
             type="button"
             disabled={trocandoModo}
             onClick={() => trocarModo("devolver")}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-[#348C98] px-3 py-1.5 text-xs font-semibold text-[#2A727C] transition hover:bg-[#F1F8F9] disabled:opacity-60"
-            aria-label="Devolver para a IA"
+            className="inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-filete-forte bg-white px-3 text-[13px] font-medium text-tinta transition hover:bg-[#F4F8F9] disabled:opacity-60"
+            aria-label="Devolver à assistente"
           >
             <Icon icon="mdi:robot-outline" className="h-4 w-4 sm:hidden" />
-            <span className="max-sm:hidden">Devolver para a IA</span>
+            <span className="max-sm:hidden">Devolver à assistente</span>
           </button>
         )}
 
@@ -435,7 +438,7 @@ export function ConversaAberta({
             type="button"
             disabled={trocandoModo}
             onClick={() => trocarModo("encerrar")}
-            className="shrink-0 rounded-lg p-1.5 text-zinc-500 transition hover:bg-zinc-100 disabled:opacity-60"
+            className="shrink-0 cursor-pointer rounded-lg p-1.5 text-tinta-3 transition hover:bg-gray-100 disabled:opacity-60"
             title="Encerrar conversa"
             aria-label="Encerrar conversa"
           >
@@ -448,15 +451,15 @@ export function ConversaAberta({
       <div
         ref={rolagem}
         onScroll={aoRolar}
-        className="min-h-0 flex-1 overflow-y-auto bg-[#F7F8FA] px-4 py-4"
+        className="min-h-0 flex-1 overflow-y-auto bg-papel-2 px-14 py-6 max-lg:px-4"
       >
-        <div ref={conteudo} className="min-h-full space-y-1.5">
+        <div ref={conteudo} className="min-h-full space-y-2.5">
           {temMaisAntigas && (
             <div className="mb-2 text-center">
               <button
                 type="button"
                 onClick={carregarAntigas}
-                className="rounded-full bg-white px-3 py-1 text-xs text-zinc-600 ring-1 ring-[#ECECF1] hover:text-zinc-900"
+                className="cursor-pointer rounded-full border border-filete bg-white px-3 py-1 text-xs text-tinta-2 hover:text-tinta"
               >
                 Carregar mensagens anteriores
               </button>
@@ -467,11 +470,11 @@ export function ConversaAberta({
             <div className="flex h-full items-center justify-center">
               <Icon
                 icon="mdi:loading"
-                className="h-6 w-6 animate-spin text-[#348C98]"
+                className="h-6 w-6 animate-spin text-acao"
               />
             </div>
           ) : mensagens.length === 0 ? (
-            <p className="pt-10 text-center text-sm text-zinc-500">
+            <p className="pt-10 text-center text-sm text-tinta-3">
               Nenhuma mensagem nesta conversa.
             </p>
           ) : (
@@ -484,10 +487,12 @@ export function ConversaAberta({
               return (
                 <div key={m.id}>
                   {novoDia && (
-                    <div className="my-3 flex justify-center">
-                      <span className="rounded-full bg-white px-2.5 py-0.5 text-[11px] font-medium text-zinc-500 ring-1 ring-[#ECECF1]">
+                    <div className="my-4 flex items-center gap-3">
+                      <span className="h-px flex-grow bg-[#E3DED6]" />
+                      <span className="font-mono text-[10.5px] tracking-[0.08em] text-tinta-3 uppercase">
                         {rotuloDoDia(data)}
                       </span>
+                      <span className="h-px flex-grow bg-[#E3DED6]" />
                     </div>
                   )}
                   <Balao mensagem={m} url={linkDe(m)} />
@@ -499,9 +504,9 @@ export function ConversaAberta({
       </div>
 
       {/* Resposta */}
-      <div className="border-t border-[#ECECF1] bg-white p-3">
+      <div className="shrink-0 bg-papel-2 px-6 pt-1 pb-5 max-lg:px-3">
         {conversa.status === "ACTIVE" && (
-          <p className="mb-2 flex items-center gap-1.5 text-xs text-zinc-500">
+          <p className="mb-2 flex items-center gap-1.5 text-xs text-tinta-3">
             <Icon icon="mdi:information-outline" className="h-3.5 w-3.5" />A IA
             está respondendo. Ao enviar uma mensagem, você assume a conversa e a
             IA para.
@@ -519,7 +524,7 @@ export function ConversaAberta({
             <button
               type="button"
               onClick={() => void concluirGravacao(false)}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-zinc-500 transition hover:bg-zinc-100"
+              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-[9px] text-tinta-3 transition hover:bg-gray-100"
               aria-label="Descartar áudio"
               title="Descartar"
             >
@@ -534,7 +539,7 @@ export function ConversaAberta({
             <button
               type="button"
               onClick={() => void concluirGravacao(true)}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#348C98] text-white transition hover:bg-[#2A727C]"
+              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-[9px] bg-acao text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition hover:bg-acao-escura"
               aria-label="Enviar áudio"
               title="Enviar áudio"
             >
@@ -542,7 +547,7 @@ export function ConversaAberta({
             </button>
           </div>
         ) : (
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-1.5 rounded-[14px] border border-filete-forte bg-white p-2 shadow-[0_1px_2px_rgba(21,19,17,0.04)] focus-within:border-acao focus-within:shadow-[0_0_0_3px_#D7EBEE]">
             <input
               ref={seletor}
               type="file"
@@ -558,7 +563,7 @@ export function ConversaAberta({
               type="button"
               onClick={() => seletor.current?.click()}
               disabled={enviando}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-800 disabled:opacity-50"
+              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-[9px] text-tinta-3 transition hover:bg-gray-100 hover:text-tinta disabled:opacity-50"
               aria-label="Anexar arquivo"
               title="Anexar arquivo (o texto digitado vai como legenda)"
             >
@@ -582,14 +587,14 @@ export function ConversaAberta({
               }}
               rows={1}
               placeholder="Escreva uma mensagem"
-              className="max-h-40 min-h-10 flex-1 resize-none rounded-xl border border-[#E4E4EA] px-3 py-2 text-sm text-zinc-800 outline-none [field-sizing:content] focus:border-[#348C98] focus:ring-2 focus:ring-[#348C98]/20"
+              className="max-h-40 min-h-9 flex-1 resize-none border-0 bg-transparent px-1 py-2 text-[14px] text-tinta outline-none [field-sizing:content] focus:border-[#348C98] focus:ring-2 focus:ring-[#348C98]/20"
             />
             {/* Caixa vazia: o botão grava áudio, como no WhatsApp */}
             {!texto.trim() && !enviando && gravador.disponivel ? (
               <button
                 type="button"
                 onClick={() => void gravador.iniciar()}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#348C98] text-white transition hover:bg-[#2A727C]"
+                className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-[9px] bg-acao text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition hover:bg-acao-escura"
                 aria-label="Gravar áudio"
                 title="Gravar áudio"
               >
@@ -600,7 +605,7 @@ export function ConversaAberta({
                 type="button"
                 onClick={() => void enviar()}
                 disabled={!texto.trim() || enviando}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#348C98] text-white transition hover:bg-[#2A727C] disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-[9px] bg-acao text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition hover:bg-acao-escura disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label="Enviar"
               >
                 {enviando ? (

@@ -1,6 +1,6 @@
 "use client"
 
-import Image from "next/image"
+import { ArrowRight } from "lucide-react"
 
 import { Controller, useFormContext } from "react-hook-form"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -13,6 +13,7 @@ import { CustomerFormData } from "@/schemas/customer"
 import { InputPhone } from "@/components/ui/custom-input-phone"
 import { useEffect } from "react"
 import { validateCpf } from "@/utils/validate-cpf"
+import { RodapeDoFormulario } from "@/components/drawer-or-sheet/partes"
 
 interface PersonalData {
   nextStep(): void
@@ -76,8 +77,11 @@ export function PersonalData({ nextStep, close, editando }: PersonalData) {
     }
   }
   return (
-    <form onSubmit={handleNext} className="pb-6 w-full h-screen">
-      <div className="flex flex-col gap-5 mt-10">
+    <form
+      onSubmit={handleNext}
+      className="flex w-full flex-grow flex-col gap-5"
+    >
+      <div className="flex flex-col gap-5">
         <Input
           {...register("name")}
           label="Nome"
@@ -105,11 +109,11 @@ export function PersonalData({ nextStep, close, editando }: PersonalData) {
         />
 
         <div>
-          <h4 className="text-base text-[#707070] font-semibold">
+          <h4 className="mb-[7px] text-[13px] font-medium text-tinta-2">
             Tipo de cadastro
           </h4>
 
-          <div className="flex items-center gap-4 mt-6">
+          <div className="flex items-center gap-6">
             <Controller
               name="type_document"
               control={control}
@@ -174,40 +178,33 @@ export function PersonalData({ nextStep, close, editando }: PersonalData) {
             error={errors?.trade_name}
           />
         )}
-
-        <div className="flex items-center justify-between max-md:flex-col max-md:gap-4 mb-6 max-md:mb-0">
-          <CustomButton
-            type="button"
-            onClick={() => {
-              if (returnTo) {
-                router.push(decodeURIComponent(returnTo))
-              } else {
-                close()
-              }
-            }}
-            className="w-[251px] max-md:w-full cursor-pointer"
-            variant="outline"
-          >
-            Cancelar
-          </CustomButton>
-
-          <CustomButton
-            type="submit"
-            className="px-10 cursor-pointer max-md:w-full"
-            variant="primary"
-            iconRight={
-              <Image
-                src="/icons/arrow-right.svg"
-                alt=""
-                width={24}
-                height={24}
-              />
-            }
-          >
-            Prosseguir
-          </CustomButton>
-        </div>
       </div>
+
+      <RodapeDoFormulario>
+        <CustomButton
+          type="button"
+          onClick={() => {
+            if (returnTo) {
+              router.push(decodeURIComponent(returnTo))
+            } else {
+              close()
+            }
+          }}
+          className="cursor-pointer"
+          variant="outline"
+        >
+          Cancelar
+        </CustomButton>
+
+        <CustomButton
+          type="submit"
+          className="cursor-pointer px-6"
+          variant="primary"
+          iconRight={<ArrowRight size={16} />}
+        >
+          Prosseguir
+        </CustomButton>
+      </RodapeDoFormulario>
     </form>
   )
 }

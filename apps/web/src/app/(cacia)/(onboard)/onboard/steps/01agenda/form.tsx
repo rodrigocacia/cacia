@@ -18,7 +18,7 @@ import { createCalendar } from "@/http/calendar/create-calendar"
 import { useCalendar } from "@/http/hooks/calendar"
 
 import { translateWeekdayToLocale } from "@/utils/day-translation"
-import { formatName } from "@/utils/formatters"
+import { nomeParaExibir } from "@/utils/formatters"
 
 import { AgendaDetailFormData, schema } from "@/schemas/calendar"
 
@@ -29,12 +29,16 @@ import { CustomTextarea } from "@/components/ui/custom-textarea"
 import { CustomSelect } from "@/components/ui/custom-select"
 import { Input } from "@/components/ui/custom-input"
 import { Toast } from "@/components/ui/toast"
-import { Button } from "@/components/ui/custom-button"
 import { Spinner } from "@/components/ui/sppiner"
 
 import { HeaderSteps } from "../components/header-steps"
+import {
+  BotaoAvancar,
+  BotaoVoltar,
+  RodapeDoPasso,
+  SecaoDoPasso,
+} from "../components/partes"
 import { useMe } from "@/http/hooks/user"
-import { Icon } from "@/components/icone"
 import { mensagemDeErro } from "@/utils/error-handlers"
 
 export function Form() {
@@ -199,25 +203,13 @@ export function Form() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="bg-white relative z-10 w-full h-full max-lg:h-fit flex flex-col shadow-md rounded-4xl px-8 pt-[28px] max-lg:pb-4"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col">
       <HeaderSteps />
 
-      <div className="w-full flex flex-col gap-3 max-md:mt-4 mt-10">
-        <div className="flex items-center gap-2">
-          <Icon icon="mdi:calendar-check" className="text-[#BDBDBD] w-8 h-8" />
-          <h3 className="text-[20px] text-[#348C98] font-bold">Nova agenda</h3>
-        </div>
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-normal text-[#3D3D3D]">
-            Usarei esta agenda para reuniões, prazos e audiências.
-          </p>
-        </div>
-      </div>
-
-      <hr className="w-full my-4 max-md:my-2 h-px border-t-0 bg-gray-200" />
+      <SecaoDoPasso
+        titulo="Nova agenda"
+        descricao="Usarei esta agenda para reuniões, prazos e audiências."
+      />
 
       <div className="flex flex-col gap-5">
         <Controller
@@ -244,7 +236,7 @@ export function Form() {
               defaultValue={value}
               options={[
                 {
-                  label: formatName(user?.name ?? ""),
+                  label: nomeParaExibir(user?.name ?? ""),
                   value: user?.userId ?? "",
                 },
               ]}
@@ -273,9 +265,12 @@ export function Form() {
         />
       </div>
 
-      <h3 className="text-[20px] text-[#707070] font-bold mt-8">
-        Disponibilidade
-      </h3>
+      <div className="mt-8">
+        <SecaoDoPasso
+          titulo="Disponibilidade"
+          descricao="Marque os dias em que você atende e os horários de cada turno."
+        />
+      </div>
 
       {errors?.available_days &&
         typeof errors.available_days === "object" &&
@@ -285,13 +280,11 @@ export function Form() {
           </p>
         )}
 
-      <hr className="w-full h-px border-t-0 bg-gray-200 mt-3.5" />
-
-      <div className="p-4 bg-[#FCFCFD] flex flex-col gap-4">
+      <div className="flex flex-col rounded-[14px] border border-filete bg-white px-4">
         {fields.map((day, index) => (
           <div
             key={day.day}
-            className="flex flex-col gap-1 border-b border-[#F5F5F5] pb-3.5"
+            className="flex flex-col gap-2 border-b border-filete py-3.5 last:border-b-0"
           >
             <div className="flex max-[1300px]:flex-col items-center justify-between">
               <div className="w-full flex items-center gap-3">
@@ -301,13 +294,7 @@ export function Form() {
                   render={() => (
                     <Checkbox
                       id={`dia-${day.day}`}
-                      className="w-6 h-6 
-             border border-gray-300 
-             data-[state=checked]:bg-[#348C98] 
-             data-[state=checked]:text-white 
-             data-[state=checked]:border-transparent 
-             focus-visible:ring-0 
-             focus-visible:ring-offset-0"
+                      className="h-5 w-5 rounded-[5px] border border-filete-forte bg-white data-[state=checked]:border-acao data-[state=checked]:bg-acao data-[state=checked]:text-white"
                       checked={day.available}
                       onCheckedChange={() => {
                         const newAvailable = !day.available
@@ -337,7 +324,7 @@ export function Form() {
 
                 <label
                   htmlFor={`dia-${day.day}`}
-                  className="text-sm text-[#3D3D3D] font-semibold"
+                  className="text-[14px] font-semibold text-tinta"
                 >
                   {translateWeekdayToLocale(day.day)}
                 </label>
@@ -398,7 +385,7 @@ export function Form() {
                   </div>
 
                   <div className="flex flex-col gap-2 max-md:ml-0 md:ml-4">
-                    <label className="text-xs text-[#707070] font-medium">
+                    <label className="text-xs font-medium text-tinta-3">
                       Modalidade
                     </label>
                     <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
@@ -429,17 +416,11 @@ export function Form() {
             </div>
 
             {day.available && (
-              <div className="pl-14 max-[1300px]:flex-col flex items-center justify-between">
+              <div className="flex items-center justify-between pl-8 max-[1300px]:flex-col">
                 <div className="w-full flex items-center gap-3">
                   <Checkbox
                     id={`turno2-${day.day}`}
-                    className="w-6 h-6 
-             border border-gray-300 
-             data-[state=checked]:bg-[#348C98] 
-             data-[state=checked]:text-white 
-             data-[state=checked]:border-transparent 
-             focus-visible:ring-0 
-             focus-visible:ring-offset-0"
+                    className="h-5 w-5 rounded-[5px] border border-filete-forte bg-white data-[state=checked]:border-acao data-[state=checked]:bg-acao data-[state=checked]:text-white"
                     checked={day.shift2_available}
                     onCheckedChange={() => {
                       const newShift2Available = !day.shift2_available
@@ -456,7 +437,7 @@ export function Form() {
 
                   <label
                     htmlFor={`turno2-${day.day}`}
-                    className="text-sm text-[#3D3D3D] font-semibold"
+                    className="text-[13.5px] text-tinta-2"
                   >
                     Dois turnos
                   </label>
@@ -523,7 +504,7 @@ export function Form() {
                     </div>
 
                     <div className="flex flex-col gap-2 max-md:ml-0 md:ml-4">
-                      <label className="text-xs text-[#707070] font-medium">
+                      <label className="text-xs font-medium text-tinta-3">
                         Modalidade
                       </label>
                       <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
@@ -557,35 +538,10 @@ export function Form() {
         ))}
       </div>
 
-      <div className="flex items-center justify-between mb-7">
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            className="w-[251px] max-lg:w-full cursor-pointer"
-            onClick={() => prevStep()}
-            iconLeft={
-              <Icon icon="mdi:arrow-left" className="w-6 h-6 text-[#707070]" />
-            }
-          >
-            Voltar
-          </Button>
-        </div>
-
-        <Button
-          type="submit"
-          className="w-[251px] max-lg:w-fit cursor-pointer"
-          variant="primary"
-          isLoading={isSubmitting}
-          iconRight={
-            !isSubmitting ? (
-              <Icon icon="mdi:arrow-right" className="w-6 h-6 text-white" />
-            ) : null
-          }
-        >
-          Prosseguir
-        </Button>
-      </div>
+      <RodapeDoPasso>
+        <BotaoVoltar onClick={() => prevStep()} />
+        <BotaoAvancar isLoading={isSubmitting} />
+      </RodapeDoPasso>
 
       {hasError && (
         <Toast

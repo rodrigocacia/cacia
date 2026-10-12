@@ -1,47 +1,25 @@
 import { EventStatus } from "@/types/event"
 import clsx from "clsx"
 
-const labelVariant = [
-  {
-    variant: EventStatus.PENDING,
-    label: "Pendente",
-  },
-  {
-    variant: EventStatus.CONFIRM,
-    label: "Confirmado",
-  },
-  {
-    variant: EventStatus.CANCEL,
-    label: "Cancelado",
-  },
-  {
-    variant: EventStatus.DONE,
-    label: "Concluído",
-  },
-]
+const STATUS: Record<EventStatus, { rotulo: string; ponto: string }> = {
+  [EventStatus.PENDING]: { rotulo: "Pendente", ponto: "bg-ambar-ponto" },
+  [EventStatus.CONFIRM]: { rotulo: "Confirmado", ponto: "bg-acao" },
+  [EventStatus.CANCEL]: { rotulo: "Cancelado", ponto: "bg-[#C2513E]" },
+  [EventStatus.DONE]: { rotulo: "Concluído", ponto: "bg-turquesa-profundo" },
+}
 
 export function StatusEvent({ status }: { status: EventStatus }) {
+  const item = STATUS[status]
+
   return (
-    <span
-      className={clsx(
-        "inline-flex items-center gap-1 font-medium text-sm px-2 py-1 rounded-full",
-        {
-          "bg-[#FFE4B6] text-[#F59E0B]": status === EventStatus.PENDING,
-          "bg-[#DBEAFE] text-[#3B82F6]": status === EventStatus.CONFIRM,
-          "bg-[#FFCFCF] text-[#EF4444]": status === EventStatus.CANCEL,
-          "bg-[#DDFFFB] text-[#34C791]": status === EventStatus.DONE,
-        }
-      )}
-    >
+    <span className="inline-flex h-[22px] w-fit items-center gap-1.5 rounded-md border border-[#E3DED6] bg-white px-2 text-xs whitespace-nowrap text-tinta-2">
       <span
-        className={clsx("w-2 h-2 rounded-full", {
-          "bg-[#F59E0B]": status === EventStatus.PENDING,
-          "bg-[#3B82F6]": status === EventStatus.CONFIRM,
-          "bg-[#EF4444]": status === EventStatus.CANCEL,
-          "bg-[#34C791]": status === EventStatus.DONE,
-        })}
+        className={clsx(
+          "h-1.5 w-1.5 rounded-full",
+          item?.ponto ?? "bg-gray-400"
+        )}
       />
-      {labelVariant.find((label) => label.variant === status)?.label}
+      {item?.rotulo ?? status}
     </span>
   )
 }

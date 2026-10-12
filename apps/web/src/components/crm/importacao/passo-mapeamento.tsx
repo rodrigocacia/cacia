@@ -68,50 +68,52 @@ export function PassoMapeamento({
   return (
     <div>
       <div className="mb-3 flex items-center justify-between gap-2">
-        <p className="text-sm text-zinc-600">
+        <p className="text-[13.5px] text-tinta-2">
           <strong>{previa.fileName}</strong> · {previa.totalRows} linha(s)
         </p>
 
         <button
           type="button"
           onClick={onVoltar}
-          className="text-xs text-zinc-500 underline"
+          className="cursor-pointer text-xs text-tinta-3 underline hover:text-tinta"
         >
           trocar arquivo
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-zinc-200">
+      <div className="overflow-x-auto rounded-[14px] border border-filete bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-zinc-50 text-left text-xs text-zinc-500">
+          <thead className="border-b border-filete bg-papel text-left">
             <tr>
-              <th className="px-3 py-2 font-medium">Coluna do arquivo</th>
-              <th className="px-3 py-2 font-medium">Exemplo</th>
-              <th className="px-3 py-2 font-medium">Vai para</th>
+              <th className="rotulo px-4 py-2.5 font-normal">
+                Coluna do arquivo
+              </th>
+              <th className="rotulo px-4 py-2.5 font-normal">Exemplo</th>
+              <th className="rotulo px-4 py-2.5 font-normal">Vai para</th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-[#F1EEE8]">
             {(previa.columns ?? []).map((coluna) => {
               const atual = mapeamento[String(coluna.index)] ?? ""
 
               return (
                 <tr key={coluna.index}>
-                  <td className="px-3 py-2 font-medium text-zinc-800">
+                  <td className="px-4 py-2.5 font-medium text-tinta">
                     {coluna.header}
                   </td>
 
-                  <td className="max-w-48 truncate px-3 py-2 text-zinc-500">
+                  <td className="max-w-48 truncate px-4 py-2.5 text-tinta-3">
                     {coluna.amostra[0] ?? "—"}
                   </td>
 
-                  <td className="px-3 py-2">
+                  <td className="px-4 py-2">
                     <select
                       value={atual}
                       onChange={(evento) =>
                         definirCampo(coluna.index, evento.target.value)
                       }
-                      className="w-full rounded-md border border-zinc-200 px-2 py-1 text-sm outline-none focus:border-zinc-400"
+                      className="h-9 w-full rounded-[9px] border border-filete-forte bg-white px-2.5 text-[13.5px] text-tinta outline-none focus:border-acao focus:shadow-[0_0_0_3px_#D7EBEE]"
                     >
                       <option value="">Não importar</option>
 
@@ -136,7 +138,7 @@ export function PassoMapeamento({
       </div>
 
       {!temTelefone && (
-        <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <p className="mt-3 rounded-xl bg-ambar-fundo px-4 py-3 text-sm text-ambar">
           Indique qual coluna tem o telefone. Sem ele não há como falar com a
           pessoa nem como saber se ela já está na base.
         </p>
@@ -144,14 +146,14 @@ export function PassoMapeamento({
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="text-xs font-medium text-zinc-600">
+          <label className="text-[13px] font-medium text-tinta-2">
             Etapa de entrada
           </label>
 
           <select
             value={stageId}
             onChange={(evento) => setStageId(evento.target.value)}
-            className="mt-1 w-full rounded-lg border border-zinc-200 px-2.5 py-1.5 text-sm outline-none"
+            className="mt-1.5 h-9 w-full rounded-[9px] border border-filete-forte bg-white px-2.5 text-[13.5px] text-tinta outline-none focus:border-acao focus:shadow-[0_0_0_3px_#D7EBEE]"
           >
             {etapas.map((etapa) => (
               <option key={etapa.id} value={etapa.id}>
@@ -162,13 +164,13 @@ export function PassoMapeamento({
         </div>
 
         <div>
-          <label className="text-xs font-medium text-zinc-600">
+          <label className="text-[13px] font-medium text-tinta-2">
             Etiquetas para todos os importados
           </label>
 
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {etiquetas.length === 0 && (
-              <span className="text-xs text-zinc-400">
+              <span className="text-xs text-tinta-3">
                 Nenhuma etiqueta cadastrada
               </span>
             )}
@@ -189,7 +191,7 @@ export function PassoMapeamento({
                   }
                   className={`rounded-full transition ${
                     ativa
-                      ? "ring-2 ring-zinc-900 ring-offset-1"
+                      ? "ring-2 ring-acao ring-offset-1"
                       : "opacity-60 hover:opacity-100"
                   }`}
                 >
@@ -202,7 +204,7 @@ export function PassoMapeamento({
       </div>
 
       <div className="mt-6 flex items-center justify-between gap-3">
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-tinta-3">
           Contatos que já existem na base são ignorados, não duplicados.
         </p>
 
@@ -212,7 +214,7 @@ export function PassoMapeamento({
           onClick={() =>
             void onConfirmar({ mapping: mapeamento, stageId, tagIds })
           }
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-40"
+          className="flex h-9 cursor-pointer items-center rounded-[9px] bg-acao px-3.5 text-[13.5px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition hover:bg-acao-escura disabled:cursor-not-allowed disabled:opacity-40"
         >
           {ocupado ? "Enviando…" : `Importar ${previa.totalRows} linha(s)`}
         </button>

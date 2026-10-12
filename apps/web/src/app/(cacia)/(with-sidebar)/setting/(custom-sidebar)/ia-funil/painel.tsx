@@ -12,6 +12,8 @@ import {
   type ConfiguracaoDoEscritorio,
 } from "@/http/crm/configuracoes"
 
+import { Cartao } from "../../_ui/cartao"
+
 type Chave = "aiCanMoveLeadStage" | "aiCanTagLead"
 
 const PORTOES: Array<{
@@ -24,17 +26,17 @@ const PORTOES: Array<{
     chave: "aiCanMoveLeadStage",
     titulo: "Mover o lead de etapa",
     descricao:
-      "Quando a conversa mostrar que o negócio avançou ou foi descartado, a IA move o cartão no quadro.",
+      "Quando a conversa mostrar que o negócio avançou ou foi descartado, o assistente move o cartão no quadro.",
     aviso:
-      "Movimentos feitos pela IA aparecem no histórico do lead como “IA de atendimento”, e não como uma pessoa — dá para revisar depois.",
+      "Movimentos feitos pelo assistente aparecem no histórico do lead como “IA de atendimento”, e não como uma pessoa — dá para revisar depois.",
   },
   {
     chave: "aiCanTagLead",
     titulo: "Aplicar etiquetas",
     descricao:
-      "A IA marca o contato com etiquetas já cadastradas, conforme o assunto que a conversa revelar.",
+      "O assistente marca o contato com etiquetas já cadastradas, conforme o assunto que a conversa revelar.",
     aviso:
-      "Ela nunca cria etiqueta nova: só usa as que existem em Configurações → Etiquetas.",
+      "Ele nunca cria etiqueta nova: só usa as que existem em Configurações → Etiquetas.",
   },
 ]
 
@@ -57,13 +59,13 @@ function Chave({
       aria-label={rotulo}
       disabled={desabilitado}
       onClick={() => onMudar(!ligado)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition disabled:opacity-40 ${
-        ligado ? "bg-emerald-600" : "bg-zinc-300"
+      className={`relative h-6 w-[42px] shrink-0 cursor-pointer rounded-full transition outline-none focus-visible:ring-[3px] focus-visible:ring-nevoa-2 disabled:cursor-not-allowed disabled:opacity-40 ${
+        ligado ? "bg-acao" : "bg-gray-300"
       }`}
     >
       <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
-          ligado ? "left-[22px]" : "left-0.5"
+        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-[0_1px_2px_rgba(21,19,17,0.25)] transition-all ${
+          ligado ? "left-[20px]" : "left-0.5"
         }`}
       />
     </button>
@@ -112,32 +114,29 @@ export function PainelDaIaNoFunil() {
   if (isLoading && !data) return <Spinner />
 
   return (
-    <div className="w-full">
-      <h1 className="text-lg font-semibold text-zinc-900">
-        I.A. no funil de vendas
-      </h1>
-      <p className="mt-1 text-sm text-zinc-500">
-        A IA de atendimento já cria leads a partir das conversas do WhatsApp.
-        Aqui você decide se ela também pode mexer no funil.
-      </p>
-
-      <ul className="mt-5 space-y-3">
+    <Cartao
+      titulo="Assistente no funil de vendas"
+      descricao="O assistente de atendimento já cria leads a partir das conversas do WhatsApp. Aqui você decide se ele também pode mexer no funil."
+    >
+      <ul className="flex flex-col">
         {PORTOES.map((portao) => {
           const ligado = data?.[portao.chave] ?? false
 
           return (
             <li
               key={portao.chave}
-              className="flex items-start gap-4 rounded-xl border border-zinc-200 bg-white p-4"
+              className="flex items-start gap-6 border-t border-[#F1EEE8] py-4 first:border-t-0 first:pt-0 last:pb-0"
             >
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-zinc-800">
+                <p className="text-[14px] font-medium text-tinta">
                   {portao.titulo}
                 </p>
-                <p className="mt-0.5 text-sm text-zinc-500">
+                <p className="mt-1 text-[13px] text-tinta-2">
                   {portao.descricao}
                 </p>
-                <p className="mt-1.5 text-xs text-zinc-400">{portao.aviso}</p>
+                <p className="mt-1.5 text-[12.5px] text-tinta-3">
+                  {portao.aviso}
+                </p>
               </div>
 
               <Chave
@@ -159,6 +158,6 @@ export function PainelDaIaNoFunil() {
           onClose={() => setErro(null)}
         />
       )}
-    </div>
+    </Cartao>
   )
 }

@@ -2,8 +2,6 @@
 
 import { useState } from "react"
 
-import { Icon } from "@/components/icone"
-
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
@@ -24,6 +22,8 @@ import {
 import { Input } from "@/components/ui/custom-input"
 import { CustomRadioButton } from "@/components/ui/custom-radio-button"
 import { mensagemDeErro } from "@/utils/error-handlers"
+
+import { Cartao, RodapeDoCartao } from "../../_ui/cartao"
 
 export function LegalConsultationDetail() {
   const [hasError, setHasError] = useState(false)
@@ -93,28 +93,22 @@ export function LegalConsultationDetail() {
   if (isLoading) return <Spinner />
 
   return (
-    <div className="p-8 max-md:p-0 pb-4 md:rounded-2xl md:shadow-sm">
-      <div className="w-full flex items-center gap-3 max-md:hidden">
-        <Icon icon="octicon:law-16" className="text-[#BDBDBD] w-8 h-8" />
-
-        <h3 className="text-[20px] text-[#707070] font-bold">
-          Consulta jurídica
-        </h3>
-      </div>
-
-      <hr className="w-full my-6 max-md:my-2 h-px border-t-0 bg-gray-200 max-md:hidden" />
-
+    <Cartao
+      titulo="Consulta jurídica"
+      descricao="Se a primeira consulta é cobrada e como o assistente pede o pagamento ao agendar."
+    >
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full mt-6 flex flex-col justify-between gap-8"
+        className="flex w-full flex-col gap-7"
       >
-        <div className="w-full flex flex-col gap-5">
-          <div>
-            <h4 className="text-base text-[#707070] font-semibold">
+        <div className="flex w-full flex-col">
+          <fieldset className="flex flex-wrap items-center justify-between gap-4 pb-5">
+            <legend className="sr-only">A consulta jurídica é cobrada?</legend>
+            <span className="text-[14px] font-medium text-tinta" aria-hidden>
               A consulta jurídica é cobrada?
-            </h4>
+            </span>
 
-            <div className="flex items-center gap-4 md:gap-10 mt-6 flex-wrap">
+            <div className="flex flex-wrap items-center gap-6">
               <Controller
                 name="is_charged"
                 control={control}
@@ -144,26 +138,31 @@ export function LegalConsultationDetail() {
                 )}
               />
             </div>
-          </div>
+          </fieldset>
 
           {is_charged === "yes" && (
-            <Input
-              {...register("consultation_value")}
-              iconName="money"
-              mask="price"
-              label="Valor"
-              placeholder="R$ 0,00"
-              error={errors?.consultation_value}
-            />
+            <div className="border-t border-filete py-5">
+              <Input
+                {...register("consultation_value")}
+                iconName="money"
+                mask="price"
+                label="Valor"
+                placeholder="R$ 0,00"
+                error={errors?.consultation_value}
+              />
+            </div>
           )}
 
           {is_charged === "yes" && (
-            <div>
-              <h4 className="text-base text-[#707070] font-semibold">
+            <fieldset className="flex flex-wrap items-center justify-between gap-4 border-t border-filete py-5">
+              <legend className="sr-only">
                 Exigir pagamento para concluir agendamento?
-              </h4>
+              </legend>
+              <span className="text-[14px] font-medium text-tinta" aria-hidden>
+                Exigir pagamento para concluir agendamento?
+              </span>
 
-              <div className="flex items-center gap-4 md:gap-10 mt-6 flex-wrap">
+              <div className="flex flex-wrap items-center gap-6">
                 <Controller
                   name="requires_payment_to_schedule"
                   control={control}
@@ -188,53 +187,52 @@ export function LegalConsultationDetail() {
                   )}
                 />
               </div>
-            </div>
+            </fieldset>
           )}
 
           {is_charged === "yes" && (
-            <div className="w-full flex flex-col gap-1">
-              <h3 className="text-base text-[#707070] font-semibold">
-                Chave PIX
-              </h3>
+            <div className="flex w-full flex-col gap-3 border-t border-filete pt-5">
+              <h3 className="text-[14px] font-medium text-tinta">Chave PIX</h3>
 
-              <ul className="flex flex-col gap-1 list-none">
-                <li className="text-xs text-[#707070] font-medium">
-                  - Esta chave será enviada para recebimento do valor da
-                  consulta. Após receber o comprovante de pagamento o
-                  agendamento será confirmado.
+              <ul className="flex list-disc flex-col gap-1 pl-4 text-[13px] text-tinta-2 marker:text-tinta-3">
+                <li>
+                  Esta chave será enviada para recebimento do valor da consulta.
+                  Após receber o comprovante de pagamento o agendamento será
+                  confirmado.
                 </li>
 
-                <li className="text-xs text-[#707070] font-medium">
-                  - Você receberá uma notificação do agendamento incluindo o
+                <li>
+                  Você receberá uma notificação do agendamento incluindo o
                   comprovante de pagamento enviado pelo lead/cliente.
                 </li>
               </ul>
-            </div>
-          )}
 
-          {is_charged === "yes" && requires_payment_to_schedule === "yes" && (
-            <Input
-              {...register("lawyer_pix_key")}
-              iconName={null}
-              label=""
-              placeholder="Sua chave PIX aqui"
-              error={errors?.lawyer_pix_key}
-            />
+              {requires_payment_to_schedule === "yes" && (
+                <Input
+                  {...register("lawyer_pix_key")}
+                  iconName={null}
+                  label=""
+                  aria-label="Chave PIX"
+                  placeholder="Sua chave PIX aqui"
+                  error={errors?.lawyer_pix_key}
+                />
+              )}
+            </div>
           )}
         </div>
 
-        <div className="w-full flex items-center justify-end max-md:flex-col max-md:gap-4 mt-8 max-md:pb-10 max-md:mt-8">
+        <RodapeDoCartao>
           <Button
             type="submit"
             disabled={isSubmitting}
             isLoading={isSubmitting}
-            className="px-10 cursor-pointer max-md:w-full"
+            className="px-5"
             variant="primary"
-            iconLeft={<Check />}
+            iconLeft={<Check size={16} />}
           >
             Salvar
           </Button>
-        </div>
+        </RodapeDoCartao>
       </form>
 
       {hasError && (
@@ -254,6 +252,6 @@ export function LegalConsultationDetail() {
           description="As configurações da consulta jurídica foram salvas."
         />
       )}
-    </div>
+    </Cartao>
   )
 }

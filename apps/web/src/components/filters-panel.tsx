@@ -2,9 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import React, { useEffect, useState } from "react"
-import { FaTrash } from "react-icons/fa"
-import { MdTune } from "react-icons/md"
-import { Check, X } from "lucide-react"
+import { Check, SlidersHorizontal, X } from "lucide-react"
 
 import { Button } from "@/components/ui/custom-button"
 
@@ -112,22 +110,20 @@ export function FiltersPanel({
         type="button"
         onClick={() => setIsOpen((open) => !open)}
         aria-expanded={isOpen}
-        className={`flex h-11 shrink-0 cursor-pointer items-center gap-2.5 rounded-full px-5 text-sm transition-colors ${
+        className={`flex h-11 shrink-0 cursor-pointer items-center gap-2 rounded-[10px] border px-3.5 text-[13.5px] font-medium transition-colors ${
           showResponsive ? "" : "max-lg:hidden"
         } ${
           isOpen || activeCount > 0
-            ? "bg-[#BBE2E7] hover:bg-[#A8DAE1]"
-            : "bg-[#ECF7F8] hover:bg-[#DCEFF2]"
+            ? "border-acao bg-nevoa text-turquesa-profundo"
+            : "border-filete-forte bg-white text-tinta hover:bg-gray-100"
         }`}
       >
-        <MdTune size={18} className="text-[#348C98]" />
+        <SlidersHorizontal size={16} strokeWidth={1.7} />
 
-        <span className="font-plus-jakarta text-sm font-bold text-[#348C98]">
-          Filtros
-        </span>
+        <span>Filtros</span>
 
         {activeCount > 0 && (
-          <span className="ml-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#348C98] text-xs font-bold text-white">
+          <span className="tabular flex h-5 min-w-5 items-center justify-center rounded-md bg-acao px-1 text-[11px] font-semibold text-white">
             {activeCount}
           </span>
         )}
@@ -135,17 +131,17 @@ export function FiltersPanel({
 
       {isOpen && (
         <div
-          className={`w-full rounded-2xl border border-[#ECECF1] bg-white p-4 ${
+          className={`w-full rounded-[14px] border border-filete bg-white p-5 ${
             showResponsive ? "" : "max-lg:hidden"
           }`}
         >
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-base font-bold text-[#3D3D3D]">
+              <h2 className="text-[14.5px] font-semibold text-tinta">
                 Filtros avançados
               </h2>
 
-              <p className="text-sm text-[#9A9AA5]">
+              <p className="text-[13px] text-tinta-3">
                 Selecione filtros para uma busca mais específica.
               </p>
             </div>
@@ -154,7 +150,7 @@ export function FiltersPanel({
               type="button"
               onClick={() => setIsOpen(false)}
               aria-label="Fechar filtros"
-              className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-[#9A9AA5] transition-colors hover:bg-[#F1F1F5] hover:text-[#3D3D3D]"
+              className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-tinta-3 transition-colors hover:bg-gray-100 hover:text-tinta"
             >
               <X className="h-4 w-4" />
             </button>
@@ -162,9 +158,7 @@ export function FiltersPanel({
 
           {filters.length > 0 && (
             <div className="flex w-full flex-col gap-3">
-              <h3 className="text-[11px] font-semibold tracking-wide text-[#BDBDBD]">
-                FILTRAGEM RÁPIDA
-              </h3>
+              <h3 className="rotulo">Status</h3>
 
               <div className="flex w-full flex-wrap items-center gap-1.5">
                 {filters.map((link) => {
@@ -175,26 +169,31 @@ export function FiltersPanel({
                       key={link.id}
                       type="button"
                       onClick={() => setSelectedStatus(link.status)}
-                      className={`relative flex cursor-pointer items-center justify-center rounded-full border px-3 py-[9px] text-sm font-medium transition-colors ${
+                      aria-pressed={isActive}
+                      className={`relative flex h-8 cursor-pointer items-center justify-center rounded-lg border px-3 text-[13px] transition-colors ${
                         isActive
-                          ? "border-[#BBE2E7] bg-[#ECF7F8]"
-                          : "border-[#EDEDF2] bg-white hover:border-[#D5D5E0]"
+                          ? "border-acao bg-nevoa"
+                          : "border-filete-forte bg-white hover:bg-gray-100"
                       }`}
                     >
                       {link.icon && (
                         <span className="mr-2 flex items-center justify-center">
                           {React.cloneElement(link.icon, {
                             className: `w-4 h-4 ${
-                              isActive ? "text-[#348C98]" : "text-[#BDBDBD]"
+                              isActive
+                                ? "text-turquesa-profundo"
+                                : "text-tinta-3"
                             }`,
                           })}
                         </span>
                       )}
 
                       <span
-                        className={`text-sm font-bold ${
-                          isActive ? "text-[#348C98]" : "text-[#707070]"
-                        }`}
+                        className={
+                          isActive
+                            ? "font-semibold text-turquesa-profundo"
+                            : "font-medium text-tinta-2"
+                        }
                       >
                         {link.name}
                       </span>
@@ -207,13 +206,11 @@ export function FiltersPanel({
 
           {showDateFilter && (
             <div className="flex w-full flex-col gap-3">
-              <h3 className="text-[11px] font-semibold tracking-wide text-[#BDBDBD]">
-                FILTRO POR PERÍODO
-              </h3>
+              <h3 className="rotulo">Período</h3>
 
               <div className="flex items-center gap-3 max-md:flex-col">
                 <div className="flex flex-1 flex-col gap-1 max-md:w-full">
-                  <label className="text-xs font-medium text-[#3D3D3D]">
+                  <label className="text-[13px] font-medium text-tinta-2">
                     Data de Início
                   </label>
 
@@ -221,12 +218,12 @@ export function FiltersPanel({
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="rounded-lg border border-[#E7E7EE] px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-[#348C98] focus:outline-none"
+                    className="h-10 rounded-[10px] border border-filete-forte bg-white px-3 text-[14px] text-tinta outline-none focus:border-acao focus:shadow-[0_0_0_3px_#D7EBEE]"
                   />
                 </div>
 
                 <div className="flex flex-1 flex-col gap-1 max-md:w-full">
-                  <label className="text-xs font-medium text-[#3D3D3D]">
+                  <label className="text-[13px] font-medium text-tinta-2">
                     Data de Fim
                   </label>
 
@@ -234,29 +231,28 @@ export function FiltersPanel({
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="rounded-lg border border-[#E7E7EE] px-3 py-2 text-sm focus:border-transparent focus:ring-2 focus:ring-[#348C98] focus:outline-none"
+                    className="h-10 rounded-[10px] border border-filete-forte bg-white px-3 text-[14px] text-tinta outline-none focus:border-acao focus:shadow-[0_0_0_3px_#D7EBEE]"
                   />
                 </div>
               </div>
             </div>
           )}
 
-          <div className="mt-5 flex items-center justify-between gap-3 border-t border-[#F1F1F5] pt-4">
+          <div className="mt-5 flex items-center justify-end gap-2.5 border-t border-filete pt-4">
             <Button
-              className="h-10! cursor-pointer px-4 text-sm"
-              variant="danger"
-              iconLeft={<FaTrash size={14} className="text-[#DC2626]" />}
+              className="h-9! cursor-pointer px-3.5 text-[13.5px]"
+              variant="ghost"
               onClick={handleClear}
             >
-              Limpar Filtros
+              Limpar filtros
             </Button>
 
             <Button
-              className="h-10! cursor-pointer px-5 text-sm"
+              className="h-9! cursor-pointer px-3.5 text-[13.5px]"
               iconLeft={<Check className="h-4 w-4" />}
               onClick={handleSave}
             >
-              Salvar
+              Aplicar
             </Button>
           </div>
         </div>

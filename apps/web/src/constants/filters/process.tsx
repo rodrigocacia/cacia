@@ -15,7 +15,7 @@ export const processFilters = [
     icon: (
       <Icon
         icon="mdi:folder-check-outline"
-        className="text-[#BDBDBD] w-4 h-4"
+        className="text-[#A39C93] w-4 h-4"
       />
     ),
   },
@@ -26,7 +26,7 @@ export const processFilters = [
     icon: (
       <Icon
         icon="mdi:folder-alert-outline"
-        className="text-[#BDBDBD] w-4 h-4"
+        className="text-[#A39C93] w-4 h-4"
       />
     ),
   },
@@ -37,7 +37,7 @@ export const processFilters = [
     icon: (
       <Icon
         icon="mdi:folder-clock-outline"
-        className="text-[#BDBDBD] w-4 h-4"
+        className="text-[#A39C93] w-4 h-4"
       />
     ),
   },
@@ -48,7 +48,7 @@ export const processFilters = [
     icon: (
       <Icon
         icon="mdi:check-circle-outline"
-        className="text-[#BDBDBD] w-4 h-4"
+        className="text-[#A39C93] w-4 h-4"
       />
     ),
   },

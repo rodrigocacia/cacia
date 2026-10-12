@@ -6,7 +6,7 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter, useSearchParams } from "next/navigation"
 
-import { Icon } from "@/components/icone"
+import { Check, Plus } from "lucide-react"
 
 import { Button, Button as CustomButton } from "@/components/ui/custom-button"
 import { Input } from "@/components/ui/custom-input"
@@ -21,12 +21,14 @@ import {
 } from "@/components/ui/sheet"
 
 import { DialogTitle } from "@radix-ui/react-dialog"
-import Image from "next/image"
-import { AiOutlinePlus } from "react-icons/ai"
 import { createFolder } from "@/http/folder/create-folder"
 import { useState } from "react"
 import { Toast } from "@/components/ui/toast"
 import { mensagemDeErro } from "@/utils/error-handlers"
+import {
+  CabecalhoDoFormulario,
+  RodapeDoFormulario,
+} from "@/components/drawer-or-sheet/partes"
 
 const createFolderFormSchema = z.object({
   title: z.string().min(2, { message: "Insira um nome válido" }),
@@ -87,7 +89,7 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="px-4 pb-6 w-full h-screen flex flex-col max-md:overflow-y-scroll"
+      className="flex h-screen w-full flex-col gap-7 overflow-y-auto pb-6 max-md:h-[85vh]"
     >
       {erro && (
         <Toast
@@ -98,18 +100,13 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
         />
       )}
 
-      <div className="mt-10 flex flex-col gap-3">
-        <div className="flex gap-2">
-          <Icon
-            icon="mdi:add-circle-outline"
-            className="text-[#BBE2E7] w-[30px] h-[30px]"
-          />
+      <CabecalhoDoFormulario
+        rotulo="Documentos"
+        titulo="Nova pasta"
+        descricao="Dê um nome à pasta. Depois é só adicionar os documentos dentro dela."
+      />
 
-          <h3 className="text-xl text-[#3D3D3D] font-bold">Nova pasta</h3>
-        </div>
-      </div>
-
-      <div className="flex h-full flex-col justify-between  gap-5 mt-10">
+      <div className="flex flex-col gap-5">
         <Input
           {...register("title")}
           label="Nome"
@@ -117,43 +114,34 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
           placeholder="Insira o nome da pasta..."
           error={errors?.title}
         />
-
-        <div className="flex items-center justify-between">
-          <CustomButton
-            type="button"
-            className="w-[251px] cursor-pointer"
-            variant="outline"
-            onClick={() => {
-              if (returnTo) {
-                router.push(decodeURIComponent(returnTo))
-              } else {
-                setOpen(false)
-              }
-            }}
-          >
-            Cancelar
-          </CustomButton>
-
-          <CustomButton
-            type="submit"
-            className="px-10 cursor-pointer"
-            variant="primary"
-            isLoading={isSubmitting}
-            iconRight={
-              !isSubmitting ? (
-                <Image
-                  src="/icons/arrow-right.svg"
-                  alt=""
-                  width={24}
-                  height={24}
-                />
-              ) : null
-            }
-          >
-            Criar pasta
-          </CustomButton>
-        </div>
       </div>
+
+      <RodapeDoFormulario>
+        <CustomButton
+          type="button"
+          className="cursor-pointer"
+          variant="outline"
+          onClick={() => {
+            if (returnTo) {
+              router.push(decodeURIComponent(returnTo))
+            } else {
+              setOpen(false)
+            }
+          }}
+        >
+          Cancelar
+        </CustomButton>
+
+        <CustomButton
+          type="submit"
+          className="cursor-pointer px-6"
+          variant="primary"
+          isLoading={isSubmitting}
+          iconLeft={<Check size={16} />}
+        >
+          Criar pasta
+        </CustomButton>
+      </RodapeDoFormulario>
     </form>
   )
 }
@@ -173,14 +161,14 @@ export function Form() {
         <Sheet open={openSheet} onOpenChange={setOpenSheet}>
           <SheetTrigger asChild>
             <Button
-              className="cursor-pointer"
-              iconLeft={<AiOutlinePlus size={20} />}
+              className="h-10! cursor-pointer px-4 text-[13.5px]"
+              iconLeft={<Plus size={16} strokeWidth={2} />}
             >
               Nova pasta
             </Button>
           </SheetTrigger>
 
-          <SheetContent className="min-w-[707px] rounded-tl-[24px] rounded-bl-[24px]">
+          <SheetContent className="min-w-[640px] px-8">
             <SheetTitle className="sr-only">Nova pasta</SheetTitle>
 
             <FormComponent
@@ -196,11 +184,14 @@ export function Form() {
           open={openDrawer}
           onOpenChange={(value) => setOpenDrawer(value)}
         >
-          <DrawerTrigger className="md:hidden fixed w-[56px] h-[56px] bottom-6 right-6 bg-teal-500 hover:bg-teal-600 text-white rounded-full shadow-lg text-xl">
-            +
+          <DrawerTrigger
+            aria-label="Nova pasta"
+            className="fixed right-5 bottom-5 z-50 flex h-14 w-14 items-center justify-center rounded-2xl bg-acao text-white shadow-[0_10px_24px_rgba(21,19,17,0.22)] transition-colors hover:bg-acao-escura md:hidden"
+          >
+            <Plus className="h-5 w-5" strokeWidth={2} />
           </DrawerTrigger>
 
-          <DrawerContent className="h-full">
+          <DrawerContent className="h-full px-4">
             <DialogTitle className="sr-only">Nova pasta</DialogTitle>
 
             <FormComponent

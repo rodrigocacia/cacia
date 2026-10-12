@@ -14,9 +14,5 @@ export default async function SignIn() {
     }
   } catch {}
 
-  return (
-    <div className="w-full h-full">
-      <Steps qrCode={qrCode} />
-    </div>
-  )
+  return <Steps qrCode={qrCode} />
 }

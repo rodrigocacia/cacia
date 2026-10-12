@@ -123,7 +123,7 @@ export function PersonalData({ nextStep }: PersonalDataProps) {
     // senha para a URL
     <form method="post" onSubmit={handleNext} className="w-full h-full pb-4">
       <div className="flex flex-col gap-5">
-        <h3 className="text-xl font-semibold text-[#3D3D3D]">
+        <h3 className="text-xl font-semibold text-[#1B1916]">
           Dados do usuário
         </h3>
 
@@ -145,7 +145,7 @@ export function PersonalData({ nextStep }: PersonalDataProps) {
           placeholder="Insira o seu número de telefone..."
           error={errors?.user_phone}
         />
-        <div className="flex items-start gap-1.5 p-2.5 bg-[#F8F9FA] border border-[#E9ECEF] rounded-[6px]">
+        <div className="flex items-start gap-1.5 p-2.5 bg-[#F6F4EF] border border-[#E9ECEF] rounded-[6px]">
           <IoMdInformationCircle
             size={16}
             className="text-[#348C98] mt-0.5 flex-shrink-0"
@@ -164,7 +164,7 @@ export function PersonalData({ nextStep }: PersonalDataProps) {
         />
 
         <div>
-          <h4 className="text-base text-[#707070] font-semibold">
+          <h4 className="text-base text-[#57514A] font-semibold">
             Tipo de cadastro
           </h4>
 
@@ -208,7 +208,7 @@ export function PersonalData({ nextStep }: PersonalDataProps) {
       </div>
 
       <div className="mt-8 flex flex-col gap-5">
-        <h3 className="text-xl font-semibold text-[#3D3D3D]">
+        <h3 className="text-xl font-semibold text-[#1B1916]">
           Defina uma senha de acesso
         </h3>
 
@@ -240,7 +240,7 @@ export function PersonalData({ nextStep }: PersonalDataProps) {
               className="text-[#348C98]"
             />
 
-            <h3 className="text-base text-[#3D3D3D] font-bold">
+            <h3 className="text-base text-[#1B1916] font-bold">
               Sua senha deve ter:
             </h3>
           </div>
@@ -274,7 +274,7 @@ export function PersonalData({ nextStep }: PersonalDataProps) {
                   size={16}
                   className={rule.valid ? "text-[#16A31B]" : "text-[#EFEFEF]"}
                 />
-                <h4 className="text-sm font-bold text-[#707070]">
+                <h4 className="text-sm font-bold text-[#57514A]">
                   {rule.label}
                 </h4>
               </motion.div>

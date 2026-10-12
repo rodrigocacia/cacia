@@ -22,6 +22,8 @@ import { FILA } from './filas';
           username: config.get<string>('REDIS_USERNAME'),
           password: config.get<string>('REDIS_PASSWORD'),
           db: config.getOrThrow<number>('REDIS_DB'),
+          // Ver RedisService: *.internal no Fly é só IPv6
+          family: 0,
           ...(config.get<boolean>('REDIS_TLS') && { tls: {} }),
         },
         prefix: config.get<string>('REDIS_PREFIX'),

@@ -1,19 +1,32 @@
 import "./globals.css"
 
 import Script from "next/script"
-import { Montserrat, Plus_Jakarta_Sans } from "next/font/google"
+import { Geist, Geist_Mono, Newsreader } from "next/font/google"
 
-const montserrat = Montserrat({
+/**
+ * Tipografia da CacIA (direção visual 02).
+ *
+ * Geist na interface e nos dados; Newsreader, serifa editorial de alto
+ * contraste, nos títulos; Geist Mono nos rótulos. Os eixos variáveis vêm
+ * inteiros: o Newsreader ajusta o desenho ao tamanho (opsz) sozinho.
+ */
+const geist = Geist({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-montserrat",
+  variable: "--font-geist",
   display: "swap",
 })
 
-const plusJakarta = Plus_Jakarta_Sans({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-plus-jakarta",
+  variable: "--font-geist-mono",
+  display: "swap",
+})
+
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+  variable: "--font-newsreader",
   display: "swap",
 })
 
@@ -58,9 +71,9 @@ export default function RootLayout({
   return (
     <html
       lang="pt-br"
-      className={`${montserrat.variable} ${plusJakarta.variable}`}
+      className={`${geist.variable} ${geistMono.variable} ${newsreader.variable}`}
     >
-      <body className="bg-[#FCFCFD]">
+      <body className="bg-ink font-sans text-tinta antialiased">
         {/* Google Tag Manager */}
         <Script
           id="google-tag-manager"

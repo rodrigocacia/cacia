@@ -75,7 +75,7 @@ export function FinalCheckout({ setStep, close }: FinalCheckoutProps) {
               className="w-[30px] h-[30px] text-[#BBE2E7]"
             />
 
-            <h1 className="text-2xl text-[#3D3D3D] font-bold">
+            <h1 className="text-2xl text-[#1B1916] font-bold">
               Ative seu acesso Beta agora
             </h1>
           </div>
@@ -83,13 +83,13 @@ export function FinalCheckout({ setStep, close }: FinalCheckoutProps) {
           <button
             type="button"
             onClick={close}
-            className="text-[#BDBDBD] hover:text-[#3D3D3D] transition-colors"
+            className="text-[#A39C93] hover:text-[#1B1916] transition-colors"
           >
             <Icon icon="material-symbols:close" className="w-6 h-6" />
           </button>
         </div>
 
-        <p className="text-[18px] leading-[24px] text-[#3D3D3D] font-semibold">
+        <p className="text-[18px] leading-[24px] text-[#1B1916] font-semibold">
           Pague R$129,90 e libere todos os recursos da CacIA Beta
         </p>
       </div>
@@ -101,34 +101,34 @@ export function FinalCheckout({ setStep, close }: FinalCheckoutProps) {
               <div className="w-5 h-5 flex items-center justify-center">
                 <Check className="w-12 h-12 font-bold text-[#348C98]" />
               </div>
-              <span className="text-base text-[#3D3D3D]">{benefit.title}</span>
+              <span className="text-base text-[#1B1916]">{benefit.title}</span>
             </div>
           ))}
         </div>
       </div>
 
       <div className="w-full flex flex-col gap-4 mt-6">
-        <div className="w-full flex flex-col py-4 px-4 gap-3 bg-[#ECF7F8] border border-[#BBE2E7] rounded-[14px]">
-          <h2 className="text-lg text-[#3D3D3D] font-semibold">Plano BETA</h2>
+        <div className="w-full flex flex-col py-4 px-4 gap-3 bg-[#EEF6F7] border border-[#BBE2E7] rounded-[14px]">
+          <h2 className="text-lg text-[#1B1916] font-semibold">Plano BETA</h2>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <strong className="text-2xl text-[#348C98] font-bold">
               R$ 129,90
             </strong>
-            <span className="text-sm text-[#3D3D3D] font-medium">
+            <span className="text-sm text-[#1B1916] font-medium">
               (pagamento único)
             </span>
           </div>
         </div>
 
-        <p className="text-base text-[#3D3D3D] leading-relaxed">
+        <p className="text-base text-[#1B1916] leading-relaxed">
           Acesso válido no período Beta. Após esse ciclo, você será avisado no
           grupo para renovar com condições especiais.
         </p>
       </div>
 
       <div className="w-full flex flex-col gap-4 mt-6">
-        <h4 className="text-base text-[#3D3D3D] font-semibold">
+        <h4 className="text-base text-[#1B1916] font-semibold">
           Forma de pagamento
         </h4>
 
@@ -137,11 +137,11 @@ export function FinalCheckout({ setStep, close }: FinalCheckoutProps) {
             <Check className="w-4 h-4 text-white" />
           </div>
 
-          <h3 className="text-sm text-[#3D3D3D] font-semibold">Pix</h3>
+          <h3 className="text-sm text-[#1B1916] font-semibold">Pix</h3>
         </div>
 
         <div className="w-full">
-          <p className="text-base text-[#3D3D3D]">
+          <p className="text-base text-[#1B1916]">
             Assim que o pagamento for confirmado, você receberá um e-mail com
             instruções para ativar seu acesso imediato.
           </p>
@@ -163,7 +163,7 @@ export function FinalCheckout({ setStep, close }: FinalCheckoutProps) {
 
           <label
             htmlFor="terms"
-            className="text-sm text-[#3D3D3D] font-semibold cursor-pointer leading-relaxed"
+            className="text-sm text-[#1B1916] font-semibold cursor-pointer leading-relaxed"
             onClick={() => setAcceptedTerms(!acceptedTerms)}
           >
             Declaro que li e aceito os{" "}

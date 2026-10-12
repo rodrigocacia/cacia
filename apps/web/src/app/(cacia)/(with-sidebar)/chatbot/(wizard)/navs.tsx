@@ -1,18 +1,18 @@
-"use client"
+import { ShieldCheck, User } from "lucide-react"
 
-import { Icon } from "@/components/icone"
+import type { GrupoDaNav } from "../../setting/_ui/nav-secoes"
 
-export const NavLinks = [
+/** Seções da área de chatbot: avisos para clientes e para administradores. */
+export const GruposDoChatbot: GrupoDaNav[] = [
   {
-    id: 1,
-    name: "I.A. Assistente",
-    icon: <Icon icon="mdi:robot" />,
-    path: "/chatbot/ia-assistent",
-  },
-  {
-    id: 2,
-    name: "Notificações",
-    icon: <Icon icon="mdi:message-notification" />,
-    path: "/chatbot/notifications",
+    rotulo: "Avisos",
+    itens: [
+      { nome: "Cliente", path: "/chatbot/client", icone: User },
+      {
+        nome: "Administrador",
+        path: "/chatbot/administrator",
+        icone: ShieldCheck,
+      },
+    ],
   },
 ]

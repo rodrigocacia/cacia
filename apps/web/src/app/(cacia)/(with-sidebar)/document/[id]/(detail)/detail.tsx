@@ -1,9 +1,8 @@
 "use client"
 
-import { Icon } from "@/components/icone"
 import { CardDocument } from "../components/card-document"
 import { Form } from "../new/form"
-import { EmptySearch } from "@/components/empty-search"
+import { Painel, Vazio } from "@/components/tables/ficha"
 import { useState, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { DialogDeleteDocument } from "../components/dialog-delete-document"
@@ -168,43 +167,29 @@ export function DocumentDetail({
   }
 
   return (
-    <div className="p-8 max-md:p-0 md:rounded-2xl md:shadow-sm max-md:mt-6">
-      <div className="w-full flex items-center gap-3 max-md:hidden">
-        <Icon
-          icon="mdi:file-document-outline"
-          className="text-[#BDBDBD] w-8 h-8"
-        />
-
-        <h3 className="text-[20px] text-[#707070] font-bold">Arquivos</h3>
-      </div>
-
-      <hr className="w-full my-6 max-md:my-2 h-px border-t-0 bg-gray-200 max-md:hidden" />
-
-      <div className="h-full w-full mt-6 flex flex-col justify-between gap-8">
-        <div className="w-full flex flex-col gap-4">
-          {documents?.length === 0 ? (
-            <EmptySearch title="Sem documentos cadastrados" subtitle="" />
-          ) : null}
-
-          {documents?.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 max-[1600px]:grid-cols-1">
-              {documents?.map((document) => (
-                <CardDocument
-                  key={document?._id}
-                  document={document}
-                  handleOpenDialog={handleOpenDialog}
-                  handleAddDeleteDocumentId={handleAddDeleteQuestionId}
-                  isSystemFolder={isSystemFolder}
-                />
-              ))}
-            </div>
-          ) : null}
-        </div>
-
-        <div className="w-full flex items-center justify-end max-md:flex-col">
-          <Form />
-        </div>
-      </div>
+    <div>
+      <Painel
+        titulo="Arquivos"
+        contagem={documents?.length ?? 0}
+        acao={<Form />}
+        semPreenchimento
+      >
+        {documents?.length === 0 ? (
+          <Vazio>Nenhum documento nesta pasta ainda.</Vazio>
+        ) : (
+          <ul className="flex flex-col">
+            {documents?.map((document) => (
+              <CardDocument
+                key={document?._id}
+                document={document}
+                handleOpenDialog={handleOpenDialog}
+                handleAddDeleteDocumentId={handleAddDeleteQuestionId}
+                isSystemFolder={isSystemFolder}
+              />
+            ))}
+          </ul>
+        )}
+      </Painel>
 
       <DocumentViewerModal
         open={isViewerModalOpen}

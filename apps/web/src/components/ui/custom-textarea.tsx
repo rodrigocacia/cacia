@@ -23,19 +23,19 @@ export function CustomTextarea({
 
   return (
     <div className="w-full">
-      <label className="block text-gray-600 text-base mb-2 font-semibold">
+      <label className="mb-[7px] block text-[13px] font-medium text-tinta-2">
         {label}
       </label>
       <div
-        className={`bg-[#FCFCFD] flex items-start w-full rounded-2xl border transition-colors duration-200 px-4 py-3 ${
+        className={`flex w-full items-start rounded-[10px] border bg-white px-3.5 py-3 transition-[border-color,box-shadow] duration-150 ${
           isFocused
-            ? "border-[#348C98] ring-1 ring-[#348C98]"
-            : "border-gray-200"
+            ? "border-acao shadow-[0_0_0_3px_#D7EBEE]"
+            : "border-filete-forte"
         }`}
       >
         <MdEdit
-          className={`mr-2 h-5 w-5 mt-1 ${
-            isFocused ? "text-[#348C98]" : "text-gray-400"
+          className={`mt-[3px] mr-2 h-[17px] w-[17px] shrink-0 ${
+            isFocused ? "text-acao" : "text-gray-400"
           }`}
         />
         <textarea
@@ -43,20 +43,15 @@ export function CustomTextarea({
           onChange={onChange}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className="w-full bg-transparent outline-none placeholder-gray-400 text-gray-600 resize-none min-h-[160px]"
+          className="min-h-[160px] w-full resize-none bg-transparent text-[15px] leading-relaxed text-tinta placeholder-gray-400 outline-none"
           placeholder={placeholder}
           maxLength={maxLength}
           {...rest}
         />
       </div>
       {showCharacterCount && (
-        <div className="flex items-center mt-2 text-xs text-gray-400">
-          <div className="flex items-center">
-            <span className="text-blue-500 mr-1">ⓘ</span>
-            <span>
-              {String(value).length}/{maxLength} caracteres
-            </span>
-          </div>
+        <div className="mt-1.5 flex justify-end font-mono text-[11px] text-tinta-3 tabular">
+          {String(value).length}/{maxLength} caracteres
         </div>
       )}
     </div>

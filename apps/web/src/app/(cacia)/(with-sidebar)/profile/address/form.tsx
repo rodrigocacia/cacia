@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { Icon } from "@/components/icone"
-
 import { Button } from "@/components/ui/custom-button"
 import { Input } from "@/components/ui/custom-input"
 import { useCityByUf } from "@/http/hooks/city"
@@ -15,6 +13,9 @@ import { getCepInformations } from "@/http/get-cep-informations"
 import { Toast } from "@/components/ui/toast"
 import { AUTOCOMPLETE_VALUES } from "@/constants/autocomplete"
 import { updateOffice } from "@/http/office/udpate-office"
+import { Check } from "lucide-react"
+
+import { Cartao, RodapeDoCartao } from "../../setting/_ui/cartao"
 
 export const addressFormSchema = z.object({
   street: z.string().min(4, { message: "Insira a Rua" }),
@@ -140,20 +141,13 @@ export function Form({ address }: FormProps) {
   }
 
   return (
-    <div className="h-full p-8 max-md:p-0 pb-6 md:rounded-2xl md:shadow-sm md:pb-0">
-      <div className="flex items-center gap-3">
-        <Icon icon="mdi:address-marker" className="w-8 h-8 text-[#BDBDBD]" />
-
-        <h3 className="text-[20px] text-[#707070] font-bold">
-          Endereço do escritório
-        </h3>
-      </div>
-
-      <hr className="w-full my-4 max-md:my-2 h-px border-t-0 bg-gray-200" />
-
+    <Cartao
+      titulo="Endereço do escritório"
+      descricao="Onde o escritório atende. Aparece nos documentos e para os clientes."
+    >
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full mt-6 flex flex-col justify-between gap-8 pb-10"
+        className="flex w-full flex-col gap-7"
       >
         <div className="w-full flex flex-col gap-4">
           <Input
@@ -241,20 +235,18 @@ export function Form({ address }: FormProps) {
           />
         </div>
 
-        <div className="w-full flex items-center justify-end max-md:flex-col max-md:gap-4 mt-8 max-md:pb-10">
+        <RodapeDoCartao>
           <Button
             type="submit"
-            iconLeft={
-              <Icon icon="mdi:content-save" className="w-6 h-6 text-white" />
-            }
+            iconLeft={<Check size={16} />}
             disabled={isSubmitting}
             isLoading={isSubmitting}
-            className="px-10 cursor-pointer max-md:w-full"
+            className="px-5"
             variant="primary"
           >
             Salvar
           </Button>
-        </div>
+        </RodapeDoCartao>
       </form>
 
       {isSuccess && (
@@ -274,6 +266,6 @@ export function Form({ address }: FormProps) {
           description={errorMessage}
         />
       )}
-    </div>
+    </Cartao>
   )
 }

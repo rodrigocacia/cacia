@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 
-import { Icon } from "@/components/icone"
+import { ArrowLeft } from "lucide-react"
 import { mensagemDoErro } from "@/http/api-crm"
 import { confirmarImportacao, enviarPlanilha } from "@/http/crm/importacao"
 import type { Importacao } from "@/http/crm/tipos"
@@ -64,56 +64,62 @@ export function AssistenteDeImportacao() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
+    <div className="w-full max-w-3xl">
       <Link
         href="/lead?view=kanban"
-        className="mb-3 inline-flex items-center gap-1 text-xs text-zinc-500 transition hover:text-zinc-700"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13px] text-tinta-3 transition hover:text-tinta"
       >
-        <Icon icon="mdi:arrow-left" className="h-3.5 w-3.5" />
+        <ArrowLeft size={14} />
         Voltar ao funil
       </Link>
 
-      <h1 className="text-xl font-semibold text-zinc-900">Importar leads</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="font-display text-[44px] leading-none text-tinta max-md:text-[34px]">
+        Importar leads
+      </h1>
+      <p className="mt-2 text-[13.5px] text-tinta-2">
         Envie um arquivo CSV. Nada é gravado antes de você conferir de qual
         coluna sai cada informação.
       </p>
 
-      <ol className="mt-5 flex items-center gap-2">
+      <ol className="mt-6 flex flex-wrap items-center gap-2">
         {PASSOS.map((passo, indice) => (
           <li key={passo} className="flex items-center gap-2">
             <span
-              className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+              className={`tabular flex h-6 w-6 items-center justify-center rounded-md font-mono text-[11px] ${
                 indice <= passoAtual
-                  ? "bg-zinc-900 text-white"
-                  : "bg-zinc-200 text-zinc-500"
+                  ? "bg-acao text-white"
+                  : "border border-filete-forte bg-white text-tinta-3"
               }`}
             >
               {indice + 1}
             </span>
 
             <span
-              className={`text-sm ${
-                indice <= passoAtual ? "text-zinc-900" : "text-zinc-400"
+              className={`text-[13.5px] ${
+                indice === passoAtual
+                  ? "font-semibold text-tinta"
+                  : indice < passoAtual
+                    ? "text-tinta-2"
+                    : "text-tinta-3"
               }`}
             >
               {passo}
             </span>
 
             {indice < PASSOS.length - 1 && (
-              <span className="mx-1 h-px w-8 bg-zinc-200" aria-hidden />
+              <span className="mx-1 h-px w-8 bg-filete-forte" aria-hidden />
             )}
           </li>
         ))}
       </ol>
 
       {erro && (
-        <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="mt-4 rounded-xl bg-[#FBEDEA] px-4 py-3 text-sm text-[#A23B2A]">
           {erro}
         </p>
       )}
 
-      <div className="mt-5">
+      <div className="mt-6">
         {passoAtual === 0 && (
           <PassoArquivo ocupado={ocupado} onEnviar={enviar} />
         )}

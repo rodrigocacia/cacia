@@ -7,6 +7,7 @@ import { getDateRange } from "@/utils/get-date-range"
 
 import { Header } from "@/components/header"
 import { CustomSearchFilter } from "@/components/ui/custom-search-filter"
+import { PageHeader } from "@/components/ui/page-header"
 
 import { SelectCalendar } from "./components/select-calendar"
 import { CalendarMonth } from "./components/calendar-month"
@@ -72,43 +73,46 @@ export default async function EventPage({
   }
 
   return (
-    <div className="w-full h-full">
+    <div className="h-full w-full">
       <div className="max-lg:px-4">
-        <Header title="Eventos" />
+        <Header title="Agenda" />
+
+        <PageHeader
+          title="Agenda"
+          description="Audiências, prazos e compromissos do escritório."
+          action={
+            <div className="flex items-center gap-2.5 max-md:w-full">
+              <div className="min-w-[220px] max-md:w-full max-md:min-w-0">
+                <SelectCalendar calendars={calendars.data} />
+              </div>
+
+              <Form />
+            </div>
+          }
+        />
       </div>
 
-      <div className="flex items-start justify-end mt-7 max-lg:mt-2 max-lg:px-4">
-        <div className="flex items-center gap-5 max-md:gap-0 max-md:w-full">
-          <SelectCalendar calendars={calendars.data} />
+      <div className="mt-6">
+        <ResponsiveCalendar
+          dataEvents={events?.data || []}
+          searchParams={searchParams}
+        />
+      </div>
 
-          <div className="h-full bg-[#EFEFEF] py-2.5">
-            <div className="w-[2px] h-full self-stretch bg-[#EFEFEF] max-md:hidden" />
+      <div className="grid w-full grid-cols-[300px_minmax(0,1fr)] gap-5 max-[1300px]:grid-cols-1 max-lg:px-4">
+        <aside className="flex flex-col gap-5 max-[1300px]:hidden">
+          <div className="rounded-[14px] border border-filete bg-white p-4">
+            <CalendarMonth events={events?.data || []} />
           </div>
 
-          <Form />
-        </div>
-      </div>
+          <div className="overflow-hidden rounded-[14px] border border-filete bg-white">
+            <NextEvents searchParams={searchParams} />
+          </div>
+        </aside>
 
-      <ResponsiveCalendar
-        dataEvents={events?.data || []}
-        searchParams={searchParams}
-      />
-
-      <div className="w-full grid grid-cols-[1fr_3fr] max-[1300px]:grid-cols-1 max-lg:px-4 gap-6 mt-7">
-        <div className="h-full max-h-[calc(100vh-240px)] max-[1300px]:hidden bg-white rounded-2xl px-5 py-4 shadow-md">
-          <CalendarMonth events={events?.data || []} />
-
-          <hr className="w-full h-px mt-6 mb-6 border-t-0 bg-gray-200 max-lg:hidden" />
-
-          <NextEvents searchParams={searchParams} />
-        </div>
-
-        <div className="w-full h-full flex flex-col max-md:hidden">
-          <div className="w-full flex items-center justify-between">
-            <CustomSearchFilter
-              placeholder="Buscar..."
-              className="max-w-[250px]"
-            />
+        <div className="flex h-full w-full min-w-0 flex-col max-md:hidden">
+          <div className="flex w-full items-center justify-between gap-3">
+            <CustomSearchFilter placeholder="Buscar..." />
 
             <TabCalendarType />
           </div>

@@ -7,7 +7,6 @@ import { ptBR } from "date-fns/locale"
 import { getCalendar } from "@/http/calendar/get-calendar"
 import { getEvent, GetEventResponse } from "@/http/event/get-event"
 import { Event } from "@/types/event"
-import { EmptySearch } from "@/components/empty-search"
 import { getDateRange } from "@/utils/get-date-range"
 import { addHours } from "@/utils/add-hours"
 
@@ -73,28 +72,25 @@ export async function ResponsiveCalendar({
     : format(new Date(), "dd 'de' MMMM", { locale: ptBR })
 
   return (
-    <div className="h-fit md:hidden">
-      <div className="px-4">
-        <hr className="w-full h-px mt-6 mb-6 border-t-0 bg-gray-200" />
-
+    <div className="flex h-fit flex-col gap-4 px-4 md:hidden">
+      <div className="rounded-[14px] border border-filete bg-white p-4">
         <CalendarMonth events={dataEvents || []} />
       </div>
 
-      <div className="flex flex-col flex-1 bg-white rounded-2xl shadow-md px-6 py-4">
-        <h2 className="text-lg font-semibold text-gray-800">
-          Próximos eventos
-        </h2>
-        <p className="text-sm text-gray-400 mt-1">{formattedDay}</p>
+      <section className="flex flex-col overflow-hidden rounded-[14px] border border-filete bg-white">
+        <div className="flex items-baseline justify-between gap-2 border-b border-filete px-4 py-3.5">
+          <h2 className="text-[14.5px] font-semibold tracking-[-0.01em] text-tinta">
+            Próximos eventos
+          </h2>
+          <span className="tabular text-xs text-tinta-3">{formattedDay}</span>
+        </div>
 
-        {events?.data.length === 0 && (
-          <EmptySearch
-            title="Nenhum evento encontrado"
-            subtitle="Nenhum evento encontrado para o dia selecionado"
-          />
-        )}
-
-        {futureEvents.length > 0 && (
-          <div className="space-y-1 mt-6">
+        {futureEvents.length === 0 ? (
+          <p className="px-4 py-8 text-center text-[13px] text-tinta-3">
+            Nenhum evento para o dia selecionado.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-1.5 p-3">
             {futureEvents.slice(0, 5).map((event) => (
               <CardNextEvent
                 key={event?._id}
@@ -112,7 +108,7 @@ export async function ResponsiveCalendar({
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   )
 }

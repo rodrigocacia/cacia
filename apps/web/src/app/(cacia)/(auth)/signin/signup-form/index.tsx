@@ -2,13 +2,10 @@
 
 import { useState } from "react"
 
-import Image from "next/image"
-
 import { FormProvider, useForm } from "react-hook-form"
 import { SignupFormData, signupFormSchema } from "@/schemas/signup"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { AuthTabs } from "@/components/ui/auth-tabs"
 import { Heading } from "@/components/ui/heading"
 import { Steps } from "@/components/ui/steps"
 
@@ -49,12 +46,10 @@ export function SignupForm() {
 
   return (
     <FormProvider {...methods}>
-      <div className="bg-white relative z-10 w-full h-full max-lg:h-fit flex flex-col gap-8 shadow-md rounded-4xl max-lg:rounded-t-4xl  max-lg:rounded-b-none px-8 pt-[28px] max-lg:pb-4">
-        <div className="w-full max-lg:hidden">
-          <Image src="/logo-cacia.png" alt="mockup" width={200} height={61} />
-        </div>
-
-        <AuthTabs />
+      <div className="flex w-full flex-col gap-7">
+        <span className="rotulo">
+          Criar conta · passo {step + 1} de {steps.length}
+        </span>
 
         <Heading
           title={

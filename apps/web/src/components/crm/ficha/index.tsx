@@ -7,7 +7,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { StageKind } from "@cacia/contracts"
 
-import { Icon } from "@/components/icone"
+import { ArrowLeft, ArrowUpRight, MessageSquare, Sparkles } from "lucide-react"
 import { Spinner } from "@/components/ui/sppiner"
 import { Toast } from "@/components/ui/toast"
 import { mensagemDoErro } from "@/http/api-crm"
@@ -31,6 +31,31 @@ const ROTULO_DA_ORIGEM: Record<string, string> = {
   OTHER: "Outra",
 }
 
+/** Linha da lista de detalhes: rótulo à esquerda, valor à direita. */
+function Detalhe({
+  rotulo,
+  children,
+}: {
+  rotulo: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex min-h-[38px] items-center gap-3 border-t border-[#F1EEE8] py-1.5 text-[13px] last:border-b">
+      <dt className="w-[104px] shrink-0 text-tinta-3">{rotulo}</dt>
+      <dd className="min-w-0 flex-grow font-medium text-tinta">{children}</dd>
+    </div>
+  )
+}
+
+function iniciais(nome: string): string {
+  return nome
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase())
+    .join("")
+}
+
 function Bloco({
   titulo,
   children,
@@ -41,9 +66,9 @@ function Bloco({
   acao?: React.ReactNode
 }) {
   return (
-    <section className="rounded-xl border border-zinc-200 bg-white p-4">
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-zinc-800">{titulo}</h2>
+    <section className="flex flex-col gap-3">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="rotulo">{titulo}</h2>
         {acao}
       </div>
       {children}
@@ -116,97 +141,154 @@ export function FichaDoLead({ id }: { id: string }) {
     }
   }
 
+  // A barra de progresso segue as etapas em aberto e a de ganho; perder é uma
+  // saída lateral, não o fim da linha, e fica num botão à parte.
+  const trilha = etapas.filter((etapa) => etapa.kind !== StageKind.LOST)
+  const perdida = etapas.find((etapa) => etapa.kind === StageKind.LOST)
+  const posicaoAtual = trilha.findIndex((etapa) => etapa.id === lead.stageId)
+  const estaPerdido = perdida?.id === lead.stageId
+
   return (
     <div className="w-full max-lg:px-4">
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <Link
-            href="/lead?view=kanban"
-            className="mb-1 inline-flex items-center gap-1 text-xs text-zinc-500 transition hover:text-zinc-700"
-          >
-            <Icon icon="mdi:arrow-left" className="h-3.5 w-3.5" />
-            Voltar ao funil
-          </Link>
+      <Link
+        href="/lead?view=kanban"
+        className="mb-4 inline-flex items-center gap-1.5 text-[13px] text-tinta-3 transition hover:text-tinta"
+      >
+        <ArrowLeft size={14} />
+        Voltar ao funil
+      </Link>
 
-          <h1 className="truncate text-xl font-semibold text-zinc-900">
+      {/* Cabeçalho */}
+      <div className="flex flex-wrap items-end gap-5 border-b border-filete pb-6">
+        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[18px] bg-nevoa font-display text-[28px] text-turquesa-profundo">
+          {iniciais(lead.name)[0] ?? "?"}
+        </span>
+
+        <div className="flex min-w-0 flex-grow flex-col gap-1.5">
+          <h1 className="truncate font-display text-[44px] leading-none text-tinta max-md:text-[32px]">
             {lead.name}
           </h1>
-
-          <p className="text-sm text-zinc-500">
+          <p className="tabular text-[13.5px] text-tinta-2">
             {formatPhone(lead.remotejid)}
             {lead.email && ` · ${lead.email}`}
           </p>
         </div>
 
-        <div className="flex shrink-0 flex-wrap justify-end gap-2">
+        <div className="flex shrink-0 flex-wrap gap-2">
           <Link
             href={`/chat?leadId=${lead.id}`}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#348C98] px-3 py-1.5 text-sm text-[#2A727C] transition hover:bg-[#F1F8F9]"
+            className="inline-flex h-9 items-center gap-2 rounded-[9px] border border-filete-forte bg-white px-3.5 text-[13.5px] font-medium text-tinta transition hover:bg-gray-100"
           >
-            <Icon icon="mdi:forum-outline" className="h-4 w-4" />
-            Ver conversa
+            <MessageSquare size={15} strokeWidth={1.7} />
+            Abrir conversa
           </Link>
 
           {lead.customerId && (
             <Link
               href={`/customer/${lead.customerId}`}
-              className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm text-emerald-700"
+              className="inline-flex h-9 items-center gap-2 rounded-[9px] bg-acao px-3.5 text-[13.5px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition hover:bg-acao-escura"
             >
-              Já é cliente
+              Ver cliente
+              <ArrowUpRight size={15} />
             </Link>
           )}
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
-          <Bloco titulo="Etapa do funil">
-            <div className="flex flex-wrap gap-1.5">
-              {etapas.map((etapa) => {
-                const atual = etapa.id === lead.stageId
+      {/* Etapas: cada segmento é um botão que move o lead */}
+      <div className="flex flex-col gap-3 border-b border-filete py-5">
+        <div
+          className="grid gap-1"
+          style={{
+            gridTemplateColumns: `repeat(${Math.max(trilha.length, 1)}, minmax(0, 1fr))`,
+          }}
+        >
+          {trilha.map((etapa, indice) => {
+            const atual = etapa.id === lead.stageId
+            const alcancada = !estaPerdido && indice <= posicaoAtual
 
-                return (
-                  <button
-                    key={etapa.id}
-                    type="button"
-                    disabled={atual}
-                    onClick={() => {
-                      if (etapa.kind === StageKind.LOST) setPerda(etapa.id)
-                      else void mover(etapa.id)
-                    }}
-                    className={`rounded-lg border px-2.5 py-1.5 text-sm transition ${
-                      atual
-                        ? "border-transparent font-medium text-white"
-                        : "border-zinc-200 text-zinc-600 hover:border-zinc-400"
-                    }`}
-                    style={atual ? { backgroundColor: etapa.color } : undefined}
-                  >
-                    {etapa.name}
-                  </button>
-                )
-              })}
-            </div>
+            return (
+              <button
+                key={etapa.id}
+                type="button"
+                disabled={atual}
+                onClick={() => void mover(etapa.id)}
+                aria-current={atual ? "step" : undefined}
+                className="group flex cursor-pointer flex-col gap-2 text-left disabled:cursor-default"
+              >
+                <span
+                  className={`h-1 rounded-full transition-colors ${
+                    alcancada
+                      ? "bg-acao"
+                      : "bg-[#E3DED6] group-hover:bg-filete-forte"
+                  }`}
+                />
+                <span
+                  className={`truncate text-[12.5px] ${
+                    atual
+                      ? "font-semibold text-tinta"
+                      : alcancada
+                        ? "text-tinta-2"
+                        : "text-tinta-3 group-hover:text-tinta"
+                  }`}
+                >
+                  {etapa.name}
+                </span>
+              </button>
+            )
+          })}
+        </div>
 
-            {lead.lostReason && (
-              <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-                <strong>Motivo da perda:</strong> {lead.lostReason}
+        {perdida && (
+          <div className="flex flex-wrap items-center gap-3">
+            {estaPerdido ? (
+              <p className="rounded-lg bg-[#FBEDEA] px-3 py-2 text-[13px] text-[#A23B2A]">
+                <strong>Perdido</strong>
+                {lead.lostReason && ` · ${lead.lostReason}`}
               </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setPerda(perdida.id)}
+                className="cursor-pointer text-[12.5px] text-tinta-3 underline-offset-2 hover:text-[#A23B2A] hover:underline"
+              >
+                Marcar como perdido
+              </button>
             )}
-          </Bloco>
+          </div>
+        )}
+      </div>
+
+      <div className="grid gap-8 pt-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="flex min-w-0 flex-col gap-8">
+          {lead.briefing && (
+            <div className="grid grid-cols-[4px_minmax(0,1fr)] gap-[18px] rounded-xl border border-filete bg-white px-[22px] py-5">
+              <span className="rounded bg-acao" />
+              <div className="flex flex-col gap-2.5">
+                <span className="flex items-center gap-1.5 font-mono text-[10.5px] tracking-[0.08em] text-turquesa-profundo">
+                  <Sparkles size={12} strokeWidth={2} />
+                  RESUMO DO CASO
+                </span>
+                <p className="font-display text-[21px] leading-[1.4] whitespace-pre-wrap text-tinta">
+                  {lead.briefing}
+                </p>
+              </div>
+            </div>
+          )}
 
           <Bloco titulo="Atividades">
             {atividades.length > 0 && (
-              <ul className="mb-4 space-y-2">
+              <ul className="flex flex-col">
                 {atividades.map((atividade) => (
                   <li
                     key={atividade.id}
-                    className="flex items-center justify-between gap-3 rounded-lg bg-zinc-50 px-3 py-2"
+                    className="flex items-center justify-between gap-3 border-t border-[#F1EEE8] py-3 last:border-b"
                   >
-                    <span className="min-w-0 truncate text-sm text-zinc-800">
+                    <span className="min-w-0 truncate text-[13.5px] font-medium text-tinta">
                       {atividade.title}
                     </span>
 
-                    <span className="shrink-0 text-xs text-zinc-500">
+                    <span className="tabular shrink-0 text-xs text-tinta-3">
                       {format(
                         new Date(atividade.startTime),
                         "dd/MM 'às' HH:mm",
@@ -230,7 +312,71 @@ export function FichaDoLead({ id }: { id: string }) {
           </Bloco>
         </div>
 
-        <div className="space-y-4">
+        <aside className="flex flex-col gap-7 lg:border-l lg:border-filete lg:pl-7">
+          <Bloco titulo="Detalhes">
+            <dl className="flex flex-col">
+              <Detalhe rotulo="Honorários">
+                {editandoValor ? (
+                  <input
+                    autoFocus
+                    value={valor}
+                    onChange={(evento) => setValor(evento.target.value)}
+                    onBlur={() => void salvarValor()}
+                    onKeyDown={(evento) => {
+                      if (evento.key === "Enter") void salvarValor()
+                      if (evento.key === "Escape") setEditandoValor(false)
+                    }}
+                    placeholder="0,00"
+                    aria-label="Honorários estimados"
+                    className="h-8 w-full rounded-md border border-acao px-2 text-[13px] shadow-[0_0_0_3px_#D7EBEE] outline-none"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setValor(lead.value ?? "")
+                      setEditandoValor(true)
+                    }}
+                    className="tabular cursor-pointer underline decoration-filete-forte decoration-dotted underline-offset-4 hover:decoration-tinta"
+                  >
+                    {emReais(lead.value) ?? "definir"}
+                  </button>
+                )}
+              </Detalhe>
+
+              <Detalhe rotulo="Responsável">
+                <select
+                  value={lead.owner?.id ?? ""}
+                  onChange={(evento) =>
+                    void trocarResponsavel(evento.target.value)
+                  }
+                  aria-label="Responsável"
+                  className="h-8 w-full cursor-pointer rounded-md border border-transparent bg-transparent px-1 text-[13px] font-medium outline-none hover:border-filete-forte"
+                >
+                  <option value="">Sem responsável</option>
+                  {(membros ?? []).map((membro) => (
+                    <option key={membro.id} value={membro.id}>
+                      {membro.name}
+                    </option>
+                  ))}
+                </select>
+              </Detalhe>
+
+              <Detalhe rotulo="Origem">
+                {ROTULO_DA_ORIGEM[lead.source] ?? lead.source}
+                {lead.sourceDetail && ` · ${lead.sourceDetail}`}
+              </Detalhe>
+
+              <Detalhe rotulo="Criado em">
+                <span className="tabular">
+                  {format(new Date(lead.createdAt), "dd MMM yyyy", {
+                    locale: ptBR,
+                  })}
+                </span>
+              </Detalhe>
+            </dl>
+          </Bloco>
+
           <Bloco titulo="Etiquetas">
             <SeletorDeEtiquetas
               leadId={id}
@@ -238,87 +384,7 @@ export function FichaDoLead({ id }: { id: string }) {
               aoMudar={() => mutate()}
             />
           </Bloco>
-
-          <Bloco titulo="Negócio">
-            <dl className="space-y-3 text-sm">
-              <div>
-                <dt className="text-xs text-zinc-500">Valor estimado</dt>
-                <dd>
-                  {editandoValor ? (
-                    <input
-                      autoFocus
-                      value={valor}
-                      onChange={(evento) => setValor(evento.target.value)}
-                      onBlur={() => void salvarValor()}
-                      onKeyDown={(evento) => {
-                        if (evento.key === "Enter") void salvarValor()
-                        if (evento.key === "Escape") setEditandoValor(false)
-                      }}
-                      placeholder="0,00"
-                      className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm outline-none"
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setValor(lead.value ?? "")
-                        setEditandoValor(true)
-                      }}
-                      className="text-zinc-800 underline decoration-dotted underline-offset-2"
-                    >
-                      {emReais(lead.value) ?? "definir"}
-                    </button>
-                  )}
-                </dd>
-              </div>
-
-              <div>
-                <dt className="text-xs text-zinc-500">Responsável</dt>
-                <dd>
-                  <select
-                    value={lead.owner?.id ?? ""}
-                    onChange={(evento) =>
-                      void trocarResponsavel(evento.target.value)
-                    }
-                    className="w-full rounded-md border border-zinc-200 px-2 py-1 text-sm outline-none"
-                  >
-                    <option value="">Sem responsável</option>
-                    {(membros ?? []).map((membro) => (
-                      <option key={membro.id} value={membro.id}>
-                        {membro.name}
-                      </option>
-                    ))}
-                  </select>
-                </dd>
-              </div>
-
-              <div>
-                <dt className="text-xs text-zinc-500">Origem</dt>
-                <dd className="text-zinc-800">
-                  {ROTULO_DA_ORIGEM[lead.source] ?? lead.source}
-                  {lead.sourceDetail && ` · ${lead.sourceDetail}`}
-                </dd>
-              </div>
-
-              <div>
-                <dt className="text-xs text-zinc-500">Criado em</dt>
-                <dd className="text-zinc-800">
-                  {format(new Date(lead.createdAt), "dd 'de' MMMM',' yyyy", {
-                    locale: ptBR,
-                  })}
-                </dd>
-              </div>
-            </dl>
-          </Bloco>
-
-          {lead.briefing && (
-            <Bloco titulo="Observações">
-              <p className="whitespace-pre-wrap text-sm text-zinc-700">
-                {lead.briefing}
-              </p>
-            </Bloco>
-          )}
-        </div>
+        </aside>
       </div>
 
       {perda && (

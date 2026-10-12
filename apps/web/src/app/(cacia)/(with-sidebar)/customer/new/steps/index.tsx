@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Icon } from "@/components/icone"
 import { Steps } from "@/components/ui/steps"
 
 import { Address } from "./address"
@@ -15,6 +14,7 @@ import { Lead } from "@/types/lead"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { DrawerOrSheet } from "@/components/drawer-or-sheet"
+import { CabecalhoDoFormulario } from "@/components/drawer-or-sheet/partes"
 
 //
 const stepsAccount = [
@@ -109,25 +109,16 @@ function FormComponent({
 
   return (
     <FormProvider {...methods}>
-      <div className="px-4 pb-6 w-full h-screen flex flex-col justify-between overflow-y-scroll">
-        <div className="mt-10 flex flex-col gap-3 mb-10">
-          <div className="flex gap-2">
-            <Icon
-              icon="mdi:add-circle-outline"
-              className="text-[#BBE2E7] w-[30px] h-[30px]"
-            />
-
-            <h3 className="text-xl text-[#3D3D3D] font-bold">
-              {customer ? "Editar cliente" : "Novo cliente"}
-            </h3>
-          </div>
-
-          <p className="text-base text-[#BDBDBD]">
-            {customer
-              ? "Edite os campos abaixo para atualizar o cliente"
-              : "Preencha os campos abaixo para cadastrar o novo cliente"}
-          </p>
-        </div>
+      <div className="flex h-screen w-full flex-col gap-7 overflow-y-auto pb-6 max-md:h-[85vh]">
+        <CabecalhoDoFormulario
+          rotulo="Clientes"
+          titulo={customer ? "Editar cliente" : "Novo cliente"}
+          descricao={
+            customer
+              ? "Atualize os dados do cliente em duas etapas."
+              : "Preencha os campos abaixo para cadastrar o novo cliente."
+          }
+        />
 
         <Steps steps={stepsAccount} currentStep={step} />
 

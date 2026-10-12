@@ -6,7 +6,7 @@ export function tabs(customerId: string) {
       path: `/customer/${customerId}/personal-information`,
     },
     { id: 2, name: "Processos", path: `/customer/${customerId}/process` },
-    { id: 4, name: "Eventos", path: `/customer/${customerId}/events` },
     { id: 3, name: "Documentos", path: `/customer/${customerId}/document` },
+    { id: 4, name: "Eventos", path: `/customer/${customerId}/events` },
   ]
 }

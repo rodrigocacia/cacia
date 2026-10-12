@@ -72,25 +72,25 @@ export function DialogDeleteDocument({
           onSubmit={handleSubmit}
           className="w-full flex flex-col items-center"
         >
-          <div className="w-[100px] h-[100px] flex items-center justify-center rounded-full bg-[#F6F6F9]">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FBEDEA]">
             <Icon
-              icon="mdi:help-circle"
-              className="w-[56px] h-[56px] text-[#BDBDBD]"
+              icon="mdi:trash-can-outline"
+              className="h-6 w-6 text-[#A23B2A]"
             />
           </div>
 
-          <div className="flex flex-col items-center justify-center gap-3.5 mt-[30px]">
-            <h4 className="text-xl text-center text-[#33454C] font-semibold">
+          <div className="mt-5 flex flex-col items-center justify-center gap-2">
+            <h4 className="text-center font-display text-[26px] leading-tight text-tinta">
               Deseja mesmo excluir o documento {name}?
             </h4>
 
-            <p className="text-[18px] leading-[24px] text-[#4D5D63] text-center">
+            <p className="text-center text-[14.5px] leading-[1.5] text-tinta-2">
               Caso prossiga com esta solicitação, todos os dados do documento
               serão perdidos, e essa ação não poderá ser desfeita.
             </p>
           </div>
 
-          <div className="w-full flex items-center justify-center gap-3.5 mt-[34px]">
+          <div className="mt-7 flex w-full items-center justify-center gap-2.5">
             {/* type="button": sem ele o "Cancelar" enviava o formulário e
                 excluía do mesmo jeito. */}
             <Button variant="outline" type="button" onClick={onClose}>

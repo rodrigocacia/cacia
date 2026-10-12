@@ -1,3 +1,4 @@
+import { ReactNode } from "react"
 import { redirect } from "next/navigation"
 
 import { getEvent } from "@/http/event/get-event"
@@ -6,8 +7,7 @@ import { GetEventResponse } from "@/http/event/get-event"
 
 import CardEvent from "@/app/(cacia)/(with-sidebar)/event/components/card-event"
 import { getDateRange } from "@/utils/get-date-range"
-import { Icon } from "@/components/icone"
-import { EmptySearch } from "@/components/empty-search"
+import { Painel } from "@/components/tables/ficha"
 import { addHours } from "@/utils/add-hours"
 import { DialogShowEvent } from "./calendar/dialog-show-event"
 
@@ -18,11 +18,14 @@ export async function NextEventDetails({
   processId,
   customerId,
   context,
+  acao,
 }: {
   searchParams: Promise<{ calendar?: string }>
   processId?: string
   customerId?: string
   context: ContextType
+  /** Botão no cabeçalho do painel (em geral, "Novo evento"). */
+  acao?: ReactNode
 }) {
   const { calendar } = await searchParams
 
@@ -70,45 +73,37 @@ export async function NextEventDetails({
     )
 
   return (
-    <div className="w-full flex flex-col">
-      <div className="w-full flex items-center gap-1.5 max-md:mt-5 max-md:mb-2">
-        <Icon
-          icon="mdi:calendar-month-outline"
-          className="text-[#BDBDBD] w-5 h-5"
-        />
-
-        <h2 className="text-sm text-[#3D3D3D] font-bold ">
-          {getTitle()} ({futureEvents?.length || 0})
-        </h2>
-      </div>
-
-      {futureEvents?.length === 0 && (
-        <EmptySearch
-          title="Nenhum evento encontrado"
-          subtitle="Não há eventos programados para este período"
-        />
-      )}
-
-      {futureEvents?.length > 0 && (
-        <div className="w-full grid grid-cols-2 max-[1140px]:grid-cols-1 xl:grid-cols-3 gap-3 mt-3.5">
-          {futureEvents.map((event) => (
-            <CardEvent
-              key={event?._id}
-              id={event?._id}
-              variant={event?.type}
-              start_time={event?.start_time}
-              end_time={event?.end_time}
-              title={event?.title}
-              lead={event?.lead}
-              customer={event?.customer}
-              process={event?.process}
-              hasFromAnotherPlace
-            />
-          ))}
-        </div>
-      )}
+    <>
+      <Painel
+        titulo={getTitle()}
+        contagem={futureEvents?.length || 0}
+        acao={acao}
+      >
+        {futureEvents?.length === 0 ? (
+          <p className="py-6 text-center text-[13.5px] text-tinta-3">
+            Nenhum evento programado para este mês.
+          </p>
+        ) : (
+          <div className="grid w-full grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+            {futureEvents.map((event) => (
+              <CardEvent
+                key={event?._id}
+                id={event?._id}
+                variant={event?.type}
+                start_time={event?.start_time}
+                end_time={event?.end_time}
+                title={event?.title}
+                lead={event?.lead}
+                customer={event?.customer}
+                process={event?.process}
+                hasFromAnotherPlace
+              />
+            ))}
+          </div>
+        )}
+      </Painel>
 
       <DialogShowEvent />
-    </div>
+    </>
   )
 }

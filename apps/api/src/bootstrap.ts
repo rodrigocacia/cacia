@@ -17,7 +17,10 @@ export function configurarApp(
   app.use(helmet());
 
   app.enableCors({
-    origin: config.getOrThrow<string>('WEBSITE_URL'),
+    origin: [
+      config.getOrThrow<string>('WEBSITE_URL'),
+      config.get<string>('BACKOFFICE_URL'),
+    ].filter((origem): origem is string => Boolean(origem)),
     credentials: true,
   });
 

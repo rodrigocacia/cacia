@@ -7,7 +7,7 @@ export interface Lead {
   remotejid: string
   email: string
   status: LeadStatus
-  last_activity_at: null
+  last_activity_at: string | null
   delete_at: null
   events: never[]
   documents: never[]

@@ -15,7 +15,7 @@
 #      compartilham sessão. O ponto único de falha é mitigado pelo fallback
 #      para a Evolution API, que já existe na aplicação.
 
-app            = "cacia-waha"
+app            = "cacia-waha-prod"
 primary_region = "gru"
 
 [build]
@@ -43,7 +43,7 @@ primary_region = "gru"
     interval     = "20s"
     method       = "GET"
     timeout      = "10s"
-    path         = "/health"
+    path         = "/ping"
 
 [[mounts]]
   source      = "waha_sessions"

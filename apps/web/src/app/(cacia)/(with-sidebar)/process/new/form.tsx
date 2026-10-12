@@ -8,8 +8,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { Icon } from "@/components/icone"
-import { AiOutlinePlus } from "react-icons/ai"
+import { Pencil, Plus } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 
@@ -18,7 +17,6 @@ import { useSWRConfig } from "swr"
 import { createProcess } from "@/http/process/create-process"
 
 import { Customer } from "@/types/customer"
-import { formatName } from "@/utils/formatters"
 import { Process } from "@/types/process"
 
 import {
@@ -44,6 +42,10 @@ import {
 } from "@/components/ui/sheet"
 import { updateProcess } from "@/http/process/update-process"
 import { mensagemDeErro } from "@/utils/error-handlers"
+import {
+  CabecalhoDoFormulario,
+  RodapeDoFormulario,
+} from "@/components/drawer-or-sheet/partes"
 
 interface FormComponentProps {
   setOpen(value: boolean): void
@@ -189,28 +191,19 @@ function FormComponent({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="px-4 pb-6 w-full h-screen overflow-y-scroll"
+      className="flex h-screen w-full flex-col gap-7 overflow-y-auto pb-6 max-md:h-[85vh]"
     >
-      <div className="mt-10 flex flex-col gap-3">
-        <div className="flex gap-2">
-          <Icon
-            icon="mdi:add-circle-outline"
-            className="text-[#BBE2E7] w-[30px] h-[30px]"
-          />
+      <CabecalhoDoFormulario
+        rotulo="Processos"
+        titulo={process ? "Editar processo" : "Novo processo"}
+        descricao={
+          process
+            ? "Atualize os dados do processo."
+            : "Preencha os campos abaixo para cadastrar o novo processo."
+        }
+      />
 
-          <h3 className="text-xl text-[#3D3D3D] font-bold">
-            {process ? "Editar processo" : "Novo processo"}
-          </h3>
-        </div>
-
-        <p className="text-base text-[#BDBDBD]">
-          {process
-            ? "Edite os campos abaixo para atualizar o processo"
-            : "Preencha os campos abaixo para cadastrar o novo processo"}
-        </p>
-      </div>
-
-      <div className="flex flex-col gap-5 mt-10">
+      <div className="flex flex-col gap-5">
         <Input
           iconName={null}
           {...register("number")}
@@ -228,7 +221,7 @@ function FormComponent({
               label="Cliente"
               options={customers?.map((customer: Customer) => ({
                 value: customer?._id,
-                label: formatName(customer?.name),
+                label: customer?.name,
               }))}
               value={value}
               onChange={(e: any) => {
@@ -256,27 +249,27 @@ function FormComponent({
             />
           )}
         />
-
-        <div className="flex items-center justify-between">
-          <CustomButton
-            type="button"
-            onClick={() => setOpen(false)}
-            className="w-[251px] cursor-pointer"
-            variant="outline"
-          >
-            Cancelar
-          </CustomButton>
-
-          <CustomButton
-            type="submit"
-            className="px-10 cursor-pointer"
-            variant="primary"
-            isLoading={isSubmitting}
-          >
-            {process ? "Atualizar processo" : "Salvar processo"}
-          </CustomButton>
-        </div>
       </div>
+
+      <RodapeDoFormulario>
+        <CustomButton
+          type="button"
+          onClick={() => setOpen(false)}
+          className="cursor-pointer"
+          variant="outline"
+        >
+          Cancelar
+        </CustomButton>
+
+        <CustomButton
+          type="submit"
+          className="cursor-pointer px-6"
+          variant="primary"
+          isLoading={isSubmitting}
+        >
+          {process ? "Atualizar processo" : "Salvar processo"}
+        </CustomButton>
+      </RodapeDoFormulario>
 
       {hasError && (
         <Toast
@@ -365,23 +358,21 @@ export function Form({
           <SheetTrigger asChild>
             {process ? (
               <Button
-                className="cursor-pointer bg-transparent border border-[#348C98] w-full"
-                iconLeft={
-                  <Icon
-                    icon="mdi:pencil"
-                    className="text-[#348C98]"
-                    width={20}
-                    height={20}
-                  />
-                }
+                className="h-9! cursor-pointer rounded-[9px]! px-3.5 text-[13.5px] font-medium"
+                variant="outline"
+                iconLeft={<Pencil size={15} strokeWidth={1.7} />}
                 onClick={handleNewProcessClick}
               >
-                <span className="text-sm text-[#348C98]">Editar processo</span>
+                Editar processo
               </Button>
             ) : (
               <Button
-                className="cursor-pointer"
-                iconLeft={<AiOutlinePlus size={20} />}
+                className={
+                  customerContext
+                    ? "h-9! cursor-pointer rounded-[9px]! px-3.5 text-[13.5px]"
+                    : "h-10! cursor-pointer px-4 text-[13.5px]"
+                }
+                iconLeft={<Plus size={16} strokeWidth={2} />}
                 onClick={handleNewProcessClick}
               >
                 Novo processo
@@ -389,7 +380,7 @@ export function Form({
             )}
           </SheetTrigger>
 
-          <SheetContent className="min-w-[707px] rounded-tl-[24px] rounded-bl-[24px]">
+          <SheetContent className="min-w-[640px] px-8">
             <SheetTitle className="sr-only">Novo processo</SheetTitle>
 
             <FormComponent
@@ -407,14 +398,15 @@ export function Form({
           {customerContext && (
             <DrawerTrigger asChild>
               <button
-                className="fixed w-[56px] h-[56px] bottom-6 right-6 bg-teal-500 hover:bg-teal-600 text-white rounded-full shadow-lg text-xl z-50"
+                aria-label="Novo processo"
+                className="fixed right-5 bottom-5 z-50 flex h-14 w-14 items-center justify-center rounded-2xl bg-acao text-white shadow-[0_10px_24px_rgba(21,19,17,0.22)] transition-colors hover:bg-acao-escura"
                 onClick={handleNewProcessClick}
               >
-                +
+                <Plus className="h-5 w-5" strokeWidth={2} />
               </button>
             </DrawerTrigger>
           )}
-          <DrawerContent className="h-full">
+          <DrawerContent className="h-full px-4">
             <DialogTitle className="sr-only">Novo processo</DialogTitle>
 
             <FormComponent

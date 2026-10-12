@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { Icon } from "@/components/icone"
 import { FormProvider, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
@@ -14,6 +13,7 @@ import { useCustomerById } from "@/http/hooks/customer"
 import { Customer } from "@/types/customer"
 import { formatDocument } from "@/utils/formatters"
 import { DrawerOrSheet } from "@/components/drawer-or-sheet"
+import { CabecalhoDoFormulario } from "@/components/drawer-or-sheet/partes"
 
 const stepsAccount = [
   { id: 0, title: "Dados Pessoais" },
@@ -82,21 +82,12 @@ function EditCustomerForm({
 
   return (
     <FormProvider {...methods}>
-      <div className="px-4 pb-6 w-full h-screen overflow-y-scroll">
-        <div className="mt-10 flex flex-col gap-3 mb-10">
-          <div className="flex gap-2">
-            <Icon
-              icon="mdi:add-circle-outline"
-              className="text-[#BBE2E7] w-[30px] h-[30px]"
-            />
-
-            <h3 className="text-xl text-[#3D3D3D] font-bold">Editar cliente</h3>
-          </div>
-
-          <p className="text-base text-[#BDBDBD]">
-            Edite os campos abaixo para atualizar o cliente
-          </p>
-        </div>
+      <div className="flex h-screen w-full flex-col gap-7 overflow-y-auto pb-6 max-md:h-[85vh]">
+        <CabecalhoDoFormulario
+          rotulo="Clientes"
+          titulo="Editar cliente"
+          descricao="Atualize os dados do cliente em duas etapas."
+        />
 
         <Steps steps={stepsAccount} currentStep={step} />
 
@@ -136,7 +127,7 @@ export function DialogEditCustomer() {
       <div className="w-full">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#348C98]"></div>
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-acao"></div>
           </div>
         ) : (
           <EditCustomerForm

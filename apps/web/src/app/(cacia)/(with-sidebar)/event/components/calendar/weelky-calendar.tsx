@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useRef } from "react"
 
 import { useRouter, useSearchParams } from "next/navigation"
 
@@ -15,21 +15,20 @@ import {
   subDays,
   isSameDay,
   isWithinInterval,
-  parseISO,
   getHours,
   getMinutes,
   set,
 } from "date-fns"
 
 import { ptBR } from "date-fns/locale"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { Event } from "@/types/event"
 import { useCalendarStore } from "@/stores/use-calendar-store"
 import CardCalendar from "../card-calendar"
 
 import { EventDetail } from "./event-detail"
-import { formatTime } from "@/utils/formatters"
+import { horarioDaAgenda } from "@/utils/horario-da-agenda"
+import { CabecalhoDaGrade } from "./cabecalho-da-grade"
 
 export const WeekCalendar = ({ events }: { events: Event[] }) => {
   const currentMonth = useCalendarStore((state) => state.currentMonth)
@@ -44,6 +43,13 @@ export const WeekCalendar = ({ events }: { events: Event[] }) => {
   const weekStart = startOfWeek(currentMonth, { weekStartsOn: 1 })
   const days = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i))
   const today = new Date()
+
+  // A grade tem as 24 horas; abre no começo do expediente (7h, 80 px por
+  // hora) em vez da madrugada.
+  const grade = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (grade.current) grade.current.scrollTop = 7 * 80
+  }, [])
 
   const handleNavigation = (direction: "prev" | "next") => {
     let newDate: Date
@@ -82,64 +88,44 @@ export const WeekCalendar = ({ events }: { events: Event[] }) => {
     router.push(`?${params.toString()}`)
   }
 
-  const renderDayHeader = () => {
+  const renderHeader = () => {
     const weekEnd = addDays(weekStart, 6)
 
     return (
-      <div className="grid grid-cols-[60px_1fr] border-gray-200">
-        <div className="bg-[#FCFCFD]" />
-        <div className="px-4 py-3 text-sm font-medium">
-          <div className="text-2xl text-[#707070] font-semibold">
-            {format(weekStart, "d", { locale: ptBR })} -{" "}
-            {format(weekEnd, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const renderHeader = () => {
-    return (
-      <div className="flex justify-between items-center mb-4 px-2">
-        <h2 className="text-lg font-bold text-[#3D3D3D]">
-          {renderDayHeader()}
-        </h2>
-        <div className="flex gap-2">
-          <button
-            className="cursor-pointer p-2 rounded-full bg-[#ECF7F8] flex items-center justify-center"
-            onClick={() => handleNavigation("prev")}
-          >
-            <ChevronLeft className="w-4 h-4 text-[#348C98]" />
-          </button>
-          <button
-            className="cursor-pointer p-2 rounded-full bg-[#ECF7F8] flex items-center justify-center"
-            onClick={() => handleNavigation("next")}
-          >
-            <ChevronRight className="w-4 h-4 text-[#348C98]" />
-          </button>
-        </div>
-      </div>
+      <CabecalhoDaGrade
+        titulo={`${format(weekStart, "d", { locale: ptBR })}–${format(
+          weekEnd,
+          "d 'de' MMMM 'de' yyyy",
+          { locale: ptBR }
+        )}`}
+        aoNavegar={handleNavigation}
+      />
     )
   }
 
   const renderDaysHeader = () => {
-    const weekDays = ["SEG", "TER", "QUA", "QUI", "SEX", "SAB", "DOM"]
+    const weekDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
     return (
-      <div className="grid grid-cols-[60px_repeat(7,minmax(0,1fr))] border-b border-gray-200">
-        <div className="bg-[#FCFCFD]" />
-        {days.map((day, idx) => (
-          <div
-            key={idx}
-            className={`px-2 py-2 text-sm font-medium text-[#BDBDBD] ${
-              isSameDay(day, today) ? "bg-[#DAEFF1]" : "bg-[#FCFCFD]"
-            }`}
-          >
-            <div className="text-xs">{weekDays[idx]}</div>
-            <div className="text-xl text-[#707070] font-semibold">
-              {format(day, "d")}
+      <div className="grid grid-cols-[56px_repeat(7,minmax(0,1fr))] border-b border-filete bg-papel">
+        <div />
+        {days.map((day, idx) => {
+          const hoje = isSameDay(day, today)
+          return (
+            <div
+              key={idx}
+              className="flex items-center gap-2 border-l border-filete px-2.5 py-2"
+            >
+              <span className="rotulo">{weekDays[idx]}</span>
+              <span
+                className={`tabular flex h-6 min-w-6 items-center justify-center rounded-md px-1 text-[13px] ${
+                  hoje ? "bg-acao font-semibold text-white" : "text-tinta-2"
+                }`}
+              >
+                {format(day, "d")}
+              </span>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     )
   }
@@ -160,10 +146,10 @@ export const WeekCalendar = ({ events }: { events: Event[] }) => {
     const hours = Array.from({ length: 24 }).map((_, i) => i)
 
     return (
-      <div className="h-full grid bg-[#FCFCFD] grid-cols-[60px_repeat(7,minmax(0,1fr))] divide-x">
+      <div className="grid grid-cols-[56px_repeat(7,minmax(0,1fr))]">
         {hours.map((hour, hourIdx) => (
           <React.Fragment key={hourIdx}>
-            <div className="h-full -mt-1.5 text-xs text-right pr-1 pt-1 text-[#BDBDBD]">
+            <div className="tabular h-full border-t border-[#F1EEE8] pt-1 pr-2 text-right text-[11px] text-tinta-3">
               {`${hour.toString().padStart(2, "0")}:00`}
             </div>
             {days.map((day, dayIdx) => {
@@ -182,38 +168,38 @@ export const WeekCalendar = ({ events }: { events: Event[] }) => {
               })
 
               const dayEvents = events.filter((event) => {
-                const start = parseISO(event.start_time)
+                const start = horarioDaAgenda(event.start_time)
                 return isWithinInterval(start, { start: dayStart, end: dayEnd })
               })
 
               const eventsThisHour = dayEvents.filter((event) => {
-                const start = parseISO(event.start_time)
+                const start = horarioDaAgenda(event.start_time)
                 return getHours(start) === hour && isSameDay(start, day)
               })
 
               return (
                 <div
                   key={dayIdx}
-                  className={`border-t border-gray-100 h-20 p-1 relative ${
-                    isToday ? "bg-[#F4FAFB]" : "bg-white"
+                  className={`relative h-20 border-t border-l border-[#F1EEE8] border-l-filete p-1 ${
+                    isToday ? "bg-[#F7FBFB]" : "bg-white"
                   }`}
                 >
                   {eventsThisHour.map((event, idx) => {
-                    const start = formatTime(event.start_time)
-                    const end = formatTime(event.end_time)
+                    const start = horarioDaAgenda(event.start_time)
+                    const end = horarioDaAgenda(event.end_time)
                     const topOffset = (getMinutes(start) / 60) * 100
 
                     return (
                       <div
                         key={idx}
-                        className="absolute left-0 right-0 px-1 cursor-pointer"
+                        className="absolute left-0 right-0 z-10 cursor-pointer px-1"
                         style={{ top: `${topOffset}%`, minHeight: "2.5rem" }}
                         onClick={() => handleSelectEvent(event)}
                       >
                         <CardCalendar
                           title={event.title}
-                          start_hour={start}
-                          end_hour={end}
+                          start_hour={format(start, "HH:mm")}
+                          end_hour={format(end, "HH:mm")}
                           status={event.status}
                           variant={event.type}
                         />
@@ -230,12 +216,14 @@ export const WeekCalendar = ({ events }: { events: Event[] }) => {
   }
 
   return (
-    <div className="mt-6 bg-[#FCFCFD] flex flex-col">
+    <div className="mt-4 flex flex-col overflow-hidden rounded-[14px] border border-filete bg-white">
       {renderHeader()}
       <div className="flex">
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           {renderDaysHeader()}
-          <div className="h-[800px]">{renderHourRows()}</div>
+          <div ref={grade} className="max-h-[680px] overflow-y-auto">
+            {renderHourRows()}
+          </div>
         </div>
 
         {eventId ? <EventDetail /> : null}

@@ -209,8 +209,8 @@ export function NotificationSelector({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        <Bell className="w-5 h-5 text-[#BBE2E7]" />
-        <label className="text-sm font-medium text-[#3D3D3D]">{label}</label>
+        <Bell size={16} strokeWidth={1.7} className="text-tinta-3" />
+        <label className="text-[13px] font-medium text-tinta-2">{label}</label>
       </div>
 
       {sortedReminders.length > 0 && (
@@ -218,19 +218,20 @@ export function NotificationSelector({
           {sortedReminders.map((reminder, index) => (
             <div
               key={index}
-              className="flex items-center justify-between bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+              className="flex items-center justify-between rounded-[10px] border border-filete bg-white py-2.5 pr-2 pl-3.5"
             >
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-[#3D3D3D]">
+                <span className="text-[14px] font-medium text-tinta">
                   {getTimeLabel(reminder.time_trigger)}
                 </span>
-                <span className="text-xs text-[#BDBDBD]">via WhatsApp</span>
+                <span className="text-xs text-tinta-3">via WhatsApp</span>
               </div>
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => removeNotification(index)}
-                className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-full transition-colors"
+                aria-label="Remover notificação"
+                className="h-8! w-8! px-0! text-tinta-3 hover:bg-[#FBEDEA] hover:text-[#A23B2A]"
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -240,7 +241,7 @@ export function NotificationSelector({
       )}
 
       {showAddForm ? (
-        <div className="flex flex-col gap-4 p-4 border-2 border-dashed border-[#BBE2E7] rounded-lg bg-[#F8FDFE]">
+        <div className="flex flex-col gap-3 rounded-[12px] border border-filete bg-papel-2 p-3.5">
           <div className="flex gap-3">
             <div className="flex-1">
               <Input
@@ -295,14 +296,14 @@ export function NotificationSelector({
           type="button"
           variant="outline"
           onClick={() => setShowAddForm(true)}
-          className="w-full flex items-center gap-2 justify-center border-dashed border-2 border-gray-300 text-gray-500 hover:border-[#BBE2E7] hover:text-[#BBE2E7] hover:bg-gray-50 py-3 rounded-lg transition-colors"
+          className="w-full border-dashed text-tinta-2"
         >
           Adicionar notificação
         </Button>
       )}
 
       {currentReminders.length === 0 && !showAddForm && (
-        <p className="text-xs text-[#BDBDBD] text-center py-2">
+        <p className="py-1 text-center text-xs text-tinta-3">
           Nenhuma notificação configurada
         </p>
       )}

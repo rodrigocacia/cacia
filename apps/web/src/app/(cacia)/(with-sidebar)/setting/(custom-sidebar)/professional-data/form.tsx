@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react"
 
-import { Icon } from "@/components/icone"
-
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -19,6 +17,8 @@ import { Toast } from "@/components/ui/toast"
 import { Check } from "lucide-react"
 import { formatDocument } from "@/utils/formatters"
 import { mensagemDeErro } from "@/utils/error-handlers"
+
+import { Cartao, RodapeDoCartao } from "../../_ui/cartao"
 
 // Razão social e nome fantasia são opcionais: só existem para CNPJ, e exigi-los
 // (a razão social nem tinha campo na tela) impedia qualquer escritório de
@@ -101,41 +101,36 @@ export function Form() {
   if (isLoading) return <Spinner />
 
   return (
-    <div className="h-full p-8 max-md:p-0 pb-6 md:rounded-2xl md:shadow-sm md:pb-0">
-      <div className="flex items-center gap-3 max-md:mt-4">
-        <Icon icon="mdi:work-outline" className="w-8 h-8 text-[#BDBDBD]" />
-
-        <h3 className="text-[20px] text-[#707070] font-bold">
-          Dados profissionais
-        </h3>
-      </div>
-
-      <hr className="w-full my-6 max-md:my-2 h-px border-t-0 bg-gray-200" />
-
+    <Cartao
+      titulo="Dados profissionais"
+      descricao="Como o escritório aparece para os clientes e para o assistente."
+    >
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full mt-6 flex flex-col justify-between gap-8 pb-10"
+        className="flex w-full flex-col gap-7"
       >
         <div className="w-full flex flex-col gap-4">
-          <Input
-            disabled
-            {...register("document")}
-            iconName="contact"
-            label={ehCnpj ? "CNPJ" : "CPF"}
-            aria-label={ehCnpj ? "CNPJ" : "CPF"}
-            mask={ehCnpj ? "cnpj" : "cpf"}
-            error={errors.document}
-          />
+          <div className="grid w-full gap-4 md:grid-cols-2">
+            <Input
+              disabled
+              {...register("document")}
+              iconName="contact"
+              label={ehCnpj ? "CNPJ" : "CPF"}
+              aria-label={ehCnpj ? "CNPJ" : "CPF"}
+              mask={ehCnpj ? "cnpj" : "cpf"}
+              error={errors.document}
+            />
 
-          <Input
-            {...register("oab_number")}
-            label="Número da OAB"
-            disabled
-            placeholder="Número da OAB..."
-            mask="fixed"
-            iconName="contact"
-            error={errors?.oab_number}
-          />
+            <Input
+              {...register("oab_number")}
+              label="Número da OAB"
+              disabled
+              placeholder="Número da OAB..."
+              mask="fixed"
+              iconName="contact"
+              error={errors?.oab_number}
+            />
+          </div>
 
           <Input
             {...register("name")}
@@ -146,7 +141,7 @@ export function Form() {
           />
 
           {ehCnpj && (
-            <div className="w-full flex gap-6 items-center justify-between max-md:flex-col max-md:gap-4">
+            <div className="grid w-full gap-4 md:grid-cols-2">
               <div className="w-full">
                 <Input
                   {...register("legal_name")}
@@ -183,18 +178,18 @@ export function Form() {
           />
         </div>
 
-        <div className="w-full flex items-center justify-end max-md:flex-col max-md:gap-4 mt-8 max-md:pb-10">
+        <RodapeDoCartao>
           <Button
             type="submit"
             disabled={isSubmitting}
             isLoading={isSubmitting}
-            className="px-10 cursor-pointer max-md:w-full"
+            className="px-5"
             variant="primary"
-            iconLeft={<Check />}
+            iconLeft={<Check size={16} />}
           >
             Salvar
           </Button>
-        </div>
+        </RodapeDoCartao>
       </form>
 
       {hasError && (
@@ -214,6 +209,6 @@ export function Form() {
           description="Os dados profissionais foram atualizados com sucesso!"
         />
       )}
-    </div>
+    </Cartao>
   )
 }

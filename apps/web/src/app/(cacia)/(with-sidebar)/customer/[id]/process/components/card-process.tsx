@@ -1,7 +1,7 @@
-import { Icon } from "@/components/icone"
 import Link from "next/link"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { ChevronRight, Scale } from "lucide-react"
 
 import { ProcessBadge } from "@/components/ui/badge/proccess.badge"
 import { ProcessStatus } from "@/types/process"
@@ -17,42 +17,41 @@ interface CardProcessProps {
   }
 }
 
+/** Linha de processo dentro da ficha do cliente. */
 export function CardProcess({ process }: CardProcessProps) {
   const formattedDate = process?.updated_at
-    ? format(new Date(process.updated_at), "dd 'de' MMMM',' yyyy", {
+    ? format(new Date(process.updated_at), "dd MMM yyyy", {
         locale: ptBR,
       })
-    : "Data não disponível"
+    : null
 
   return (
-    <Link
-      href={`/process/${process?._id}/information`}
-      className="px-2 py-3 flex gap-2.5 border border-[#F6F6F9] rounded-[12px]"
-    >
-      <div className="w-11 h-11 flex items-center justify-center rounded-[12px] bg-[#ECF7F8]">
-        <Icon icon="mdi:folder-text" className="w-6 h-6 text-[#348C98]" />
-      </div>
+    <li className="border-b border-[#F1EEE8] last:border-b-0">
+      <Link
+        href={`/process/${process?._id}/information`}
+        className="flex min-h-14 items-center gap-3 px-5 py-2.5 transition-colors hover:bg-papel"
+      >
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-nevoa text-turquesa-profundo">
+          <Scale size={15} strokeWidth={1.7} />
+        </span>
 
-      <div className="w-full flex flex-col gap-2">
-        <div className="w-full flex items-center justify-between">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-sm text-[#707070] font-semibold">Processo</h3>
-            <h3 className="text-sm text-[#707070] font-semibold">
-              {formatProcess(process?.number)?.length > 15
-                ? `${formatProcess(process?.number).slice(0, 15)}...`
-                : formatProcess(process?.number)}
-            </h3>
-          </div>
-
-          <ProcessBadge variant={process?.status} />
+        <div className="flex min-w-0 flex-grow flex-col">
+          <span className="tabular truncate text-[13.5px] font-medium text-tinta">
+            {formatProcess(process?.number)}
+          </span>
+          <span className="truncate text-xs text-tinta-3">
+            {[process?.unit, formattedDate && `atualizado em ${formattedDate}`]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
         </div>
 
-        <p className="text-xs text-[#707070]">{process?.unit}</p>
-
-        <strong className="text-[10px] text-[#707070] mt-1 ">
-          Última atualização: <span>{formattedDate}</span>
-        </strong>
-      </div>
-    </Link>
+        <ProcessBadge variant={process?.status} />
+        <ChevronRight
+          size={16}
+          className="shrink-0 text-tinta-3 max-sm:hidden"
+        />
+      </Link>
+    </li>
   )
 }

@@ -1,0 +1,33 @@
+# PostgreSQL — banco principal, auto-hospedado
+#
+# Deploy:  fly deploy -c infra/postgres/fly.toml
+#
+# Decisão de 12/10/2026: máquina própria em vez de Postgres gerenciado, para
+# reduzir custo. O preço disso é que backup e atualização ficam por nossa conta:
+#
+#   - O volume tem snapshot diário do Fly (retenção ajustada na criação do
+#     volume). Restaurar = criar volume a partir do snapshot.
+#   - Sem réplica: a máquina é ponto único de falha.
+#
+# Só na rede privada: sem [http_service] e sem IP público. A API conecta em
+# cacia-postgres.internal:5432.
+
+app            = "cacia-postgres"
+primary_region = "gru"
+
+[build]
+  image = "postgres:16-alpine"
+
+[env]
+  POSTGRES_USER = "cacia"
+  POSTGRES_DB   = "cacia"
+  # Subpasta: a raiz do volume tem lost+found, e o initdb recusa pasta não vazia
+  PGDATA        = "/var/lib/postgresql/data/pgdata"
+
+[[mounts]]
+  source      = "pg_data"
+  destination = "/var/lib/postgresql/data"
+
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "1gb"

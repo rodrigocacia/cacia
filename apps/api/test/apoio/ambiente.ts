@@ -43,7 +43,9 @@ const PADROES: Record<string, string> = {
   PORT: '3000',
 
   REDIS_HOST: 'localhost',
-  REDIS_PORT: '6380',
+  // 6380 é a porta do Redis do docker compose; quem roda um Redis nativo na
+  // máquina aponta REDIS_PORT_E2E para ele.
+  REDIS_PORT: process.env.REDIS_PORT_E2E ?? '6380',
   // Banco 15 e prefixo próprio: um `flushdb` acidental não leva o
   // desenvolvimento junto.
   REDIS_DB: '15',

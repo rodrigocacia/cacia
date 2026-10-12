@@ -7,8 +7,6 @@ import {
   type ClipboardEvent,
 } from "react"
 
-import Image from "next/image"
-
 import { Send } from "lucide-react"
 
 import { SubmitHandler, useForm } from "react-hook-form"
@@ -219,11 +217,7 @@ export function Form() {
   }
 
   return (
-    <main className="bg-white relative z-10 w-full h-full max-lg:h-fit flex flex-col gap-8 shadow-md rounded-4xl px-8 pt-[28px] max-lg:pb-4">
-      <div className="w-full">
-        <Image src="/logo-cacia.png" alt="mockup" width={200} height={61} />
-      </div>
-
+    <main className="flex w-full flex-col gap-8">
       {step === 1 ? (
         <div className="w-full">
           <Heading
@@ -287,7 +281,7 @@ export function Form() {
                   onChange={(e) => handleChange(e, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)}
                   onPaste={handlePaste}
-                  className="w-[75px] h-[75px] max-md:w-[50px] max-md:h-[50px] bg-[#FCFCFD] border border-[#F6F6F9] rounded-2xl outline-0 flex items-center justify-center text-center text-[#707070] text-base max-md:text-sm font-semibold"
+                  className="w-[75px] h-[75px] max-md:w-[50px] max-md:h-[50px] bg-[#FBFAF7] border border-[#F1EEE8] rounded-2xl outline-0 flex items-center justify-center text-center text-[#57514A] text-base max-md:text-sm font-semibold"
                 />
               ))}
             </div>
@@ -356,7 +350,7 @@ export function Form() {
                     className="text-[#348C98]"
                   />
 
-                  <h3 className="text-base text-[#3D3D3D] font-bold">
+                  <h3 className="text-base text-[#1B1916] font-bold">
                     Sua senha deve possuir:
                   </h3>
                 </div>
@@ -395,7 +389,7 @@ export function Form() {
                           rule.valid ? "text-[#16A31B]" : "text-[#EFEFEF]"
                         }
                       />
-                      <h4 className="text-sm font-bold text-[#707070]">
+                      <h4 className="text-sm font-bold text-[#57514A]">
                         {rule.label}
                       </h4>
                     </motion.div>

@@ -110,12 +110,12 @@ function FormComponent({ setOpen, handleOpenSuccess }: FormComponentProps) {
             className="text-[#BBE2E7] w-[30px] h-[30px]"
           />
 
-          <h3 className="text-xl text-[#3D3D3D] font-bold">
+          <h3 className="text-xl text-[#1B1916] font-bold">
             Novo andamento do processo
           </h3>
         </div>
 
-        <p className="text-base text-[#BDBDBD]">
+        <p className="text-base text-[#A39C93]">
           Preencha os campos abaixo para adicionar uma nova nota ao andamento do
           processo
         </p>

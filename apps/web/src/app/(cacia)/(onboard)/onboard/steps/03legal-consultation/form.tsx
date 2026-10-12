@@ -5,12 +5,15 @@ import { useEffect, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 
-import { Icon } from "@/components/icone"
-
-import { Button } from "@/components/ui/custom-button"
 import { Spinner } from "@/components/ui/sppiner"
 import { Toast } from "@/components/ui/toast"
 import { HeaderSteps } from "../components/header-steps"
+import {
+  BotaoAvancar,
+  BotaoVoltar,
+  RodapeDoPasso,
+  SecaoDoPasso,
+} from "../components/partes"
 import { useOnboardingStore } from "@/stores/use-onboard-store"
 import { CustomRadioButton } from "@/components/ui/custom-radio-button"
 import { Input } from "@/components/ui/custom-input"
@@ -108,36 +111,22 @@ export function Form() {
   if (isLoading) return <Spinner />
 
   return (
-    <div className="bg-white relative z-10 w-full h-full max-lg:h-fit flex flex-col shadow-md rounded-4xl px-8 pt-[28px] max-lg:pb-4">
+    <div className="flex w-full flex-col">
       <HeaderSteps />
 
-      <div className="w-full flex flex-col gap-3 max-md:mt-4 mt-10">
-        <div className="flex items-center gap-2">
-          <Icon icon="octicon:law-16" className="w-8 h-8 text-[#BDBDBD]" />
-          <h3 className="text-[20px] text-[#348C98] font-bold">
-            Consulta jurídica
-          </h3>
-        </div>
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-normal text-[#3D3D3D]">
-            Configure seu modelo de atuação para consultas jurídicas.
-          </p>
-        </div>
-      </div>
+      <SecaoDoPasso
+        titulo="Consulta jurídica"
+        descricao="Configure seu modelo de atuação para consultas jurídicas."
+      />
 
-      <hr className="w-full my-4 max-md:my-2 h-px border-t-0 bg-gray-200" />
-
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="w-full mt-6 max-md:mt-4 flex flex-col justify-between gap-8"
-      >
-        <div className="w-full flex flex-col gap-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-col">
+        <div className="flex w-full flex-col gap-6">
           <div>
-            <h4 className="text-base text-[#707070] font-semibold">
+            <h4 className="text-[14px] font-semibold text-tinta">
               A consulta jurídica é cobrada?
             </h4>
 
-            <div className="flex items-center gap-4 md:gap-10 mt-6 flex-wrap">
+            <div className="mt-3 flex flex-wrap items-center gap-6">
               <Controller
                 name="is_charged"
                 control={control}
@@ -182,11 +171,11 @@ export function Form() {
 
           {is_charged === "yes" && (
             <div>
-              <h4 className="text-base text-[#707070] font-semibold">
+              <h4 className="text-[14px] font-semibold text-tinta">
                 Exigir pagamento para concluir agendamento?
               </h4>
 
-              <div className="flex items-center gap-4 md:gap-10 mt-6 flex-wrap">
+              <div className="mt-3 flex flex-wrap items-center gap-6">
                 <Controller
                   name="requires_payment_to_schedule"
                   control={control}
@@ -216,19 +205,19 @@ export function Form() {
 
           {is_charged === "yes" && (
             <div className="w-full flex flex-col gap-1">
-              <h3 className="text-base text-[#707070] font-semibold">
+              <h4 className="text-[14px] font-semibold text-tinta">
                 Chave PIX
-              </h3>
+              </h4>
 
-              <ul className="flex flex-col gap-1 list-none">
-                <li className="text-xs text-[#707070] font-medium">
-                  - Esta chave será enviada para recebimento do valor da
-                  consulta. Após receber o comprovante de pagamento o
-                  agendamento será confirmado.
+              <ul className="flex list-disc flex-col gap-1 pl-4 text-[13px] leading-relaxed text-tinta-2 marker:text-tinta-3">
+                <li>
+                  Esta chave será enviada para recebimento do valor da consulta.
+                  Após receber o comprovante de pagamento o agendamento será
+                  confirmado.
                 </li>
 
-                <li className="text-xs text-[#707070] font-medium">
-                  - Você receberá uma notificação do agendamento incluindo o
+                <li>
+                  Você receberá uma notificação do agendamento incluindo o
                   comprovante de pagamento enviado pelo lead/cliente.
                 </li>
               </ul>
@@ -246,38 +235,10 @@ export function Form() {
           )}
         </div>
 
-        <div className="flex items-center justify-between mb-7">
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-[251px] max-lg:w-full cursor-pointer"
-              onClick={() => prevStep()}
-              iconLeft={
-                <Icon
-                  icon="mdi:arrow-left"
-                  className="w-6 h-6 text-[#707070]"
-                />
-              }
-            >
-              Voltar
-            </Button>
-          </div>
-
-          <Button
-            type="submit"
-            className="w-[251px] max-lg:w-fit cursor-pointer"
-            variant="primary"
-            isLoading={isSubmitting}
-            iconRight={
-              !isSubmitting ? (
-                <Icon icon="mdi:arrow-right" className="w-6 h-6 text-white" />
-              ) : null
-            }
-          >
-            Prosseguir
-          </Button>
-        </div>
+        <RodapeDoPasso>
+          <BotaoVoltar onClick={() => prevStep()} />
+          <BotaoAvancar isLoading={isSubmitting} />
+        </RodapeDoPasso>
       </form>
 
       {hasError && (

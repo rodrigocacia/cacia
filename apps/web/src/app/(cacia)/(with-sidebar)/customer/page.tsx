@@ -27,7 +27,7 @@ export default async function Lead({
 
   return (
     <div className="w-full max-lg:px-4">
-      <Header />
+      <Header title="Clientes" />
 
       <ClientFormSection customerById={customerById} customers={customers} />
 

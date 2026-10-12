@@ -6,10 +6,12 @@ import { format } from "date-fns"
 
 import clsx from "clsx"
 
-import { CalendarCheck, Clock, UserIcon, FileIcon } from "lucide-react"
+import { ptBR } from "date-fns/locale"
 
 import { EventType } from "@/types/event"
-import { formatTime, formatName, formatProcess } from "@/utils/formatters"
+import { formatTime, formatProcess } from "@/utils/formatters"
+
+import { corDoEvento, ehPrazo, ROTULO_DO_TIPO } from "./estilo-do-evento"
 
 type CardEventProps = {
   id: string
@@ -52,34 +54,17 @@ export default function CardEvent({
   const formattedStartHour = formatTime(start_time)
   const formattedEndHour = formatTime(end_time)
 
-  const formattedStartDate = format(start_time, "dd/MM/yyyy")
+  const formattedStartDate = format(start_time, "EEE, dd MMM", {
+    locale: ptBR,
+  }).replace(".", "")
 
-  const labelVariant = [
-    {
-      variant: EventType.HEARING,
-      label: "Audiência",
-    },
-    {
-      variant: EventType.DEADLINE,
-      label: "Prazo",
-    },
-    {
-      variant: EventType.INQUIRY,
-      label: "Inquérito",
-    },
-    {
-      variant: EventType.MEETING,
-      label: "Reunião",
-    },
-    {
-      variant: EventType.SERVICE,
-      label: "Atendimento",
-    },
-    {
-      variant: EventType.COMMITMENT,
-      label: "Compromisso",
-    },
-  ].sort((a, b) => a.label.localeCompare(b.label))
+  const cor = corDoEvento(variant)
+
+  const vinculos = [
+    lead ? `Lead ${lead.name}` : null,
+    customer ? customer.name : null,
+    process ? `Processo ${formatProcess(process.number)}` : null,
+  ].filter(Boolean)
 
   function handleSelectEvent() {
     if (hasFromAnotherPlace) {
@@ -102,75 +87,39 @@ export default function CardEvent({
   }
 
   return (
-    <div
+    <button
+      type="button"
       className={clsx(
-        "cursor-pointer flex flex-col gap-2 p-3 rounded-2xl shadow-sm relative bg-white w-full",
-        "border-l-4",
-        {
-          "border-[#9333EA]": variant === EventType.HEARING,
-          "border-[#16A31B]": variant === EventType.DEADLINE,
-          "border-[#EA820C]": variant === EventType.INQUIRY,
-          "border-[#2563EB]": variant === EventType.MEETING,
-          "border-[#1E40AF]": variant === EventType.SERVICE,
-          "border-[#158f89]": variant === EventType.COMMITMENT,
-        }
+        "flex w-full cursor-pointer flex-col gap-1 rounded-[10px] border border-l-2 border-filete bg-white px-3 py-2.5 text-left transition-colors hover:bg-papel",
+        cor.filete,
+        eventId === id && "bg-papel ring-1 ring-filete-forte"
       )}
       onClick={handleSelectEvent}
     >
-      <div className="flex justify-between items-start">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1 text-gray-400 text-[10px]">
-            <CalendarCheck className="w-4 h-4" />
-            {formattedStartDate}
-          </div>
-
-          <div className="flex items-center gap-1 text-gray-400 text-[10px]">
-            <Clock className="w-4 h-4" />
-            <b>{formattedStartHour}</b> - <b>{formattedEndHour}</b>
-          </div>
-        </div>
+      <div className="flex w-full items-center justify-between gap-2">
+        <span className="tabular truncate text-xs text-tinta-3 first-letter:uppercase">
+          {formattedStartDate} · {formattedStartHour}–{formattedEndHour}
+        </span>
 
         <span
           className={clsx(
-            "text-[10px] font-semibold px-1.5 py-0.5 rounded-full",
-            {
-              "bg-[#EBDAFB] text-[#9333EA]": variant === EventType.HEARING,
-              "bg-[#DBFADC] text-[#16A31B]": variant === EventType.DEADLINE,
-              "bg-[#FDECD8] text-[#EA820C]": variant === EventType.INQUIRY,
-              "bg-[#DBEAFE] text-[#2563EB]": variant === EventType.MEETING,
-              "bg-[#E6F4FF] text-[#1E40AF]": variant === EventType.SERVICE,
-              "bg-[#F3E8FF] text-[#008a83]": variant === EventType.COMMITMENT,
-            }
+            "shrink-0 text-[11px] font-semibold",
+            ehPrazo(variant) ? "text-ambar" : "text-tinta-3"
           )}
         >
-          {labelVariant.find((item) => item.variant === variant)?.label}
+          {ROTULO_DO_TIPO[variant] ?? variant}
         </span>
       </div>
 
-      {lead && (
-        <div className="flex items-center gap-2 text-gray-500 text-[10px]">
-          <UserIcon className="w-4 h-4" />
-          LEAD: <b>{lead.name}</b>
-        </div>
-      )}
-
-      {customer && (
-        <div className="flex items-center gap-2 text-gray-500 text-[10px]">
-          <UserIcon className="w-4 h-4" />
-          CLIENTE: <b>{formatName(customer.name)}</b>
-        </div>
-      )}
-
-      {process && (
-        <div className="flex items-center gap-2 text-gray-500 text-[10px]">
-          <FileIcon className="w-4 h-4" />
-          PROCESSO: <b>{formatProcess(process.number)}</b>
-        </div>
-      )}
-
-      <h3 className="text-sm font-semibold text-gray-700">
-        {title.length > 25 ? `${title.slice(0, 25)}...` : title}
+      <h3 className="w-full truncate text-[13.5px] font-medium text-tinta">
+        {title}
       </h3>
-    </div>
+
+      {vinculos.length > 0 && (
+        <p className="tabular w-full truncate text-xs text-tinta-3">
+          {vinculos.join(" · ")}
+        </p>
+      )}
+    </button>
   )
 }

@@ -188,7 +188,7 @@ export function DocumentApprovalModal({
               <DialogHeader className="px-4 pt-2 flex-shrink-0">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <DialogTitle className="text-[2rem] mb-4 text-[#3D3D3D]">
+                    <DialogTitle className="mb-3 font-display text-[32px] leading-tight font-normal text-tinta">
                       {currentDocument.title}
                     </DialogTitle>
                     <div className="flex flex-wrap items-center gap-3">
@@ -227,7 +227,7 @@ export function DocumentApprovalModal({
 
                     {currentDocument.status !== DocumentStatus.APPROVED && (
                       <div className="flex justify-between py-4 max-md:flex-col max-md:items-center">
-                        <div className="text-lg max-md:text-sm text-gray-600 p-4 max-md:w-full max-md:text-center">
+                        <div className="p-4 text-[13.5px] text-tinta-2 max-md:w-full max-md:text-center">
                           Após aprovado, será <b>AUTOMATICAMENTE ENVIADO</b>{" "}
                           para:{" "}
                           <b>
@@ -241,7 +241,7 @@ export function DocumentApprovalModal({
                         </div>
                         <Button
                           onClick={handleApprove}
-                          className="cursor-pointer bg-green-600 hover:bg-green-700"
+                          className="h-10! cursor-pointer px-4 text-[13.5px]"
                           iconLeft={
                             <Icon icon="mdi:check" className="size-4" />
                           }
@@ -283,7 +283,7 @@ export function DocumentApprovalModal({
               </DialogTitle>
             </DialogHeader>
             <div className="py-4">
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="mb-6 text-[14px] leading-[1.5] text-tinta-2">
                 Tem certeza que deseja <b>APROVAR</b> este documento{" "}
                 <b>e envia-lo automaticamente</b> para:{" "}
                 <b>
@@ -299,13 +299,13 @@ export function DocumentApprovalModal({
                 <button
                   onClick={cancelApproval}
                   disabled={isSubmitting}
-                  className="cursor-pointer flex w-fit px-[30px] py-3 items-center gap-2 rounded-full border border-[#CDEDF0] bg-white text-[#2C8B94] shadow-sm hover:bg-[#f7fdfd] transition-colors"
+                  className="flex h-9 w-fit cursor-pointer items-center gap-2 rounded-[9px] border border-filete-forte bg-white px-3.5 text-tinta transition-colors hover:bg-gray-100 disabled:opacity-60"
                 >
-                  <span className="text-base font-medium">cancelar</span>
+                  <span className="text-[13.5px] font-medium">Cancelar</span>
                 </button>
                 <Button
                   onClick={confirmApproval}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="h-10! cursor-pointer px-4 text-[13.5px]"
                   disabled={isSubmitting}
                   iconLeft={<Icon icon="mdi:check" className="size-4" />}
                 >

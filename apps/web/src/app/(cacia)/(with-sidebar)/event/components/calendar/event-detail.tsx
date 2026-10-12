@@ -3,13 +3,10 @@ import { useRouter, useSearchParams } from "next/navigation"
 
 import ReactMarkdown from "react-markdown"
 
-import { Icon } from "@/components/icone"
-
-import { ClockIcon } from "lucide-react"
+import { Pencil, Scale, Trash2, User, X } from "lucide-react"
 
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { formatName } from "@/utils/formatters"
 
 import { Spinner } from "@/components/ui/sppiner"
 
@@ -21,6 +18,11 @@ import { BotaoCancelarEvento } from "../button-cancel-event"
 
 import { formatProcess } from "@/utils/formatters"
 
+import { ehPrazo, ROTULO_DO_TIPO } from "../estilo-do-evento"
+
+const PAINEL =
+  "w-[320px] shrink-0 border-l border-filete bg-white p-5 max-xl:w-[280px]"
+
 export function EventDetail() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -31,7 +33,7 @@ export function EventDetail() {
 
   if (isLoading) {
     return (
-      <div className="w-[300px] bg-[#FAFAFA] border-l border-[#E0E0E0] p-4">
+      <div className={PAINEL}>
         <Spinner />
       </div>
     )
@@ -39,10 +41,8 @@ export function EventDetail() {
 
   if (isError) {
     return (
-      <div className="w-[300px] bg-[#FAFAFA] border-l border-[#E0E0E0] p-4">
-        <p className="text-sm text-[#BDBDBD] font-semibold">
-          Erro ao carregar evento
-        </p>
+      <div className={PAINEL}>
+        <p className="text-[13px] text-tinta-3">Erro ao carregar evento</p>
       </div>
     )
   }
@@ -65,106 +65,112 @@ export function EventDetail() {
     router.push(`?${params.toString()}`)
   }
 
+  const vinculo =
+    "flex items-center gap-2.5 rounded-[10px] border border-filete bg-white px-3 py-2 text-[13px] text-tinta transition-colors hover:bg-papel"
+
   return (
-    <div className="w-[300px] bg-[#FAFAFA] border-l border-[#E0E0E0] p-4">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <h2 className="text-[2rem] text-[#707070] leading-none font-semibold">
-            {event?.title}
-          </h2>
+    <div className={PAINEL}>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-col gap-1.5">
+            {event?.type && (
+              <span
+                className={
+                  ehPrazo(event.type)
+                    ? "font-mono text-[10.5px] tracking-[0.08em] text-ambar uppercase"
+                    : "rotulo"
+                }
+              >
+                {ROTULO_DO_TIPO[event.type] ?? event.type}
+              </span>
+            )}
+            <h2 className="font-display text-[26px] leading-[1.1] break-words text-tinta">
+              {event?.title}
+            </h2>
+          </div>
 
           <button
-            className="cursor-pointer bg-gray-200 rounded-md p-1"
+            type="button"
+            aria-label="Fechar detalhes do evento"
+            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-tinta-3 transition-colors hover:bg-gray-100 hover:text-tinta"
             onClick={handleSelectEvent}
           >
-            <Icon icon="mdi:close" className="w-6 h-6" />
+            <X className="h-[18px] w-[18px]" />
           </button>
         </div>
 
-        {event?.status && (
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-sm text-[#BDBDBD] font-semibold">Status</p>
+        <p className="tabular text-[13.5px] text-tinta-2">
+          {event?.start_time &&
+            format(event?.start_time, "EEEE, d 'de' MMMM", {
+              locale: ptBR,
+            })}
+          <br />
+          {event?.custom_start_time}–{event?.custom_end_time}
+        </p>
 
-            <StatusEvent status={event?.status} />
-          </div>
-        )}
-
-        <div className="flex items-center justify-between text-[#9E9E9E] text-sm">
-          <span className="text-[#BDBDBD] font-semibold">
-            {event?.start_time &&
-              format(event?.start_time, "d 'de' MMMM 'de' yyyy", {
-                locale: ptBR,
-              })}
-          </span>
-
-          <span className="flex items-center gap-1 text-[#BDBDBD]">
-            <ClockIcon className="w-4 h-4" />
-            {event?.custom_start_time} - {event?.custom_end_time}
-          </span>
-        </div>
-
-        {event?.lead && !event?.customer && (
-          <Link
-            href={`/lead/?lead_id=${event?.lead?._id}`}
-            className="flex items-center gap-2 p-2 bg-[#FAFAFA] rounded border text-[#666]"
-          >
-            <Icon icon="mdi:account-outline" className="w-4 h-4" />
-            <span className="text-[#707070]">
-              {formatName(event?.lead?.name) || "Lead sem nome"}
-            </span>
-          </Link>
-        )}
-
-        {event?.customer && (
-          <Link
-            href={`/customer/${event?.customer?._id}/personal-information`}
-            className="flex items-center gap-2 p-2 bg-[#FAFAFA] rounded border text-[#666]"
-          >
-            <Icon icon="mdi:account-outline" className="w-4 h-4" />
-            <span className="text-[#707070]">
-              {formatName(event?.customer?.name) || "Cliente sem nome"}
-            </span>
-          </Link>
-        )}
-
-        {event?.process && (
-          <Link
-            href={`/process/${event?.process?._id}/information`}
-            className="flex flex-col gap-1 p-2 bg-[#FAFAFA] rounded border text-[#666]"
-          >
-            <div className="flex items-center gap-2">
-              <Icon icon="mdi:folder-text-outline" className="w-4 h-4" />
-              <span className="text-[#707070]">Processo</span>
-            </div>
-            <span className="text-[#707070]">
-              {formatProcess(event?.process?.number)}
-            </span>
-          </Link>
-        )}
-
-        {event?.type && (
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-sm text-[#BDBDBD] font-semibold">
-              Tipo de evento
-            </p>
-
-            <TypeEvent type={event?.type} />
-          </div>
-        )}
-
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-[#BDBDBD] font-semibold">Agenda</p>
-
-          <span className="inline-flex items-center gap-2 text-[#555] font-medium">
+        <dl className="flex flex-col">
+          {event?.status && (
+            <Linha rotulo="Status">
+              <StatusEvent status={event?.status} />
+            </Linha>
+          )}
+          {event?.type && (
+            <Linha rotulo="Tipo">
+              <TypeEvent type={event?.type} />
+            </Linha>
+          )}
+          <Linha rotulo="Agenda">
             {event?.calendar?.title || "Agenda não definida"}
-          </span>
-        </div>
+          </Linha>
+        </dl>
+
+        {(event?.lead || event?.customer || event?.process) && (
+          <div className="flex flex-col gap-1.5">
+            <span className="rotulo">Vínculos</span>
+
+            {event?.lead && !event?.customer && (
+              <Link
+                href={`/lead/?lead_id=${event?.lead?._id}`}
+                className={vinculo}
+              >
+                <User size={15} strokeWidth={1.7} className="text-tinta-3" />
+                <span className="truncate">
+                  {event?.lead?.name || "Lead sem nome"}
+                </span>
+              </Link>
+            )}
+
+            {event?.customer && (
+              <Link
+                href={`/customer/${event?.customer?._id}/personal-information`}
+                className={vinculo}
+              >
+                <User size={15} strokeWidth={1.7} className="text-tinta-3" />
+                <span className="truncate">
+                  {event?.customer?.name || "Cliente sem nome"}
+                </span>
+              </Link>
+            )}
+
+            {event?.process && (
+              <Link
+                href={`/process/${event?.process?._id}/information`}
+                className={vinculo}
+              >
+                <Scale size={15} strokeWidth={1.7} className="text-tinta-3" />
+                <span className="tabular truncate">
+                  {formatProcess(event?.process?.number)}
+                </span>
+              </Link>
+            )}
+          </div>
+        )}
 
         {event?.description && (
-          <div className="flex flex-col gap-1">
-            <p className="text-sm text-[#BDBDBD] font-semibold">Detalhes</p>
+          <div className="flex flex-col gap-1.5">
+            <span className="rotulo">Detalhes</span>
 
-            <div className="text-sm text-[#555] font-medium">
+            <div className="text-[13.5px] leading-[1.5] text-tinta-2">
               <ReactMarkdown>
                 {event?.description || "Nenhuma descrição"}
               </ReactMarkdown>
@@ -172,22 +178,22 @@ export function EventDetail() {
           </div>
         )}
 
-        <div className="w-full flex flex-wrap items-center justify-start gap-2 mt-2">
+        <div className="flex w-full flex-wrap items-center gap-2 border-t border-filete pt-4">
           <button
             type="button"
             onClick={handleEditEvent}
-            className="cursor-pointer bg-transparent border border-gray-200 text-[#333] flex items-center justify-center gap-2 px-4 py-2 rounded-md"
+            className="flex h-9 cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-filete-forte bg-white px-3 text-[13px] font-medium text-tinta transition-colors hover:bg-gray-100"
           >
-            <Icon icon="mdi:pencil" className="w-4 h-4 text-[#333]" />
+            <Pencil size={14} strokeWidth={1.7} />
             Editar
           </button>
 
           <button
             type="button"
             onClick={handleDeleteEvent}
-            className="cursor-pointer bg-transparent border border-red-200 text-[#DC2626] flex items-center justify-center gap-2 px-4 py-2 rounded-md"
+            className="flex h-9 cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-filete-forte bg-white px-3 text-[13px] font-medium text-tinta transition-colors hover:border-[#F3D5CF] hover:bg-[#FBEDEA] hover:text-[#A23B2A]"
           >
-            <Icon icon="mdi:trash-can" className="w-4 h-4 text-[#DC2626]" />
+            <Trash2 size={14} strokeWidth={1.7} />
             Excluir
           </button>
 
@@ -196,6 +202,21 @@ export function EventDetail() {
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+function Linha({
+  rotulo,
+  children,
+}: {
+  rotulo: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex min-h-[40px] items-center justify-between gap-3 border-b border-[#F1EEE8] py-1.5 text-[13px] first:border-t">
+      <dt className="text-tinta-3">{rotulo}</dt>
+      <dd className="min-w-0 truncate font-medium text-tinta">{children}</dd>
     </div>
   )
 }

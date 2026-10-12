@@ -21,6 +21,20 @@ interface QueryParams {
   customer_id?: string
 }
 
+// Datas sem hora ("2026-10-12") chegavam à API como meia-noite UTC. Com
+// `to` igual a `from`, a visão de dia pedia um intervalo vazio; na semana e
+// no mês, o último dia ficava de fora. Aqui o dia vira o dia inteiro de
+// Brasília (UTC−3 o ano todo — o Brasil não tem horário de verão).
+const SO_DATA = /^\d{4}-\d{2}-\d{2}$/
+
+function inicioDoDia(data: string): string {
+  return SO_DATA.test(data) ? `${data}T00:00:00.000-03:00` : data
+}
+
+function fimDoDia(data: string): string {
+  return SO_DATA.test(data) ? `${data}T23:59:59.999-03:00` : data
+}
+
 export async function getEvent({
   page,
   calendar_id,
@@ -42,8 +56,8 @@ export async function getEvent({
   }
 
   if (start_time && end_time) {
-    queryParams.set("from", start_time)
-    queryParams.set("to", end_time)
+    queryParams.set("from", inicioDoDia(start_time))
+    queryParams.set("to", fimDoDia(end_time))
   }
 
   if (process_id) {
