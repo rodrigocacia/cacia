@@ -1,0 +1,15 @@
+# Contexto do build dos frontends (infra/fronts/Dockerfile). Diferente do
+# .dockerignore da raiz, que exclui apps/web e apps/backoffice.
+**/node_modules
+**/.next
+**/.open-next
+**/.wrangler
+**/.turbo
+**/dist
+**/coverage
+.git
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example

@@ -14,6 +14,9 @@ primary_region = "gru"
 
 [env]
   QDRANT__SERVICE__HTTP_PORT = "6333"
+  # "::" para aceitar a rede privada do Fly (IPv6): a API conecta em
+  # http://cacia-qdrant.internal:6333, sem passar pelo endereço público
+  QDRANT__SERVICE__HOST      = "::"
   QDRANT__TELEMETRY_DISABLED = "true"
 
 [http_service]

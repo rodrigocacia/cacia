@@ -1,0 +1,3 @@
+# App só de build: nunca tem máquina. Ver infra/fronts/Dockerfile.
+app            = "cacia-build-fronts"
+primary_region = "gru"
