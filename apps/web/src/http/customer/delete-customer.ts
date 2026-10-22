@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 import { api } from "../api-client"
 
 export async function deleteCustomer(customerId: string) {
@@ -17,7 +17,7 @@ export async function deleteCustomer(customerId: string) {
       data = await response.text()
     }
 
-    revalidateTag("customers")
+    updateTag("customers")
 
     return {
       success: true,

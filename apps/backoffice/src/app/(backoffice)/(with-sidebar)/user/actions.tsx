@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { updateUser } from "@/http/user/update-user";
 import { deleteUser } from "@/http/user/delete-user";
 import { createUser } from "@/http/user/create-user";
@@ -23,7 +23,7 @@ export async function updateUserAction(data: {
       phone: data.phone,
     });
 
-    revalidateTag("users");
+    updateTag("users");
 
     return result;
   } catch (error) {
@@ -50,7 +50,7 @@ export async function createUserAction(data: {
       password: data.password,
     });
 
-    revalidateTag("users");
+    updateTag("users");
 
     return result;
   } catch (error) {
@@ -67,7 +67,7 @@ export async function deleteUserAction(userId: string) {
       throw new Error(result.error);
     }
 
-    revalidateTag("users");
+    updateTag("users");
     return { success: true };
   } catch (error) {
     console.error("Erro ao deletar usuário:", error);

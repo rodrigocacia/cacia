@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 import { api } from "../api-client"
 
 interface DeleteEventResponse {
@@ -25,7 +25,7 @@ export async function deleteEvent(
       data = await response.text()
     }
 
-    revalidateTag("events")
+    updateTag("events")
 
     return {
       success: true,

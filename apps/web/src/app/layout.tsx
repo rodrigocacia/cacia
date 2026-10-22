@@ -30,11 +30,22 @@ const newsreader = Newsreader({
   display: "swap",
 })
 
+// Fora do `metadata`: o Next 16 só aceita o viewport no export próprio
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+}
+
 export const metadata = {
+  // Base das URLs do openGraph; sem ela, a prévia do link compartilhado
+  // apontava para localhost
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+  ),
   title: "CacIA BETA – Assistente Jurídica no WhatsApp (100 vagas exclusivas)",
   description:
     "Exclusivo para 100 advogados que não têm mais tempo a perder: garanta agora sua vaga na CacIA BETA e descubra a assistente jurídica que transforma sua rotina no WhatsApp.",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   openGraph: {
     title:
       "CacIA BETA – Assistente Jurídica no WhatsApp (100 vagas exclusivas)",

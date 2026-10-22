@@ -1,7 +1,7 @@
 'use server';
 
 import { HTTPError } from 'ky';
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 
 import { OfficeStatus } from '@/types/office';
 
@@ -19,7 +19,7 @@ export async function updateOfficeStatus({
   try {
     await api.patch(`admin/offices/${id}/status`, { json: { status } });
 
-    revalidateTag('offices');
+    updateTag('offices');
 
     return { success: true, error: null };
   } catch (err) {

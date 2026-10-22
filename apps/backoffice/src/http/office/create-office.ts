@@ -2,7 +2,7 @@
 'use server';
 
 import { api } from '../api-client';
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 
 interface Address {
   street: string;
@@ -94,7 +94,7 @@ export async function createOffice({
       })
       .json<CreateOfficeResponse>();
 
-    revalidateTag('offices');
+    updateTag('offices');
 
     return { success: true, data: result };
   } catch (err: any) {

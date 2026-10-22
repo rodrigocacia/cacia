@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import {
   updateOffice,
   type UpdateOfficeRequest,
@@ -23,7 +23,7 @@ export async function updateOfficeAction(data: UpdateOfficeRequest) {
   try {
     const result = await updateOffice(data);
 
-    revalidateTag("offices");
+    updateTag("offices");
 
     return result;
   } catch (error) {
@@ -50,7 +50,7 @@ export async function createOfficeAction(data: {
   try {
     const result = await createOffice(data);
 
-    revalidateTag("offices");
+    updateTag("offices");
 
     return result;
   } catch (error) {
@@ -66,7 +66,7 @@ export async function alterarSituacaoDoEscritorioAction(
   const result = await updateOfficeStatus({ id: officeId, status });
 
   if (result.success) {
-    revalidateTag("offices");
+    updateTag("offices");
     revalidatePath(`/office/${officeId}`, "layout");
   }
 
@@ -81,7 +81,7 @@ export async function deleteOfficeAction(officeId: string) {
       throw new Error(result.error);
     }
 
-    revalidateTag("offices");
+    updateTag("offices");
     return { success: true };
   } catch (error) {
     console.error("Erro ao deletar escritório:", error);

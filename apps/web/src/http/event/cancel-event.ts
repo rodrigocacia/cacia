@@ -1,6 +1,6 @@
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 import { HTTPError } from "ky"
 
 import { api } from "../api-client"
@@ -18,8 +18,8 @@ export async function cancelEvent(eventId: string) {
   try {
     await api.post(`events/${eventId}/cancel`)
 
-    revalidateTag("events")
-    revalidateTag("reminders")
+    updateTag("events")
+    updateTag("reminders")
 
     return { success: true as const }
   } catch (erro) {

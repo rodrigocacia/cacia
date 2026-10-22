@@ -1,6 +1,6 @@
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 import { api } from "../api-client"
 
 export interface CreateReminderRequest {
@@ -54,7 +54,7 @@ export async function createReminder({
       })
       .json<CreateReminderResponse>()
 
-    revalidateTag("reminders")
+    updateTag("reminders")
 
     return { success: true, data: result }
   } catch (err: unknown) {

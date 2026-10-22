@@ -2,7 +2,7 @@
 'use server';
 
 import { api } from '../api-client';
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 
 export interface DeleteUserRequest {
   id: string;
@@ -12,7 +12,7 @@ export async function deleteUser({ id }: DeleteUserRequest) {
   try {
     await api.delete(`admin/users/${id}`).json();
 
-    revalidateTag('users');
+    updateTag('users');
 
     return { success: true };
   } catch (err: any) {

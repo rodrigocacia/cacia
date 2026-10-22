@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 import { api } from "../api-client"
 
 export async function deleteFolder(folderId: string) {
@@ -17,7 +17,7 @@ export async function deleteFolder(folderId: string) {
       data = await response.text()
     }
 
-    revalidateTag("folders")
+    updateTag("folders")
 
     return {
       success: true,

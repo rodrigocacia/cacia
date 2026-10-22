@@ -1,21 +1,19 @@
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { FlatCompat } from '@eslint/eslintrc';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTs from 'eslint-config-next/typescript';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-  {
+export default defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  globalIgnores([
+    '.next/**',
+    '.open-next/**',
+    '.wrangler/**',
+    'next-env.d.ts',
     // Arquivo gerado por scripts/gerar-icones.mjs: dezenas de KB de dados de
     // desenho. Regras escritas para código humano não têm o que dizer aqui.
-    ignores: ['src/lib/icones.ts'],
-  },
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+    'src/lib/icones.ts',
+  ]),
   {
     rules: {
       // O prefixo `_` marca o parâmetro que existe só para manter a
@@ -29,8 +27,10 @@ const eslintConfig = [
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+      // Ver apps/web/eslint.config.mjs: regras do React Compiler vindas com o
+      // eslint-config-next 16, avisos até a refatoração própria.
+      'react-hooks/set-state-in-effect': ['warn'],
+      'react-hooks/purity': ['warn'],
     },
   },
-];
-
-export default eslintConfig;
+]);

@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   images: {
     // Foto de perfil do WhatsApp. Documentos não passam por aqui: saem por
     // link temporário do storage.
-    domains: ["pps.whatsapp.net"],
+    remotePatterns: [{ protocol: "https", hostname: "pps.whatsapp.net" }],
     // No Cloudflare Workers não há otimizador de imagem do Next (ele depende
     // do sharp, binário nativo); a foto vai direto da origem.
     unoptimized: true,

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 
 import { api } from "../api-client"
 
@@ -50,7 +50,7 @@ export async function createCalendar({
       })
       .json<CreateCalendarResponse>()
 
-    revalidateTag("calendar")
+    updateTag("calendar")
 
     return { success: true, data: result }
   } catch (err: any) {

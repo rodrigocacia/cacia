@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 
 import { api } from "../api-client"
 
@@ -74,7 +74,7 @@ export async function updateOffice({
       })
       .json<UpdateOfficeResponse>()
 
-    revalidateTag("office")
+    updateTag("office")
 
     return { success: true, data: result }
   } catch (err: any) {

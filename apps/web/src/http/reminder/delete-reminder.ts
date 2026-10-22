@@ -1,13 +1,13 @@
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 import { api } from "../api-client"
 
 export async function deleteReminder(reminderId: string) {
   try {
     await api.delete(`reminders/${reminderId}`)
 
-    revalidateTag("reminders")
+    updateTag("reminders")
 
     return { success: true }
   } catch (err: unknown) {

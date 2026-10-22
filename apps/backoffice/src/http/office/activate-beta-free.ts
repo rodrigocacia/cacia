@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 import { api } from '../api-client';
 
 export interface ActivateBetaFreeRequest {
@@ -24,8 +24,8 @@ export async function activateBetaFree({
       .patch(`admin/offices/${id}/status`, { json: { status: 'ACTIVE' } })
       .json();
 
-    revalidateTag('office');
-    revalidateTag('recurrence');
+    updateTag('office');
+    updateTag('recurrence');
 
     return { success: true, message: 'Escritório ativado com sucesso!' };
   } catch (err: any) {

@@ -1,6 +1,6 @@
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 import { api } from "../api-client"
 import { Document, DocumentStatus } from "@/types/document"
 
@@ -59,8 +59,8 @@ export async function updateDocument({
       })
       .json<Document>()
 
-    revalidateTag("documents")
-    revalidateTag("folders")
+    updateTag("documents")
+    updateTag("folders")
 
     return { success: true, data: result }
   } catch (err: unknown) {
@@ -88,7 +88,7 @@ export async function approveDocument(id: string) {
   try {
     const result = await api.patch(`documents/${id}`).json<Document>()
 
-    revalidateTag("documents")
+    updateTag("documents")
 
     return { success: true, data: result }
   } catch (err: unknown) {

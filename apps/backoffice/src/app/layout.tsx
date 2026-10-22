@@ -28,10 +28,16 @@ const newsreader = Newsreader({
   display: "swap",
 });
 
+// Fora do `metadata`: o Next 16 só aceita o viewport no export próprio
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata = {
   title: "Backoffice CacIA",
   description: "Backoffice CacIA",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
 };
 
 export default function RootLayout({

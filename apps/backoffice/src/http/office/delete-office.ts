@@ -2,7 +2,7 @@
 'use server';
 
 import { api } from '../api-client';
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 
 export interface DeleteOfficeRequest {
   id: string;
@@ -19,7 +19,7 @@ export async function deleteOffice({
   try {
     await api.delete(`admin/offices/${id}`).json();
 
-    revalidateTag('offices');
+    updateTag('offices');
 
     return { success: true };
   } catch (err: any) {

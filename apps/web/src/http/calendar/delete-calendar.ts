@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 
 import { api } from "../api-client"
 
@@ -13,7 +13,7 @@ export async function deleteCalendar(calendarId: string) {
       .delete(`calendars/${calendarId}`)
       .json<GetCalendarByIdResponse>()
 
-    revalidateTag("calendar")
+    updateTag("calendar")
 
     return { success: true, data: result }
   } catch (err: any) {

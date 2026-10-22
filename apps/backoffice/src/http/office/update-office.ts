@@ -1,7 +1,7 @@
 'use server';
 
 import { HTTPError } from 'ky';
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 
 import { api } from '../api-client';
 
@@ -36,7 +36,7 @@ export async function updateOffice({ id, ...dados }: UpdateOfficeRequest) {
       .patch(`admin/offices/${id}`, { json: dados })
       .json<{ _id: string; name: string }>();
 
-    revalidateTag('offices');
+    updateTag('offices');
 
     return { success: true, data: result };
   } catch (err) {

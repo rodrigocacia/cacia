@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 
 import { api } from "../api-client"
 
@@ -60,10 +60,10 @@ export async function createDocument({
       })
       .json<CreateDocumentResponse>()
 
-    revalidateTag("documents")
+    updateTag("documents")
 
     if (customer_id) {
-      revalidateTag(`customer/${customer_id}`)
+      updateTag(`customer/${customer_id}`)
     }
 
     return { success: true, data: result }

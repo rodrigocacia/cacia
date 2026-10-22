@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 import { api } from "../api-client"
 
 interface UpdateEventRequest {
@@ -65,8 +65,8 @@ export async function updateEvent({
       })
       .json<UpdateEventResponse>()
 
-    revalidateTag("events")
-    revalidateTag("reminders")
+    updateTag("events")
+    updateTag("reminders")
 
     return { success: true, data: result }
   } catch (err: any) {

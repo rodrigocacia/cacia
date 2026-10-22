@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 import { api } from "../api-client"
 
 interface CreateLeadRequest {
@@ -42,7 +42,7 @@ export async function createLead({
       })
       .json<CreateLeadResponse>()
 
-    revalidateTag("leads")
+    updateTag("leads")
 
     return { success: true, data: result }
   } catch (err: any) {

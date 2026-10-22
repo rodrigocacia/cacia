@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
-import { revalidateTag } from "next/cache"
+import { updateTag } from "next/cache"
 
 import { api } from "../api-client"
 import { AgentStyle } from "@/types/agent"
@@ -44,7 +44,7 @@ export async function updateAgent({
       })
       .json<UpdateAgentResponse>()
 
-    revalidateTag("agents")
+    updateTag("agents")
 
     return { success: true, data: result }
   } catch (err: any) {
