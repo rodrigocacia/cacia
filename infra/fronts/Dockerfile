@@ -18,6 +18,11 @@
 # apps/backoffice, e o --ignorefile do flyctl não o substitui.
 
 FROM node:22-bookworm-slim
+# A OpenNext sobe o workerd (runtime local da Cloudflare) durante o build, e
+# ele recusa iniciar sem certificados de CA — a imagem slim não os traz.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
 RUN corepack enable
 WORKDIR /app
 
